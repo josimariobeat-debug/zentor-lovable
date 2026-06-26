@@ -288,9 +288,9 @@ export default function StoriesVideosApp() {
             </div>
 
             {stories === null ?
-            <div data-ev-id="ev_2aa92d4f0f" className="flex flex-col gap-2">
+            <div data-ev-id="ev_2aa92d4f0f" className="bg-white border border-neutral-200 rounded-2xl overflow-hidden">
                 {[1, 2, 3].map((i) =>
-              <Skeleton key={i} className="h-[88px] rounded-2xl" />
+              <div key={i} className={`h-[108px] ${i !== 3 ? 'border-b border-neutral-100' : ''}`} />
               )}
               </div> :
             filtered.length === 0 ?
