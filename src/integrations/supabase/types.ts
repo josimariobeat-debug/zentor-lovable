@@ -14,7 +14,370 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      installed_apps: {
+        Row: {
+          app_id: string | null
+          app_key: string
+          created_at: string
+          description: string | null
+          expires_at: string | null
+          id: string
+          is_installed: boolean | null
+          name: string
+          status: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          app_id?: string | null
+          app_key?: string
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          is_installed?: boolean | null
+          name: string
+          status?: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          app_id?: string | null
+          app_key?: string
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          is_installed?: boolean | null
+          name?: string
+          status?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      media_gallery: {
+        Row: {
+          created_at: string
+          id: string
+          name: string | null
+          size: number | null
+          type: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name?: string | null
+          size?: number | null
+          type: string
+          url: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string | null
+          size?: number | null
+          type?: string
+          url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          paid_at: string | null
+          payment_method: string | null
+          status: string
+          subscription_id: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          paid_at?: string | null
+          payment_method?: string | null
+          status?: string
+          subscription_id?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          paid_at?: string | null
+          payment_method?: string | null
+          status?: string
+          subscription_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          has_seen_onboarding: boolean | null
+          id: string
+          initials: string | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          has_seen_onboarding?: boolean | null
+          id: string
+          initials?: string | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          has_seen_onboarding?: boolean | null
+          id?: string
+          initials?: string | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      stories: {
+        Row: {
+          active: boolean
+          aparencia: string
+          app_id: string | null
+          cover_type: string | null
+          cover_url: string | null
+          created_at: string
+          cta: string | null
+          format: string
+          id: string
+          scroll: string
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+          urls: Json
+          user_id: string
+          views: number
+        }
+        Insert: {
+          active?: boolean
+          aparencia?: string
+          app_id?: string | null
+          cover_type?: string | null
+          cover_url?: string | null
+          created_at?: string
+          cta?: string | null
+          format?: string
+          id?: string
+          scroll?: string
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+          urls?: Json
+          user_id: string
+          views?: number
+        }
+        Update: {
+          active?: boolean
+          aparencia?: string
+          app_id?: string | null
+          cover_type?: string | null
+          cover_url?: string | null
+          created_at?: string
+          cta?: string | null
+          format?: string
+          id?: string
+          scroll?: string
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          urls?: Json
+          user_id?: string
+          views?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stories_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "installed_apps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      story_media: {
+        Row: {
+          created_at: string
+          id: string
+          is_cover: boolean
+          name: string | null
+          position: number
+          story_id: string
+          type: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_cover?: boolean
+          name?: string | null
+          position?: number
+          story_id: string
+          type: string
+          url: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_cover?: boolean
+          name?: string | null
+          position?: number
+          story_id?: string
+          type?: string
+          url?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_media_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscriptions: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          plan: string
+          price: number
+          started_at: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          plan?: string
+          price?: number
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          plan?: string
+          price?: number
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      upload_session_files: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_url: string
+          id: string
+          mime_type: string
+          session_id: string
+          size: number
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_url: string
+          id?: string
+          mime_type: string
+          session_id: string
+          size: number
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_url?: string
+          id?: string
+          mime_type?: string
+          session_id?: string
+          size?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "upload_session_files_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "upload_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      upload_sessions: {
+        Row: {
+          app_id: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          status: string
+          token: string
+          user_id: string
+        }
+        Insert: {
+          app_id?: string | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          status?: string
+          token: string
+          user_id: string
+        }
+        Update: {
+          app_id?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          status?: string
+          token?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "upload_sessions_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "installed_apps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
