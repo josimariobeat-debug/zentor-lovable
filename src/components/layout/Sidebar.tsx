@@ -1,4 +1,5 @@
 import { NavLink, useLocation } from 'react-router';
+import { memo, useMemo } from 'react';
 import {
   LayoutGrid,
   Store,
@@ -18,9 +19,13 @@ const items = [
 { key: 'perfil', label: 'Perfil', icon: User, path: '/perfil' }];
 
 
-export default function Sidebar() {
+function Sidebar() {
   const location = useLocation();
   const isMeusApps = location.pathname === '/' || location.pathname.startsWith('/app/');
+  const activeByPath = useMemo(
+    () => new Map(items.map((item) => [item.key, item.path === '/' ? isMeusApps : location.pathname.startsWith(item.path)])),
+    [isMeusApps, location.pathname]
+  );
 
   return (
     <aside data-ev-id="ev_5375042d05" className="w-[260px] shrink-0 border-r border-neutral-200 bg-white flex flex-col h-screen sticky top-0">
@@ -38,7 +43,7 @@ export default function Sidebar() {
       <nav data-ev-id="ev_3682cafbab" className="px-3 flex-1 flex flex-col gap-1">
         {items.map((item) => {
           const Icon = item.icon;
-          const active = item.path === '/' ? isMeusApps : location.pathname.startsWith(item.path);
+          const active = activeByPath.get(item.key) ?? false;
           return (
             <NavLink
               key={item.key}
@@ -71,3 +76,5 @@ export default function Sidebar() {
     </aside>);
 
 }
+
+export default memo(Sidebar);

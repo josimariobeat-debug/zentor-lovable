@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import TopBar from '@/components/layout/TopBar';
 import AppCard from '@/components/apps/AppCard';
@@ -15,42 +15,46 @@ type InstalledApp = Tables<'installed_apps'>;
 export default function MeusApps() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const userId = user?.id;
   const { hasSeenOnboarding, loading: subLoading } = useSubscription();
   const [apps, setApps] = useState<InstalledApp[] | null>(null);
   const [welcomeOpen, setWelcomeOpen] = useState(false);
 
-  useEffect(() => {
-    loadApps();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
-
-  // Mostrar modal de boas-vindas no primeiro acesso
-  useEffect(() => {
-    if (!subLoading && !hasSeenOnboarding && user) {
-      setWelcomeOpen(true);
+  const loadApps = useCallback(async () => {
+    if (!supabase || !userId) {
+      setApps([]);
+      return;
     }
-  }, [subLoading, hasSeenOnboarding, user]);
 
-  const loadApps = async () => {
-    if (!supabase || !user) return;
     const { data } = await supabase.
     from('installed_apps').
     select('*').
-    eq('user_id', user.id).
+    eq('user_id', userId).
     eq('is_installed', true) // Apenas apps "instalados" em Meus Apps
     .order('created_at', { ascending: false });
     setApps(data ?? []);
-  };
+  }, [userId]);
 
-  const handleUninstall = async (id: string) => {
+  useEffect(() => {
+    void loadApps();
+  }, [loadApps]);
+
+  // Mostrar modal de boas-vindas no primeiro acesso
+  useEffect(() => {
+    if (!subLoading && !hasSeenOnboarding && userId) {
+      setWelcomeOpen(true);
+    }
+  }, [subLoading, hasSeenOnboarding, userId]);
+
+  const handleUninstall = useCallback(async (id: string) => {
     if (!supabase) return;
     // Apenas marca como não instalado, não exclui a assinatura
     await supabase.
     from('installed_apps').
     update({ is_installed: false }).
     eq('id', id);
-    setApps((apps ?? []).filter((app) => app.id !== id));
-  };
+    setApps((currentApps) => (currentApps ?? []).filter((app) => app.id !== id));
+  }, []);
 
   const getExpiresInDays = (expiresAt: string | null) => {
     if (!expiresAt) return 30;
@@ -68,17 +72,20 @@ export default function MeusApps() {
     return app.status;
   };
 
+  const renderedApps = useMemo(() => apps ?? [], [apps]);
+
   return (
     <>
       <TopBar title="Meus Apps" />
       <main data-ev-id="ev_5e165afc9e" className="px-10 py-10 fade-in">
         <h2 data-ev-id="ev_f285ec828f" className="text-[18px] font-semibold text-neutral-900 mb-6">Apps instalados</h2>
         
+        <section className="max-w-[920px] min-h-[130px]">
         {subLoading || apps === null ?
-        <AppCardRowSkeleton count={2} className="max-w-[920px]" /> :
-        apps.length === 0 ?
+        <AppCardRowSkeleton count={1} /> :
+        renderedApps.length === 0 ?
         // Sem apps instalados - CTA para ir à loja
-        <div data-ev-id="ev_dd148067b4" className="max-w-[920px]">
+        <div data-ev-id="ev_dd148067b4">
             <div data-ev-id="ev_5cb2c15fed" className="border border-dashed border-neutral-300 rounded-2xl p-12 text-center bg-neutral-50">
               <div data-ev-id="ev_76363d1b33" className="w-16 h-16 rounded-2xl bg-violet-100 flex items-center justify-center mx-auto mb-4">
                 <Sparkles className="w-8 h-8 text-violet-600" />
@@ -100,8 +107,8 @@ export default function MeusApps() {
             </div>
           </div> :
 
-        <div data-ev-id="ev_1111709a7f" className="flex flex-col gap-4 max-w-[920px]">
-            {apps.map((app) =>
+        <div data-ev-id="ev_1111709a7f" className="flex flex-col gap-4">
+            {renderedApps.map((app) =>
           <AppCard
             key={app.id}
             app={{
@@ -118,6 +125,7 @@ export default function MeusApps() {
           )}
           </div>
         }
+        </section>
       </main>
 
       <WelcomeModal

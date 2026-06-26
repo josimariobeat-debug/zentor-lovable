@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
 import type { Tables } from '@/integrations/supabase/helpers';
@@ -21,11 +21,12 @@ const SubscriptionContext = createContext<SubscriptionContextType | null>(null);
 
 export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
+  const userId = user?.id;
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState(true);
   const [loading, setLoading] = useState(true);
 
-  const fetchSubscription = async (userId: string) => {
+  const fetchSubscription = useCallback(async (userId: string) => {
     const { data: sub } = await supabase
       .from('subscriptions')
       .select('*')
@@ -55,18 +56,18 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       .maybeSingle();
 
     setHasSeenOnboarding(profile?.has_seen_onboarding ?? false);
-  };
+  }, []);
 
   useEffect(() => {
-    if (!user) {
+    if (!userId) {
       setSubscription(null);
       setHasSeenOnboarding(true);
       setLoading(false);
       return;
     }
     setLoading(true);
-    fetchSubscription(user.id).finally(() => setLoading(false));
-  }, [user]);
+    fetchSubscription(userId).finally(() => setLoading(false));
+  }, [fetchSubscription, userId]);
 
   const hasActiveSubscription = !!(
     subscription?.status === 'active' &&
@@ -74,14 +75,14 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     new Date(subscription.expires_at) > new Date()
   );
 
-  const daysRemaining = (() => {
+  const daysRemaining = useMemo(() => {
     if (!subscription?.expires_at) return 0;
     const diff = new Date(subscription.expires_at).getTime() - Date.now();
     return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
-  })();
+  }, [subscription?.expires_at]);
 
-  const subscribe = async () => {
-    if (!user) throw new Error('Not authenticated');
+  const subscribe = useCallback(async () => {
+    if (!userId) throw new Error('Not authenticated');
 
     const now = new Date();
     const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
@@ -89,7 +90,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     const { data: existingSub } = await supabase
       .from('subscriptions')
       .select('id')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .maybeSingle();
 
     if (existingSub) {
@@ -104,7 +105,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         .eq('id', existingSub.id);
     } else {
       await supabase.from('subscriptions').insert({
-        user_id: user.id,
+        user_id: userId,
         plan: 'mensal',
         status: 'active',
         price: 29.90,
@@ -116,11 +117,11 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     const { data: sub } = await supabase
       .from('subscriptions')
       .select('id')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .maybeSingle();
 
     await supabase.from('payments').insert({
-      user_id: user.id,
+      user_id: userId,
       subscription_id: sub?.id,
       amount: 29.90,
       status: 'completed',
@@ -131,13 +132,13 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     const { data: existingApp } = await supabase
       .from('installed_apps')
       .select('id')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('app_id', 'stories-videos')
       .maybeSingle();
 
     if (!existingApp) {
       await supabase.from('installed_apps').insert({
-        user_id: user.id,
+        user_id: userId,
         app_key: 'stories-videos',
         app_id: 'stories-videos',
         name: 'Stories Vídeos',
@@ -153,38 +154,51 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         .eq('id', existingApp.id);
     }
 
-    await fetchSubscription(user.id);
-  };
+    await fetchSubscription(userId);
+  }, [fetchSubscription, userId]);
 
-  const renewSubscription = async () => {
+  const renewSubscription = useCallback(async () => {
     await subscribe();
-  };
+  }, [subscribe]);
 
-  const markOnboardingSeen = async () => {
-    if (!user) return;
-    await supabase.from('profiles').update({ has_seen_onboarding: true }).eq('id', user.id);
+  const markOnboardingSeen = useCallback(async () => {
+    if (!userId) return;
+    await supabase.from('profiles').update({ has_seen_onboarding: true }).eq('id', userId);
     setHasSeenOnboarding(true);
-  };
+  }, [userId]);
 
-  const refresh = async () => {
-    if (!user) return;
-    await fetchSubscription(user.id);
-  };
+  const refresh = useCallback(async () => {
+    if (!userId) return;
+    await fetchSubscription(userId);
+  }, [fetchSubscription, userId]);
+
+  const value = useMemo(
+    () => ({
+      subscription,
+      hasActiveSubscription,
+      hasSeenOnboarding,
+      loading,
+      daysRemaining,
+      subscribe,
+      renewSubscription,
+      markOnboardingSeen,
+      refresh,
+    }),
+    [
+      subscription,
+      hasActiveSubscription,
+      hasSeenOnboarding,
+      loading,
+      daysRemaining,
+      subscribe,
+      renewSubscription,
+      markOnboardingSeen,
+      refresh,
+    ]
+  );
 
   return (
-    <SubscriptionContext.Provider
-      value={{
-        subscription,
-        hasActiveSubscription,
-        hasSeenOnboarding,
-        loading,
-        daysRemaining,
-        subscribe,
-        renewSubscription,
-        markOnboardingSeen,
-        refresh,
-      }}
-    >
+    <SubscriptionContext.Provider value={value}>
       {children}
     </SubscriptionContext.Provider>
   );

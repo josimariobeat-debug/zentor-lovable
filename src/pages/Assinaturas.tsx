@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import TopBar from '@/components/layout/TopBar';
 import { CreditCard, Calendar, Sparkles, Check, AlertTriangle, Clock, Receipt, Play, Star, Zap, MessageSquare, RefreshCw, ShoppingBag } from 'lucide-react';
 import PaymentModal from '@/components/subscription/PaymentModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
-import { Skeleton } from '@/components/ui/skeleton';
+import { PaymentHistorySkeleton, SubscriptionSummarySkeleton, SubscriptionTableSkeleton } from '@/components/ui/skeleton';
 import type { Tables } from '@/integrations/supabase/helpers';
 
 type InstalledApp = Tables<'installed_apps'>;
@@ -21,6 +21,7 @@ const APP_ICONS: Record<string, React.ComponentType<{className?: string;}>> = {
 
 export default function Assinaturas() {
   const { user } = useAuth();
+  const userId = user?.id;
   const navigate = useNavigate();
   const [apps, setApps] = useState<InstalledApp[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -29,37 +30,41 @@ export default function Assinaturas() {
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [selectedApp, setSelectedApp] = useState<InstalledApp | null>(null);
 
-  useEffect(() => {
-    loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
-
-  const loadData = async () => {
-    if (!supabase || !user) {
+  const loadData = useCallback(async () => {
+    if (!supabase || !userId) {
       setLoading(false);
       setLoadingPayments(false);
       return;
     }
 
-    // Carregar todas as assinaturas do usuário (instaladas ou não)
-    const { data: appsData } = await supabase.
-    from('installed_apps').
-    select('*').
-    eq('user_id', user.id).
-    order('created_at', { ascending: false });
-    setApps(appsData ?? []);
-    setLoading(false);
+    setLoading(true);
+    setLoadingPayments(true);
 
-    // Carregar pagamentos
-    const { data: paymentsData } = await supabase.
-    from('payments').
-    select('*').
-    eq('user_id', user.id).
-    order('created_at', { ascending: false }).
-    limit(10);
+    const [appsResult, paymentsResult] = await Promise.all([
+      supabase.
+      from('installed_apps').
+      select('*').
+      eq('user_id', userId).
+      order('created_at', { ascending: false }),
+      supabase.
+      from('payments').
+      select('*').
+      eq('user_id', userId).
+      order('created_at', { ascending: false }).
+      limit(10)
+    ]);
+
+    const { data: appsData } = appsResult;
+    const { data: paymentsData } = paymentsResult;
+    setApps(appsData ?? []);
     setPayments(paymentsData ?? []);
+    setLoading(false);
     setLoadingPayments(false);
-  };
+  }, [userId]);
+
+  useEffect(() => {
+    void loadData();
+  }, [loadData]);
 
   const formatDate = (date: string | null) => {
     if (!date) return '-';
@@ -82,13 +87,13 @@ export default function Assinaturas() {
     return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
   };
 
-  const handleRenew = (app: InstalledApp) => {
+  const handleRenew = useCallback((app: InstalledApp) => {
     setSelectedApp(app);
     setPaymentOpen(true);
-  };
+  }, []);
 
-  const processRenewal = async () => {
-    if (!supabase || !user || !selectedApp) return;
+  const processRenewal = useCallback(async () => {
+    if (!supabase || !userId || !selectedApp) return;
 
     const now = new Date();
     const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
@@ -102,7 +107,7 @@ export default function Assinaturas() {
     eq('id', selectedApp.id);
 
     await supabase.from('payments').insert({
-      user_id: user.id,
+      user_id: userId,
       amount: 29.90, // Preço padrão - poderia vir do app
       status: 'completed',
       payment_method: 'simulated',
@@ -111,30 +116,21 @@ export default function Assinaturas() {
 
     await loadData();
     setSelectedApp(null);
-  };
+  }, [loadData, selectedApp, userId]);
 
-  const getAppIcon = (appId: string | null) => {
+  const getAppIcon = useCallback((appId: string | null) => {
     const Icon = APP_ICONS[appId || ''] || Sparkles;
     return <Icon className="w-4 h-4" />;
-  };
+  }, []);
 
-  const activeApps = apps.filter((app) => !isExpired(app.expires_at));
-  const expiredApps = apps.filter((app) => isExpired(app.expires_at));
-  const totalActive = activeApps.length;
-
-  if (loading) {
-    return (
-      <>
-        <TopBar title="Assinaturas" />
-        <main data-ev-id="ev_5e12103699" className="px-10 py-10 fade-in">
-          <div data-ev-id="ev_3f96e64183" className="flex flex-col gap-6 max-w-4xl">
-            <Skeleton className="h-[200px] rounded-2xl" />
-            <Skeleton className="h-[300px] rounded-2xl" />
-          </div>
-        </main>
-      </>);
-
-  }
+  const { expiredApps, totalActive, totalPaid } = useMemo(() => {
+    const expired = apps.filter((app) => isExpired(app.expires_at));
+    return {
+      expiredApps: expired,
+      totalActive: apps.length - expired.length,
+      totalPaid: payments.reduce((acc, p) => acc + (p.amount || 0), 0),
+    };
+  }, [apps, payments]);
 
   return (
     <>
@@ -145,8 +141,10 @@ export default function Assinaturas() {
         </p>
 
         {/* Resumo */}
+        {loading ?
+        <SubscriptionSummarySkeleton /> :
         <div data-ev-id="ev_0375aa2a65" className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mb-6">
-          <div data-ev-id="ev_720c95eb85" className="bg-white border border-neutral-200 rounded-2xl p-5">
+          <div data-ev-id="ev_720c95eb85" className="bg-white border border-neutral-200 rounded-2xl p-5 min-h-[88px]">
             <div data-ev-id="ev_e87104da47" className="flex items-center gap-3 mb-2">
               <div data-ev-id="ev_f476e9ebf4" className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
                 <Check className="w-5 h-5 text-emerald-600" />
@@ -157,7 +155,7 @@ export default function Assinaturas() {
               </div>
             </div>
           </div>
-          <div data-ev-id="ev_f7cb9e044e" className="bg-white border border-neutral-200 rounded-2xl p-5">
+          <div data-ev-id="ev_f7cb9e044e" className="bg-white border border-neutral-200 rounded-2xl p-5 min-h-[88px]">
             <div data-ev-id="ev_03159c0ed4" className="flex items-center gap-3 mb-2">
               <div data-ev-id="ev_314cef8bb0" className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
                 <AlertTriangle className="w-5 h-5 text-amber-600" />
@@ -168,7 +166,7 @@ export default function Assinaturas() {
               </div>
             </div>
           </div>
-          <div data-ev-id="ev_ad305e08fa" className="bg-white border border-neutral-200 rounded-2xl p-5">
+          <div data-ev-id="ev_ad305e08fa" className="bg-white border border-neutral-200 rounded-2xl p-5 min-h-[88px]">
             <div data-ev-id="ev_055b3a63a5" className="flex items-center gap-3 mb-2">
               <div data-ev-id="ev_540a07ced8" className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center">
                 <Receipt className="w-5 h-5 text-violet-600" />
@@ -176,12 +174,13 @@ export default function Assinaturas() {
               <div data-ev-id="ev_de0f547c1a">
                 <p data-ev-id="ev_c6f4c4d671" className="text-[12px] text-neutral-500 uppercase tracking-wider font-medium">Total Pago</p>
                 <p data-ev-id="ev_c24632beb0" className="text-[24px] font-bold text-neutral-900">
-                  {formatCurrency(payments.reduce((acc, p) => acc + (p.amount || 0), 0))}
+                  {formatCurrency(totalPaid)}
                 </p>
               </div>
             </div>
           </div>
         </div>
+        }
 
         {/* Lista de Assinaturas */}
         <div data-ev-id="ev_b29c80900c" className="bg-white border border-neutral-200 rounded-2xl overflow-hidden max-w-4xl mb-6">
@@ -199,7 +198,9 @@ export default function Assinaturas() {
             </button>
           </div>
 
-          {apps.length === 0 ?
+          {loading ?
+          <SubscriptionTableSkeleton rows={1} /> :
+          apps.length === 0 ?
           <div data-ev-id="ev_5344b20d7a" className="p-10 text-center">
               <div data-ev-id="ev_37783d8bc6" className="w-16 h-16 rounded-2xl bg-violet-100 flex items-center justify-center mx-auto mb-4">
                 <Sparkles className="w-8 h-8 text-violet-600" />
@@ -221,7 +222,7 @@ export default function Assinaturas() {
 
           <>
               {/* Header da tabela */}
-              <div data-ev-id="ev_d5793e44a0" className="grid grid-cols-12 px-6 py-3 bg-neutral-50 border-b border-neutral-200 text-[11px] font-semibold tracking-wider uppercase text-neutral-500">
+              <div data-ev-id="ev_d5793e44a0" className="grid grid-cols-12 px-6 py-3 bg-neutral-50 border-b border-neutral-200 text-[11px] font-semibold tracking-wider uppercase text-neutral-500 min-h-[40px]">
                 <div data-ev-id="ev_694a2b7e01" className="col-span-4">App</div>
                 <div data-ev-id="ev_ac971f8391" className="col-span-2">Início</div>
                 <div data-ev-id="ev_83ae804068" className="col-span-2">Vencimento</div>
@@ -236,7 +237,7 @@ export default function Assinaturas() {
                 const daysLeft = getDaysRemaining(app.expires_at);
 
                 return (
-                  <div data-ev-id="ev_878bf8e38e" key={app.id} className="grid grid-cols-12 px-6 py-4 items-center text-[14px]">
+                  <div data-ev-id="ev_878bf8e38e" key={app.id} className="grid grid-cols-12 px-6 py-4 items-center text-[14px] min-h-[70px]">
                       <div data-ev-id="ev_42b7e3cd5f" className="col-span-4 font-medium text-neutral-900 flex items-center gap-3">
                         <div data-ev-id="ev_d7547da844" className="w-9 h-9 rounded-lg bg-neutral-900 text-white flex items-center justify-center">
                           {getAppIcon(app.app_id)}
@@ -292,11 +293,9 @@ export default function Assinaturas() {
             <h3 data-ev-id="ev_03f76f5813" className="text-[15px] font-semibold text-neutral-900">Histórico de pagamentos</h3>
           </div>
           {loadingPayments ?
-          <div data-ev-id="ev_44866f69a2" className="p-6">
-              <Skeleton className="h-16" />
-            </div> :
+          <PaymentHistorySkeleton /> :
           payments.length === 0 ?
-          <div data-ev-id="ev_21ab134bb8" className="p-10 text-center text-[14px] text-neutral-500">
+            <div data-ev-id="ev_21ab134bb8" className="p-10 min-h-[100px] text-center text-[14px] text-neutral-500">
               Nenhum pagamento realizado ainda.
             </div> :
 

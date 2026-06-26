@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router';
+import { memo, useCallback, type ReactNode } from 'react';
 import { ChevronLeft, LogOut } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import {
@@ -14,24 +15,28 @@ interface TopBarProps {
   title: string;
   backTo?: string;
   breadcrumb?: string;
-  rightSlot?: React.ReactNode;
+  rightSlot?: ReactNode;
 }
 
-export default function TopBar({ title, backTo, breadcrumb, rightSlot }: TopBarProps) {
+function TopBar({ title, backTo, breadcrumb, rightSlot }: TopBarProps) {
   const navigate = useNavigate();
   const { profile, logout } = useAuth();
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     await logout();
     navigate('/login');
-  };
+  }, [logout, navigate]);
+
+  const handleBack = useCallback(() => {
+    backTo ? navigate(backTo) : navigate(-1);
+  }, [backTo, navigate]);
 
   return (
     <header data-ev-id="ev_9690f60d68" className="sticky top-0 z-40 h-[76px] border-b border-neutral-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 flex items-center justify-between px-10">
       <div data-ev-id="ev_28e457f727" className="flex items-center gap-3 min-w-0">
         {backTo !== undefined &&
         <button data-ev-id="ev_0ff3076648"
-        onClick={() => backTo ? navigate(backTo) : navigate(-1)}
+        onClick={handleBack}
         className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-neutral-100 transition-colors text-neutral-700"
         aria-label="Voltar">
 
@@ -49,8 +54,8 @@ export default function TopBar({ title, backTo, breadcrumb, rightSlot }: TopBarP
         {rightSlot}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button data-ev-id="ev_8771892fd0" className="flex items-center gap-3 outline-none">
-              <span data-ev-id="ev_c585fc684b" className="text-[14px] font-medium text-neutral-800">{profile?.name || '—'}</span>
+            <button data-ev-id="ev_8771892fd0" className="flex items-center gap-3 outline-none min-w-[190px] justify-end">
+              <span data-ev-id="ev_c585fc684b" className="block min-w-[140px] max-w-[140px] truncate text-right text-[14px] font-medium text-neutral-800">{profile?.name || '—'}</span>
               <div data-ev-id="ev_718373a63d" className="w-10 h-10 rounded-full bg-neutral-900 text-white flex items-center justify-center text-[12px] font-semibold tracking-wide">
                 {profile?.initials || '·'}
               </div>
@@ -74,3 +79,5 @@ export default function TopBar({ title, backTo, breadcrumb, rightSlot }: TopBarP
     </header>);
 
 }
+
+export default memo(TopBar);

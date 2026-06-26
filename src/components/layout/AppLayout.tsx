@@ -1,7 +1,8 @@
 import { Outlet } from 'react-router';
+import { memo } from 'react';
 import Sidebar from './Sidebar';
 
-export default function AppLayout() {
+function AppLayout() {
   return (
     <div data-ev-id="ev_3539cb7e88" className="flex bg-white text-neutral-900 min-h-screen">
       <Sidebar />
@@ -11,3 +12,5 @@ export default function AppLayout() {
     </div>);
 
 }
+
+export default memo(AppLayout);

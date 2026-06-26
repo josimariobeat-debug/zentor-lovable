@@ -52,6 +52,8 @@ function MediaThumbnailComponent({
       <video data-ev-id="ev_6faf73660b"
       ref={videoRef}
       src={`${src}#t=0.5`}
+      width={300}
+      height={400}
       className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-200 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
       muted
       playsInline
@@ -64,6 +66,8 @@ function MediaThumbnailComponent({
       <img data-ev-id="ev_60feb4797a"
       src={src}
       alt={alt}
+      width={300}
+      height={400}
       className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-200 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
       onLoad={() => setIsLoaded(true)}
       onError={() => {setHasError(true);setIsLoaded(true);}} />
