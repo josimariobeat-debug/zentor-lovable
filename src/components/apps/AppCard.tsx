@@ -42,7 +42,7 @@ function AppCard({ app, onDelete, isExpired = false }: AppCardProps) {
     <>
       <div data-ev-id="ev_1bcf52e50a"
       onClick={handleOpen}
-      className="group w-full min-h-[130px] text-left bg-white border border-neutral-200 rounded-2xl p-5 flex items-center gap-5 hover:border-neutral-300 hover:shadow-[0_4px_24px_-12px_rgba(0,0,0,0.12)] transition-all duration-200 cursor-pointer">
+      className="group w-full h-[130px] text-left bg-white border border-neutral-200 rounded-2xl p-5 flex items-center gap-5 hover:border-neutral-300 hover:shadow-[0_4px_24px_-12px_rgba(0,0,0,0.12)] transition-all duration-200 cursor-pointer">
 
         <div data-ev-id="ev_443499abd4" className="w-[88px] h-[88px] rounded-2xl bg-neutral-900 text-white flex items-center justify-center shrink-0 group-hover:scale-[1.02] transition-transform">
           <Play className="w-9 h-9 fill-white" strokeWidth={0} />
@@ -54,7 +54,7 @@ function AppCard({ app, onDelete, isExpired = false }: AppCardProps) {
               {app.type}
             </span>
           </div>
-          <p data-ev-id="ev_46379eda40" className="text-[14px] text-neutral-600 mb-3">{app.description}</p>
+          <p data-ev-id="ev_46379eda40" className="text-[14px] text-neutral-600 mb-3 line-clamp-1">{app.description}</p>
           <div data-ev-id="ev_e652815ee3" className="flex items-center gap-2 text-[12.5px]">
             <span data-ev-id="ev_7d503d3f7f" className="text-neutral-500">Assinatura {app.status}</span>
             {isExpired ?
