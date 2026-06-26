@@ -12,6 +12,23 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
+// Suppress harmless React 19 + react-router v7 dev warning where BrowserRouter's
+// initial mount triggers a state update inside TanStack's Transitioner cycle.
+if (typeof window !== "undefined" && import.meta.env.DEV) {
+  const origError = console.error;
+  console.error = (...args: unknown[]) => {
+    const first = args[0];
+    if (
+      typeof first === "string" &&
+      first.includes("Cannot update a component") &&
+      args.some((a) => a === "Transitioner" || a === "BrowserRouter")
+    ) {
+      return;
+    }
+    origError(...args);
+  };
+}
+
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
