@@ -1,53 +1,69 @@
-import * as React from "react";
-import * as TabsPrimitive from "@radix-ui/react-tabs";
+import * as React from 'react';
+import { cn } from '@/lib/utils';
 
-import { cn } from "@/lib/utils";
+interface TabsContextValue {
+  value: string;
+  onValueChange: (value: string) => void;
+}
 
-const Tabs = TabsPrimitive.Root;
+const TabsContext = React.createContext<TabsContextValue | null>(null);
 
-const TabsList = React.forwardRef<
-  React.ElementRef<typeof TabsPrimitive.List>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.List
-    ref={ref}
+interface TabsProps {
+  defaultValue?: string;
+  value?: string;
+  onValueChange?: (value: string) => void;
+  children: React.ReactNode;
+  className?: string;
+}
+
+function Tabs({ defaultValue = '', value: controlledValue, onValueChange, children, className }: TabsProps) {
+  const [internalValue, setInternalValue] = React.useState(defaultValue);
+  const value = controlledValue ?? internalValue;
+  const handleChange = onValueChange ?? setInternalValue;
+
+  return (
+    <TabsContext.Provider value={{ value, onValueChange: handleChange }}>
+      <div data-ev-id="ev_cdf309fd3d" className={className}>{children}</div>
+    </TabsContext.Provider>);
+
+}
+
+function TabsList({ children, className }: {children: React.ReactNode;className?: string;}) {
+  return (
+    <div data-ev-id="ev_9e6eafaf91" className={cn('inline-flex items-center', className)}>
+      {children}
+    </div>);
+
+}
+
+function TabsTrigger({ value, children, className }: {value: string;children: React.ReactNode;className?: string;}) {
+  const ctx = React.useContext(TabsContext)!;
+  const isActive = ctx.value === value;
+
+  return (
+    <button data-ev-id="ev_8823b0efff"
+    type="button"
+    onClick={() => ctx.onValueChange(value)}
+    data-state={isActive ? 'active' : 'inactive'}
     className={cn(
-      "inline-flex h-9 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground",
-      className,
-    )}
-    {...props}
-  />
-));
-TabsList.displayName = TabsPrimitive.List.displayName;
+      'inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 text-sm font-medium transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50',
+      className
+    )}>
 
-const TabsTrigger = React.forwardRef<
-  React.ElementRef<typeof TabsPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.Trigger
-    ref={ref}
-    className={cn(
-      "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-background cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow",
-      className,
-    )}
-    {...props}
-  />
-));
-TabsTrigger.displayName = TabsPrimitive.Trigger.displayName;
+      {children}
+    </button>);
 
-const TabsContent = React.forwardRef<
-  React.ElementRef<typeof TabsPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.Content
-    ref={ref}
-    className={cn(
-      "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-      className,
-    )}
-    {...props}
-  />
-));
-TabsContent.displayName = TabsPrimitive.Content.displayName;
+}
+
+function TabsContent({ value, children, className }: {value: string;children: React.ReactNode;className?: string;}) {
+  const ctx = React.useContext(TabsContext)!;
+  if (ctx.value !== value) return null;
+
+  return (
+    <div data-ev-id="ev_15019aad3f" className={cn('fade-in', className)}>
+      {children}
+    </div>);
+
+}
 
 export { Tabs, TabsList, TabsTrigger, TabsContent };
