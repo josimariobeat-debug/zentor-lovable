@@ -137,8 +137,10 @@ export default function StoriesVideosApp() {
     if (!files?.length || !supabase || !user) return;
     setUploading(true);
 
+    const { compressMedia } = await import('@/lib/mediaCompression');
     let uploaded = 0;
-    for (const file of Array.from(files)) {
+    for (const original of Array.from(files)) {
+      const file = await compressMedia(original);
       const ext = file.name.split('.').pop();
       const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
       const fileType = file.type.startsWith('video/') ? 'video' : 'image';

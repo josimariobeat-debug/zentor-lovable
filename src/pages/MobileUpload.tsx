@@ -128,15 +128,19 @@ export default function MobileUpload() {
       ));
 
       try {
+        // 0) Compressão automática preservando qualidade (imagens). Vídeos passam direto.
+        const { compressMedia } = await import('@/lib/mediaCompression');
+        const optimized = await compressMedia(fileItem.file);
+
         // 1) Mint signed upload URL via server fn (validates session token)
         const signed = await createSessionUploadUrl({
-          data: { token, fileName: fileItem.file.name },
+          data: { token, fileName: optimized.name },
         });
 
         // 2) Upload directly to storage using signed token (no anon RLS needed)
         const { error: uploadError } = await supabase.storage
           .from('media')
-          .uploadToSignedUrl(signed.path, signed.token, fileItem.file);
+          .uploadToSignedUrl(signed.path, signed.token, optimized);
         if (uploadError) throw uploadError;
 
         // 3) Register file row + get long-lived signed read URL via server fn
@@ -144,9 +148,9 @@ export default function MobileUpload() {
           data: {
             token,
             path: signed.path,
-            fileName: fileItem.file.name,
-            mimeType: fileItem.file.type,
-            size: fileItem.file.size,
+            fileName: optimized.name,
+            mimeType: optimized.type,
+            size: optimized.size,
           },
         });
 

@@ -1,14 +1,16 @@
 import { supabase } from '@/integrations/supabase/client';
+import { compressMedia } from './mediaCompression';
 
 /**
  * Upload to the private "media" bucket and return a long-lived signed URL.
  * Mantém compatibilidade com o comportamento do Zentor (URLs públicas).
  */
 export async function uploadMedia(file: File, userId: string): Promise<{ url: string; path: string }> {
-  const ext = file.name.split('.').pop();
+  const optimized = await compressMedia(file);
+  const ext = optimized.name.split('.').pop();
   const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
-  const { error } = await supabase.storage.from('media').upload(path, file, {
+  const { error } = await supabase.storage.from('media').upload(path, optimized, {
     cacheControl: '31536000',
     upsert: false,
   });

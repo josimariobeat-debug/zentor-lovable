@@ -183,8 +183,11 @@ export default function AdicionarStory() {
     setMedia(next);
   };
 
-  const uploadFile = async (file: File): Promise<{ url: string; name: string; type: 'image' | 'video'; size: number }> => {
+  const uploadFile = async (original: File): Promise<{ url: string; name: string; type: 'image' | 'video'; size: number }> => {
     if (!supabase || !user) throw new Error('Not authenticated');
+
+    const { compressMedia } = await import('@/lib/mediaCompression');
+    const file = await compressMedia(original);
 
     const ext = file.name.split('.').pop();
     const fileName = `${user.id}/${Date.now()}.${ext}`;
@@ -217,6 +220,7 @@ export default function AdicionarStory() {
 
     return { url: publicUrl, name: file.name, type: fileType, size: file.size };
   };
+
 
   const onGallerySelect = (items: Tables<'media_gallery'>[]) => {
     const isFirstMedia = media.length === 0;
