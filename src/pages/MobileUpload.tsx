@@ -3,9 +3,20 @@ import { useParams } from 'react-router';
 import { supabase } from '@/integrations/supabase/client';
 import { Camera, Video, Mic, FolderOpen, Upload, Check, X, Loader2, AlertCircle } from 'lucide-react';
 import { toast } from '@/components/ui/toaster';
-import type { Tables } from '@/integrations/supabase/helpers';
+import {
+  getUploadSessionByToken,
+  createSessionUploadUrl,
+  registerSessionUpload,
+  getSessionStatus,
+} from '@/lib/uploadSessions.functions';
 
-type UploadSession = Tables<'upload_sessions'>;
+interface UploadSession {
+  id: string;
+  user_id: string;
+  expires_at: string;
+}
+
+
 
 interface FilePreview {
   file: File;
