@@ -33,7 +33,7 @@ interface Media {
   url: string;
   type: 'video' | 'image';
   name: string;
-  cover: boolean;
+  cover?: boolean;
   file?: File;
 }
 
