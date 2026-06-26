@@ -28,7 +28,7 @@ function Sidebar() {
   );
 
   return (
-    <aside data-ev-id="ev_5375042d05" className="w-[260px] shrink-0 border-r border-neutral-200 bg-white flex flex-col h-screen sticky top-0">
+    <aside data-ev-id="ev_5375042d05" className="w-[260px] border-r border-neutral-200 bg-white flex flex-col fixed left-0 top-0 bottom-0 z-30">
       {/* Brand */}
       <div data-ev-id="ev_3b9bdb7b46" className="px-6 pt-7 pb-8">
         <div data-ev-id="ev_bc4bf3916b" className="items-baseline flex gap-2">
