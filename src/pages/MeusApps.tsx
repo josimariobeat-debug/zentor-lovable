@@ -77,7 +77,7 @@ export default function MeusApps() {
         {subLoading || apps === null ?
         <div data-ev-id="ev_1e1d2c9cdd" className="flex flex-col gap-4 max-w-[920px]">
             {[1, 2].map((i) =>
-          <Skeleton key={i} className="h-[124px] rounded-2xl" />
+          <Skeleton key={i} className="h-[130px] rounded-2xl" />
           )}
           </div> :
         apps.length === 0 ?
