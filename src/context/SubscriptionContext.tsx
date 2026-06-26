@@ -82,7 +82,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   }, [subscription?.expires_at]);
 
   const subscribe = useCallback(async () => {
-    if (!user) throw new Error('Not authenticated');
+    if (!userId) throw new Error('Not authenticated');
 
     const now = new Date();
     const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
@@ -90,7 +90,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     const { data: existingSub } = await supabase
       .from('subscriptions')
       .select('id')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .maybeSingle();
 
     if (existingSub) {
@@ -105,7 +105,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         .eq('id', existingSub.id);
     } else {
       await supabase.from('subscriptions').insert({
-        user_id: user.id,
+        user_id: userId,
         plan: 'mensal',
         status: 'active',
         price: 29.90,
@@ -117,11 +117,11 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     const { data: sub } = await supabase
       .from('subscriptions')
       .select('id')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .maybeSingle();
 
     await supabase.from('payments').insert({
-      user_id: user.id,
+      user_id: userId,
       subscription_id: sub?.id,
       amount: 29.90,
       status: 'completed',
@@ -132,13 +132,13 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     const { data: existingApp } = await supabase
       .from('installed_apps')
       .select('id')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('app_id', 'stories-videos')
       .maybeSingle();
 
     if (!existingApp) {
       await supabase.from('installed_apps').insert({
-        user_id: user.id,
+        user_id: userId,
         app_key: 'stories-videos',
         app_id: 'stories-videos',
         name: 'Stories Vídeos',
@@ -154,23 +154,23 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         .eq('id', existingApp.id);
     }
 
-    await fetchSubscription(user.id);
-  }, [fetchSubscription, user]);
+    await fetchSubscription(userId);
+  }, [fetchSubscription, userId]);
 
   const renewSubscription = useCallback(async () => {
     await subscribe();
   }, [subscribe]);
 
   const markOnboardingSeen = useCallback(async () => {
-    if (!user) return;
-    await supabase.from('profiles').update({ has_seen_onboarding: true }).eq('id', user.id);
+    if (!userId) return;
+    await supabase.from('profiles').update({ has_seen_onboarding: true }).eq('id', userId);
     setHasSeenOnboarding(true);
-  }, [user]);
+  }, [userId]);
 
   const refresh = useCallback(async () => {
-    if (!user) return;
-    await fetchSubscription(user.id);
-  }, [fetchSubscription, user]);
+    if (!userId) return;
+    await fetchSubscription(userId);
+  }, [fetchSubscription, userId]);
 
   const value = useMemo(
     () => ({
