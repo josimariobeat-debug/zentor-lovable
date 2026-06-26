@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router';
 import { memo } from 'react';
 import Sidebar from './Sidebar';
+import CLSDebugOverlay from '@/components/debug/CLSDebugOverlay';
 
 function AppLayout() {
   return (
@@ -9,6 +10,7 @@ function AppLayout() {
       <div data-ev-id="ev_099528319d" className="flex-1 min-w-0 flex flex-col">
         <Outlet />
       </div>
+      <CLSDebugOverlay />
     </div>);
 
 }
