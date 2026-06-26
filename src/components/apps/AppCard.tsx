@@ -1,6 +1,6 @@
 import { Play, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router';
-import { useState } from 'react';
+import { memo, useCallback, useState, type MouseEvent } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { toast } from '@/components/ui/toaster';
 
@@ -19,26 +19,30 @@ interface AppCardProps {
   isExpired?: boolean;
 }
 
-export default function AppCard({ app, onDelete, isExpired = false }: AppCardProps) {
+function AppCard({ app, onDelete, isExpired = false }: AppCardProps) {
   const navigate = useNavigate();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const handleDelete = (e: React.MouseEvent) => {
+  const handleOpen = useCallback(() => {
+    navigate(`/app/${app.id}`);
+  }, [app.id, navigate]);
+
+  const handleDelete = useCallback((e: MouseEvent) => {
     e.stopPropagation();
     setShowDeleteConfirm(true);
-  };
+  }, []);
 
-  const confirmDelete = () => {
+  const confirmDelete = useCallback(() => {
     onDelete?.(app.id);
     toast.success('Aplicativo removido com sucesso');
     setShowDeleteConfirm(false);
-  };
+  }, [app.id, onDelete]);
 
   return (
     <>
       <div data-ev-id="ev_1bcf52e50a"
-      onClick={() => navigate(`/app/${app.id}`)}
-      className="group w-full text-left bg-white border border-neutral-200 rounded-2xl p-5 flex items-center gap-5 hover:border-neutral-300 hover:shadow-[0_4px_24px_-12px_rgba(0,0,0,0.12)] transition-all duration-200 cursor-pointer">
+      onClick={handleOpen}
+      className="group w-full min-h-[130px] text-left bg-white border border-neutral-200 rounded-2xl p-5 flex items-center gap-5 hover:border-neutral-300 hover:shadow-[0_4px_24px_-12px_rgba(0,0,0,0.12)] transition-all duration-200 cursor-pointer">
 
         <div data-ev-id="ev_443499abd4" className="w-[88px] h-[88px] rounded-2xl bg-neutral-900 text-white flex items-center justify-center shrink-0 group-hover:scale-[1.02] transition-transform">
           <Play className="w-9 h-9 fill-white" strokeWidth={0} />
@@ -101,3 +105,5 @@ export default function AppCard({ app, onDelete, isExpired = false }: AppCardPro
     </>);
 
 }
+
+export default memo(AppCard);

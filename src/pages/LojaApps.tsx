@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import TopBar from '@/components/layout/TopBar';
 import { Play, Check, Search, Star, MessageSquare, Zap, ShoppingBag, Loader2, RefreshCw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -63,6 +63,7 @@ const APP_CATALOG: StoreApp[] = [
 
 export default function LojaApps() {
   const { user } = useAuth();
+  const userId = user?.id;
   const [query, setQuery] = useState('');
   const [userApps, setUserApps] = useState<InstalledApp[]>([]);
   const [loading, setLoading] = useState(true);
@@ -70,31 +71,30 @@ export default function LojaApps() {
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [selectedApp, setSelectedApp] = useState<StoreApp | null>(null);
 
-  useEffect(() => {
-    loadUserApps();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
-
-  const loadUserApps = async () => {
-    if (!supabase || !user) {
+  const loadUserApps = useCallback(async () => {
+    if (!supabase || !userId) {
       setLoading(false);
       return;
     }
     const { data } = await supabase.
     from('installed_apps').
     select('*').
-    eq('user_id', user.id);
+    eq('user_id', userId);
     setUserApps(data ?? []);
     setLoading(false);
-  };
+  }, [userId]);
+
+  useEffect(() => {
+    void loadUserApps();
+  }, [loadUserApps]);
 
   // Encontrar assinatura do usuário para um app
-  const getUserAppData = (appId: string): InstalledApp | undefined => {
+  const getUserAppData = useCallback((appId: string): InstalledApp | undefined => {
     return userApps.find((a) => a.app_id === appId);
-  };
+  }, [userApps]);
 
   // Verificar status do app
-  const getAppStatus = (appId: string): 'not_subscribed' | 'active' | 'expired' | 'installed' | 'not_installed' => {
+  const getAppStatus = useCallback((appId: string): 'not_subscribed' | 'active' | 'expired' | 'installed' | 'not_installed' => {
     const userApp = getUserAppData(appId);
     if (!userApp) return 'not_subscribed';
 
@@ -103,17 +103,17 @@ export default function LojaApps() {
 
     if (userApp.is_installed) return 'installed';
     return 'not_installed'; // Tem assinatura ativa mas não está instalado
-  };
+  }, [getUserAppData]);
 
   // Assinar app
-  const handleSubscribe = (app: StoreApp) => {
+  const handleSubscribe = useCallback((app: StoreApp) => {
     setSelectedApp(app);
     setPaymentOpen(true);
-  };
+  }, []);
 
   // Processar assinatura após pagamento
-  const processSubscription = async () => {
-    if (!supabase || !user || !selectedApp) return;
+  const processSubscription = useCallback(async () => {
+    if (!supabase || !userId || !selectedApp) return;
 
     const now = new Date();
     const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
@@ -133,7 +133,7 @@ export default function LojaApps() {
     } else {
       // Nova assinatura
       await supabase.from('installed_apps').insert({
-        user_id: user.id,
+        user_id: userId,
         app_id: selectedApp.id,
         name: selectedApp.name,
         type: selectedApp.id === 'stories-videos' ? 'stories' : selectedApp.id,
@@ -146,7 +146,7 @@ export default function LojaApps() {
 
     // Registrar pagamento
     await supabase.from('payments').insert({
-      user_id: user.id,
+      user_id: userId,
       amount: selectedApp.price,
       status: 'completed',
       payment_method: 'simulated',
@@ -155,11 +155,11 @@ export default function LojaApps() {
 
     await loadUserApps();
     setSelectedApp(null);
-  };
+  }, [getUserAppData, loadUserApps, selectedApp, userId]);
 
   // Instalar app (já tem assinatura)
-  const handleInstall = async (appId: string) => {
-    if (!supabase || !user) return;
+  const handleInstall = useCallback(async (appId: string) => {
+    if (!supabase || !userId) return;
 
     setProcessingApp(appId);
 
@@ -175,13 +175,13 @@ export default function LojaApps() {
     }
 
     setProcessingApp(null);
-  };
+  }, [getUserAppData, loadUserApps, userId]);
 
-  const filtered = APP_CATALOG.filter(
+  const filtered = useMemo(() => APP_CATALOG.filter(
     (a) =>
     a.name.toLowerCase().includes(query.toLowerCase()) ||
     a.description.toLowerCase().includes(query.toLowerCase())
-  );
+  ), [query]);
 
   const renderAppButton = (app: StoreApp) => {
     const status = getAppStatus(app.id);
@@ -290,7 +290,7 @@ export default function LojaApps() {
             return (
               <div data-ev-id="ev_e3aa572043"
               key={app.id}
-              className="bg-white border border-neutral-200 rounded-2xl p-5 hover:border-neutral-300 hover:shadow-[0_4px_24px_-12px_rgba(0,0,0,0.1)] transition-all">
+              className="bg-white border border-neutral-200 rounded-2xl p-5 min-h-[236px] hover:border-neutral-300 hover:shadow-[0_4px_24px_-12px_rgba(0,0,0,0.1)] transition-all">
 
                   <div data-ev-id="ev_f4b0a17ab8" className="flex items-start gap-4 mb-4">
                     <div data-ev-id="ev_a853848759" className="w-16 h-16 rounded-xl bg-neutral-900 text-white flex items-center justify-center shrink-0">
