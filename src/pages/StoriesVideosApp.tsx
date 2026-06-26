@@ -4,7 +4,7 @@ import TopBar from '@/components/layout/TopBar';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton, StoriesRowsSkeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { toast } from '@/components/ui/toaster';
 import { supabase } from '@/integrations/supabase/client';
@@ -288,11 +288,7 @@ export default function StoriesVideosApp() {
             </div>
 
             {stories === null ?
-            <div data-ev-id="ev_2aa92d4f0f" className="bg-white border border-neutral-200 rounded-2xl overflow-hidden">
-                {[1, 2, 3].map((i) =>
-              <div key={i} className={`h-[108px] ${i !== 3 ? 'border-b border-neutral-100' : ''}`} />
-              )}
-              </div> :
+            <StoriesRowsSkeleton count={3} /> :
             filtered.length === 0 ?
             <div data-ev-id="ev_0e5f3700fc" className="border border-dashed border-neutral-300 rounded-2xl p-16 text-center text-neutral-500">
                 Nenhum story criado ainda. Clique em <b data-ev-id="ev_c59cb67033" className="text-neutral-700">Adicionar</b> para criar o primeiro.
