@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import PaymentModal from '@/components/subscription/PaymentModal';
 import type { Tables } from '@/integrations/supabase/helpers';
+import { StoreCardSkeleton } from '@/components/ui/skeleton';
 
 type InstalledApp = Tables<'installed_apps'>;
 
@@ -281,21 +282,7 @@ export default function LojaApps() {
         </div>
 
         {loading ?
-        <div data-ev-id="ev_cb00f287ae" className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-            {[1, 2, 3].map((i) =>
-          <div data-ev-id="ev_00a641010b" key={i} className="bg-white border border-neutral-200 rounded-2xl p-5 animate-pulse">
-                <div data-ev-id="ev_5953bb3258" className="flex items-start gap-4 mb-4">
-                  <div data-ev-id="ev_787b5dcca2" className="w-16 h-16 rounded-xl bg-neutral-200" />
-                  <div data-ev-id="ev_48a2b8c15f" className="flex-1">
-                    <div data-ev-id="ev_a518874a6b" className="h-5 bg-neutral-200 rounded w-32 mb-2" />
-                    <div data-ev-id="ev_b8e775fadd" className="h-4 bg-neutral-100 rounded w-20" />
-                  </div>
-                </div>
-                <div data-ev-id="ev_e13178986a" className="h-12 bg-neutral-100 rounded mb-4" />
-                <div data-ev-id="ev_5b76bd1e85" className="h-10 bg-neutral-200 rounded" />
-              </div>
-          )}
-          </div> :
+        <StoreCardSkeleton count={3} /> :
 
         <div data-ev-id="ev_3a42082e84" className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
             {filtered.map((app) => {
