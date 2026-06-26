@@ -3,9 +3,20 @@ import { useParams } from 'react-router';
 import { supabase } from '@/integrations/supabase/client';
 import { Camera, Video, Mic, FolderOpen, Upload, Check, X, Loader2, AlertCircle } from 'lucide-react';
 import { toast } from '@/components/ui/toaster';
-import type { Tables } from '@/integrations/supabase/helpers';
+import {
+  getUploadSessionByToken,
+  createSessionUploadUrl,
+  registerSessionUpload,
+  getSessionStatus,
+} from '@/lib/uploadSessions.functions';
 
-type UploadSession = Tables<'upload_sessions'>;
+interface UploadSession {
+  id: string;
+  user_id: string;
+  expires_at: string;
+}
+
+
 
 interface FilePreview {
   file: File;
@@ -31,77 +42,39 @@ export default function MobileUpload() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
-  // Escutar mudanças na sessão (fechamento)
+  // Poll session status (substitui realtime)
   useEffect(() => {
-    if (!supabase || !session) return;
-
-    const channel = supabase.
-    channel(`session_${session.id}`).
-    on(
-      'postgres_changes',
-      {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'upload_sessions',
-        filter: `id=eq.${session.id}`
-      },
-      (payload) => {
-        const updated = payload.new as UploadSession;
-        if (updated.status === 'closed') {
-          setStatus('closed');
-        } else if (updated.status === 'expired') {
-          setStatus('expired');
-        }
+    if (!session || !token) return;
+    const interval = setInterval(async () => {
+      try {
+        const res = await getSessionStatus({ data: { token } });
+        if (res.status !== 'active') setStatus(res.status);
+      } catch {
+        /* ignore */
       }
-    ).
-    subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [session]);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [session, token]);
 
   const loadSession = async () => {
-    if (!supabase || !token) {
+    if (!token) {
       setStatus('error');
       return;
     }
 
     try {
-      const { data, error } = await supabase.
-      from('upload_sessions').
-      select('*').
-      eq('token', token).
-      single();
-
-      if (error || !data) {
-        setStatus('error');
+      const res = await getUploadSessionByToken({ data: { token } });
+      if (res.status !== 'active' || !res.session) {
+        setStatus(res.status);
         return;
       }
-
-      // Verificar expiração
-      if (new Date(data.expires_at) < new Date()) {
-        setStatus('expired');
-        return;
-      }
-
-      // Verificar status
-      if (data.status === 'closed') {
-        setStatus('closed');
-        return;
-      }
-
-      if (data.status !== 'active') {
-        setStatus('error');
-        return;
-      }
-
-      setSession(data);
+      setSession(res.session);
       setStatus('active');
     } catch (err) {
       console.error('Erro ao carregar sessão:', err);
       setStatus('error');
     }
+
   };
 
   // Adicionar arquivos
@@ -142,7 +115,7 @@ export default function MobileUpload() {
 
   // Upload de todos os arquivos
   const uploadFiles = async () => {
-    if (!supabase || !session || files.length === 0) return;
+    if (!supabase || !session || !token || files.length === 0) return;
 
     setUploading(true);
 
@@ -150,48 +123,40 @@ export default function MobileUpload() {
       const fileItem = files[i];
       if (fileItem.uploaded) continue;
 
-      // Marcar como uploading
       setFiles((prev) => prev.map((f, idx) =>
-      idx === i ? { ...f, uploading: true } : f
+        idx === i ? { ...f, uploading: true } : f
       ));
 
       try {
-        // Upload para storage
-        const ext = fileItem.file.name.split('.').pop();
-        const fileName = `${session.user_id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-
-        const { error: uploadError } = await supabase.storage.
-        from('media').
-        upload(fileName, fileItem.file);
-
-        let fileUrl: string;
-        if (uploadError) {
-          // Fallback: usar blob URL temporariamente
-          console.warn('Storage upload falhou, usando URL temporária');
-          fileUrl = URL.createObjectURL(fileItem.file);
-        } else {
-          const { data } = await supabase.storage.from('media').createSignedUrl(fileName, 60 * 60 * 24 * 365 * 10);
-          fileUrl = data?.signedUrl ?? URL.createObjectURL(fileItem.file);
-        }
-
-        // Registrar arquivo na sessão
-        await supabase.from('upload_session_files').insert({
-          session_id: session.id,
-          file_url: fileUrl,
-          file_name: fileItem.file.name,
-          mime_type: fileItem.file.type,
-          size: fileItem.file.size
+        // 1) Mint signed upload URL via server fn (validates session token)
+        const signed = await createSessionUploadUrl({
+          data: { token, fileName: fileItem.file.name },
         });
 
-        // Marcar como uploaded
-        setFiles((prev) => prev.map((f, idx) =>
-        idx === i ? { ...f, uploading: false, uploaded: true, progress: 100 } : f
-        ));
+        // 2) Upload directly to storage using signed token (no anon RLS needed)
+        const { error: uploadError } = await supabase.storage
+          .from('media')
+          .uploadToSignedUrl(signed.path, signed.token, fileItem.file);
+        if (uploadError) throw uploadError;
 
+        // 3) Register file row + get long-lived signed read URL via server fn
+        await registerSessionUpload({
+          data: {
+            token,
+            path: signed.path,
+            fileName: fileItem.file.name,
+            mimeType: fileItem.file.type,
+            size: fileItem.file.size,
+          },
+        });
+
+        setFiles((prev) => prev.map((f, idx) =>
+          idx === i ? { ...f, uploading: false, uploaded: true, progress: 100 } : f
+        ));
       } catch (err) {
         console.error('Erro ao fazer upload:', err);
         setFiles((prev) => prev.map((f, idx) =>
-        idx === i ? { ...f, uploading: false } : f
+          idx === i ? { ...f, uploading: false } : f
         ));
         toast.error(`Erro ao enviar ${fileItem.file.name}`);
       }
@@ -200,6 +165,7 @@ export default function MobileUpload() {
     setUploading(false);
     toast.success('Upload concluído!');
   };
+
 
   // Formatar tamanho
   const formatSize = (bytes: number) => {

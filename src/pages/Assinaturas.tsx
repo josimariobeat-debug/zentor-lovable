@@ -94,29 +94,12 @@ export default function Assinaturas() {
 
   const processRenewal = useCallback(async () => {
     if (!supabase || !userId || !selectedApp) return;
-
-    const now = new Date();
-    const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-
-    await supabase.
-    from('installed_apps').
-    update({
-      status: 'active',
-      expires_at: expiresAt.toISOString()
-    }).
-    eq('id', selectedApp.id);
-
-    await supabase.from('payments').insert({
-      user_id: userId,
-      amount: 29.90, // Preço padrão - poderia vir do app
-      status: 'completed',
-      payment_method: 'simulated',
-      paid_at: now.toISOString()
-    });
-
+    const { renewInstalledApp } = await import('@/lib/subscriptions.functions');
+    await renewInstalledApp({ data: { installedAppId: selectedApp.id, price: 29.9 } });
     await loadData();
     setSelectedApp(null);
   }, [loadData, selectedApp, userId]);
+
 
   const getAppIcon = useCallback((appId: string | null) => {
     const Icon = APP_ICONS[appId || ''] || Sparkles;

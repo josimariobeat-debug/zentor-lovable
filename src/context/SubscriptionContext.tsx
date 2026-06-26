@@ -2,6 +2,9 @@ import { createContext, useContext, useState, useEffect, useCallback, useMemo, t
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
 import type { Tables } from '@/integrations/supabase/helpers';
+import { activateMainSubscription } from '@/lib/subscriptions.functions';
+
+
 
 type Subscription = Tables<'subscriptions'>;
 
@@ -83,79 +86,11 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
   const subscribe = useCallback(async () => {
     if (!userId) throw new Error('Not authenticated');
-
-    const now = new Date();
-    const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-
-    const { data: existingSub } = await supabase
-      .from('subscriptions')
-      .select('id')
-      .eq('user_id', userId)
-      .maybeSingle();
-
-    if (existingSub) {
-      await supabase
-        .from('subscriptions')
-        .update({
-          status: 'active',
-          started_at: now.toISOString(),
-          expires_at: expiresAt.toISOString(),
-          price: 29.90,
-        })
-        .eq('id', existingSub.id);
-    } else {
-      await supabase.from('subscriptions').insert({
-        user_id: userId,
-        plan: 'mensal',
-        status: 'active',
-        price: 29.90,
-        started_at: now.toISOString(),
-        expires_at: expiresAt.toISOString(),
-      });
-    }
-
-    const { data: sub } = await supabase
-      .from('subscriptions')
-      .select('id')
-      .eq('user_id', userId)
-      .maybeSingle();
-
-    await supabase.from('payments').insert({
-      user_id: userId,
-      subscription_id: sub?.id,
-      amount: 29.90,
-      status: 'completed',
-      payment_method: 'simulated',
-      paid_at: now.toISOString(),
-    });
-
-    const { data: existingApp } = await supabase
-      .from('installed_apps')
-      .select('id')
-      .eq('user_id', userId)
-      .eq('app_id', 'stories-videos')
-      .maybeSingle();
-
-    if (!existingApp) {
-      await supabase.from('installed_apps').insert({
-        user_id: userId,
-        app_key: 'stories-videos',
-        app_id: 'stories-videos',
-        name: 'Stories Vídeos',
-        type: 'SCRIPT EXTERNO',
-        description: 'Crie e gerencie stories e vídeos com player flutuante e carrossel na sua loja.',
-        status: 'ativa',
-        expires_at: expiresAt.toISOString(),
-      });
-    } else {
-      await supabase
-        .from('installed_apps')
-        .update({ status: 'ativa', expires_at: expiresAt.toISOString() })
-        .eq('id', existingApp.id);
-    }
-
+    await activateMainSubscription();
     await fetchSubscription(userId);
   }, [fetchSubscription, userId]);
+
+
 
   const renewSubscription = useCallback(async () => {
     await subscribe();

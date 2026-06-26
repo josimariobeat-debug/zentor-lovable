@@ -118,32 +118,34 @@ export default function MobileUploadModal({
     return () => clearInterval(interval);
   }, [session, onOpenChange]);
 
-  // Escutar novos arquivos via Realtime
+  // Poll for new files (realtime no longer published on this table)
   useEffect(() => {
-    if (!supabase || !session) return;
-
-    const channel = supabase.
-    channel(`upload_files_${session.id}`).
-    on(
-      'postgres_changes',
-      {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'upload_session_files',
-        filter: `session_id=eq.${session.id}`
-      },
-      (payload) => {
-        const newFile = payload.new as UploadSessionFile;
-        setUploadedFiles((prev) => [...prev, newFile]);
-        toast.success(`Arquivo recebido: ${newFile.file_name}`);
+    if (!session) return;
+    let cancelled = false;
+    const seen = new Set<string>();
+    const tick = async () => {
+      try {
+        const { listSessionFiles } = await import('@/lib/uploadSessions.functions');
+        const rows = await listSessionFiles({ data: { sessionId: session.id } });
+        if (cancelled) return;
+        const fresh = rows.filter((r) => !seen.has(r.id));
+        if (fresh.length > 0) {
+          fresh.forEach((r) => seen.add(r.id));
+          setUploadedFiles((prev) => [...prev, ...fresh as UploadSessionFile[]]);
+          fresh.forEach((r) => toast.success(`Arquivo recebido: ${r.file_name}`));
+        }
+      } catch {
+        /* ignore */
       }
-    ).
-    subscribe();
-
+    };
+    void tick();
+    const interval = setInterval(tick, 3000);
     return () => {
-      supabase.removeChannel(channel);
+      cancelled = true;
+      clearInterval(interval);
     };
   }, [session]);
+
 
   // Copiar link
   const copyLink = () => {
