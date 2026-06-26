@@ -111,51 +111,23 @@ export default function LojaApps() {
     setPaymentOpen(true);
   }, []);
 
-  // Processar assinatura após pagamento
   const processSubscription = useCallback(async () => {
     if (!supabase || !userId || !selectedApp) return;
 
-    const now = new Date();
-    const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-
-    const existingApp = getUserAppData(selectedApp.id);
-
-    if (existingApp) {
-      // Renovar assinatura
-      await supabase.
-      from('installed_apps').
-      update({
-        status: 'active',
-        is_installed: true,
-        expires_at: expiresAt.toISOString()
-      }).
-      eq('id', existingApp.id);
-    } else {
-      // Nova assinatura
-      await supabase.from('installed_apps').insert({
-        user_id: userId,
-        app_id: selectedApp.id,
+    const { activateAppSubscription } = await import('@/lib/subscriptions.functions');
+    await activateAppSubscription({
+      data: {
+        appId: selectedApp.id,
         name: selectedApp.name,
-        type: selectedApp.id === 'stories-videos' ? 'stories' : selectedApp.id,
         description: selectedApp.description,
-        status: 'active',
-        is_installed: true,
-        expires_at: expiresAt.toISOString()
-      });
-    }
-
-    // Registrar pagamento
-    await supabase.from('payments').insert({
-      user_id: userId,
-      amount: selectedApp.price,
-      status: 'completed',
-      payment_method: 'simulated',
-      paid_at: now.toISOString()
+        type: selectedApp.id === 'stories-videos' ? 'stories' : selectedApp.id,
+        price: selectedApp.price,
+      },
     });
 
     await loadUserApps();
     setSelectedApp(null);
-  }, [getUserAppData, loadUserApps, selectedApp, userId]);
+  }, [loadUserApps, selectedApp, userId]);
 
   // Instalar app (já tem assinatura)
   const handleInstall = useCallback(async (appId: string) => {
@@ -165,10 +137,8 @@ export default function LojaApps() {
 
     const userApp = getUserAppData(appId);
     if (userApp) {
-      await supabase.
-      from('installed_apps').
-      update({ is_installed: true }).
-      eq('id', userApp.id);
+      const { markAppInstalled } = await import('@/lib/subscriptions.functions');
+      await markAppInstalled({ data: { installedAppId: userApp.id } });
 
       toast.success('App instalado com sucesso!');
       await loadUserApps();
@@ -176,6 +146,7 @@ export default function LojaApps() {
 
     setProcessingApp(null);
   }, [getUserAppData, loadUserApps, userId]);
+
 
   const filtered = useMemo(() => APP_CATALOG.filter(
     (a) =>
