@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import TopBar from '@/components/layout/TopBar';
 import AppCard from '@/components/apps/AppCard';
-import { Skeleton } from '@/components/ui/skeleton';
+import { AppCardRowSkeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { useSubscription } from '@/context/SubscriptionContext';
 import { useAuth } from '@/context/AuthContext';
@@ -75,11 +75,7 @@ export default function MeusApps() {
         <h2 data-ev-id="ev_f285ec828f" className="text-[18px] font-semibold text-neutral-900 mb-6">Apps instalados</h2>
         
         {subLoading || apps === null ?
-        <div data-ev-id="ev_1e1d2c9cdd" className="flex flex-col gap-4 max-w-[920px]">
-            {[1, 2].map((i) =>
-          <Skeleton key={i} className="h-[130px] rounded-2xl" />
-          )}
-          </div> :
+        <AppCardRowSkeleton count={2} className="max-w-[920px]" /> :
         apps.length === 0 ?
         // Sem apps instalados - CTA para ir à loja
         <div data-ev-id="ev_dd148067b4" className="max-w-[920px]">
