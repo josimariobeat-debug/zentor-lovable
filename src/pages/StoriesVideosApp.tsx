@@ -290,7 +290,7 @@ export default function StoriesVideosApp() {
             {stories === null ?
             <div data-ev-id="ev_2aa92d4f0f" className="flex flex-col gap-2">
                 {[1, 2, 3].map((i) =>
-              <Skeleton key={i} className="h-[92px] rounded-2xl" />
+              <Skeleton key={i} className="h-[88px] rounded-2xl" />
               )}
               </div> :
             filtered.length === 0 ?
