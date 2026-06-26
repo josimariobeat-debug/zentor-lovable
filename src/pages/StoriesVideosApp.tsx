@@ -78,13 +78,16 @@ export default function StoriesVideosApp() {
       eq('user_id', user.id).
       eq('app_key', appId).
       maybeSingle();
+      const suffix = window.location.search + window.location.hash;
       if (data?.id) {
-        navigate(`/app/${data.id}`, { replace: true });
+        navigate(`/app/${data.id}${suffix}`, { replace: true });
       } else {
+        toast.error(`App "${appId}" não encontrado`);
         navigate('/', { replace: true });
       }
     })();
   }, [appId, user, navigate]);
+
 
   useEffect(() => {
     loadStories();
