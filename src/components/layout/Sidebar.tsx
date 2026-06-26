@@ -40,7 +40,7 @@ function Sidebar() {
       </div>
 
       {/* Nav */}
-      <nav data-ev-id="ev_3682cafbab" className="px-3 flex-1 flex flex-col gap-1">
+      <nav data-ev-id="ev_3682cafbab" className="px-3 flex flex-col gap-1 overflow-y-auto">
         {items.map((item) => {
           const Icon = item.icon;
           const active = activeByPath.get(item.key) ?? false;
