@@ -115,7 +115,7 @@ export default function MobileUpload() {
 
   // Upload de todos os arquivos
   const uploadFiles = async () => {
-    if (!supabase || !session || files.length === 0) return;
+    if (!supabase || !session || !token || files.length === 0) return;
 
     setUploading(true);
 
@@ -123,48 +123,40 @@ export default function MobileUpload() {
       const fileItem = files[i];
       if (fileItem.uploaded) continue;
 
-      // Marcar como uploading
       setFiles((prev) => prev.map((f, idx) =>
-      idx === i ? { ...f, uploading: true } : f
+        idx === i ? { ...f, uploading: true } : f
       ));
 
       try {
-        // Upload para storage
-        const ext = fileItem.file.name.split('.').pop();
-        const fileName = `${session.user_id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-
-        const { error: uploadError } = await supabase.storage.
-        from('media').
-        upload(fileName, fileItem.file);
-
-        let fileUrl: string;
-        if (uploadError) {
-          // Fallback: usar blob URL temporariamente
-          console.warn('Storage upload falhou, usando URL temporária');
-          fileUrl = URL.createObjectURL(fileItem.file);
-        } else {
-          const { data } = await supabase.storage.from('media').createSignedUrl(fileName, 60 * 60 * 24 * 365 * 10);
-          fileUrl = data?.signedUrl ?? URL.createObjectURL(fileItem.file);
-        }
-
-        // Registrar arquivo na sessão
-        await supabase.from('upload_session_files').insert({
-          session_id: session.id,
-          file_url: fileUrl,
-          file_name: fileItem.file.name,
-          mime_type: fileItem.file.type,
-          size: fileItem.file.size
+        // 1) Mint signed upload URL via server fn (validates session token)
+        const signed = await createSessionUploadUrl({
+          data: { token, fileName: fileItem.file.name },
         });
 
-        // Marcar como uploaded
-        setFiles((prev) => prev.map((f, idx) =>
-        idx === i ? { ...f, uploading: false, uploaded: true, progress: 100 } : f
-        ));
+        // 2) Upload directly to storage using signed token (no anon RLS needed)
+        const { error: uploadError } = await supabase.storage
+          .from('media')
+          .uploadToSignedUrl(signed.path, signed.token, fileItem.file);
+        if (uploadError) throw uploadError;
 
+        // 3) Register file row + get long-lived signed read URL via server fn
+        await registerSessionUpload({
+          data: {
+            token,
+            path: signed.path,
+            fileName: fileItem.file.name,
+            mimeType: fileItem.file.type,
+            size: fileItem.file.size,
+          },
+        });
+
+        setFiles((prev) => prev.map((f, idx) =>
+          idx === i ? { ...f, uploading: false, uploaded: true, progress: 100 } : f
+        ));
       } catch (err) {
         console.error('Erro ao fazer upload:', err);
         setFiles((prev) => prev.map((f, idx) =>
-        idx === i ? { ...f, uploading: false } : f
+          idx === i ? { ...f, uploading: false } : f
         ));
         toast.error(`Erro ao enviar ${fileItem.file.name}`);
       }
@@ -173,6 +165,7 @@ export default function MobileUpload() {
     setUploading(false);
     toast.success('Upload concluído!');
   };
+
 
   // Formatar tamanho
   const formatSize = (bytes: number) => {
