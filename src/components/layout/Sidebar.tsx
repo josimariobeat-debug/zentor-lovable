@@ -28,7 +28,7 @@ function Sidebar() {
   );
 
   return (
-    <aside data-ev-id="ev_5375042d05" className="w-[260px] shrink-0 border-r border-neutral-200 bg-white flex flex-col h-screen sticky top-0">
+    <aside data-ev-id="ev_5375042d05" className="w-[260px] border-r border-neutral-200 bg-white flex flex-col fixed left-0 top-0 bottom-0 z-30">
       {/* Brand */}
       <div data-ev-id="ev_3b9bdb7b46" className="px-6 pt-7 pb-8">
         <div data-ev-id="ev_bc4bf3916b" className="items-baseline flex gap-2">
@@ -40,7 +40,7 @@ function Sidebar() {
       </div>
 
       {/* Nav */}
-      <nav data-ev-id="ev_3682cafbab" className="px-3 flex-1 flex flex-col gap-1">
+      <nav data-ev-id="ev_3682cafbab" className="px-3 flex flex-col gap-1 overflow-y-auto">
         {items.map((item) => {
           const Icon = item.icon;
           const active = activeByPath.get(item.key) ?? false;
@@ -63,7 +63,7 @@ function Sidebar() {
       </nav>
 
       {/* Footer actions */}
-      <div data-ev-id="ev_0d2d05f377" className="p-4 flex flex-col gap-2.5">
+      <div data-ev-id="ev_0d2d05f377" className="p-4 mt-auto flex flex-col gap-2.5">
         <button data-ev-id="ev_8f708914ff" className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[14px] font-medium text-neutral-700 border border-neutral-200 bg-white hover:bg-neutral-50 transition-colors">
           <Megaphone className="w-[18px] h-[18px]" strokeWidth={1.75} />
           Novidades
