@@ -124,8 +124,8 @@ export default function StoriesVideosApp() {
       if (error) {
         publicUrl = URL.createObjectURL(file);
       } else {
-        const { data } = supabase.storage.from('media').getPublicUrl(fileName);
-        publicUrl = data.publicUrl;
+        const { data } = await supabase.storage.from('media').createSignedUrl(fileName, 60 * 60 * 24 * 365 * 10);
+        publicUrl = data?.signedUrl ?? URL.createObjectURL(file);
       }
 
       await supabase.from('media_gallery').insert({

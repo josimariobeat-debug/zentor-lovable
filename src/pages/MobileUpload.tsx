@@ -170,8 +170,8 @@ export default function MobileUpload() {
           console.warn('Storage upload falhou, usando URL temporária');
           fileUrl = URL.createObjectURL(fileItem.file);
         } else {
-          const { data } = supabase.storage.from('media').getPublicUrl(fileName);
-          fileUrl = data.publicUrl;
+          const { data } = await supabase.storage.from('media').createSignedUrl(fileName, 60 * 60 * 24 * 365 * 10);
+          fileUrl = data?.signedUrl ?? URL.createObjectURL(fileItem.file);
         }
 
         // Registrar arquivo na sessão

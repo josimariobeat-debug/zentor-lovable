@@ -200,10 +200,10 @@ export default function AdicionarStory() {
       console.warn('Storage upload failed, using local URL');
       publicUrl = URL.createObjectURL(file);
     } else {
-      const { data } = supabase.storage.
+      const { data } = await supabase.storage.
       from('media').
-      getPublicUrl(fileName);
-      publicUrl = data.publicUrl;
+      createSignedUrl(fileName, 60 * 60 * 24 * 365 * 10);
+      publicUrl = data?.signedUrl ?? URL.createObjectURL(file);
     }
 
     // Salvar na galeria
