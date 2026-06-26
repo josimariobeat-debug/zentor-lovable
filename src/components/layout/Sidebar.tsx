@@ -63,7 +63,7 @@ function Sidebar() {
       </nav>
 
       {/* Footer actions */}
-      <div data-ev-id="ev_0d2d05f377" className="p-4 flex flex-col gap-2.5">
+      <div data-ev-id="ev_0d2d05f377" className="p-4 mt-auto flex flex-col gap-2.5">
         <button data-ev-id="ev_8f708914ff" className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[14px] font-medium text-neutral-700 border border-neutral-200 bg-white hover:bg-neutral-50 transition-colors">
           <Megaphone className="w-[18px] h-[18px]" strokeWidth={1.75} />
           Novidades
