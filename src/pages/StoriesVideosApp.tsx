@@ -46,6 +46,8 @@ const TABS = [
 { value: 'integracao', label: 'Integração' }];
 
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export default function StoriesVideosApp() {
   const navigate = useNavigate();
   const { appId } = useParams();
@@ -65,6 +67,25 @@ export default function StoriesVideosApp() {
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const galleryFileInputRef = useRef<HTMLInputElement>(null);
 
+  // Fallback: if URL uses app_key (text slug) instead of UUID, resolve to UUID and redirect.
+  useEffect(() => {
+    if (!supabase || !user || !appId) return;
+    if (UUID_RE.test(appId)) return;
+    (async () => {
+      const { data } = await supabase.
+      from('installed_apps').
+      select('id').
+      eq('user_id', user.id).
+      eq('app_key', appId).
+      maybeSingle();
+      if (data?.id) {
+        navigate(`/app/${data.id}`, { replace: true });
+      } else {
+        navigate('/', { replace: true });
+      }
+    })();
+  }, [appId, user, navigate]);
+
   useEffect(() => {
     loadStories();
     loadGallery();
@@ -72,7 +93,7 @@ export default function StoriesVideosApp() {
   }, [appId]);
 
   const loadStories = async () => {
-    if (!supabase || !appId) return;
+    if (!supabase || !appId || !UUID_RE.test(appId)) return;
     const { data } = await supabase.
     from('stories').
     select('*, story_media(*)').
@@ -80,6 +101,7 @@ export default function StoriesVideosApp() {
     order('created_at', { ascending: false });
     setStories(data as StoryWithMedia[] ?? []);
   };
+
 
   const loadGallery = async () => {
     if (!supabase || !user) return;
