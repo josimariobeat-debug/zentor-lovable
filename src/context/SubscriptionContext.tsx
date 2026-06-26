@@ -2,6 +2,9 @@ import { createContext, useContext, useState, useEffect, useCallback, useMemo, t
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
 import type { Tables } from '@/integrations/supabase/helpers';
+import { activateMainSubscription } from '@/lib/subscriptions.functions';
+
+
 
 type Subscription = Tables<'subscriptions'>;
 
