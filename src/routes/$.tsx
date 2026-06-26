@@ -1,30 +1,38 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { lazy, Suspense, useEffect, useState } from "react";
-import { createPortal } from "react-dom";
+import { useEffect, useRef } from "react";
+import { createRoot, type Root } from "react-dom/client";
 
 export const Route = createFileRoute("/$")({
   ssr: false,
   component: ZentorAppShell,
 });
 
-const ZentorApp = lazy(() => import("@/ZentorApp"));
-
 function ZentorAppShell() {
-  const [container, setContainer] = useState<HTMLElement | null>(null);
+  const mountedRef = useRef(false);
+  const rootRef = useRef<Root | null>(null);
+  const elRef = useRef<HTMLElement | null>(null);
+
   useEffect(() => {
+    if (mountedRef.current) return;
+    mountedRef.current = true;
     const el = document.createElement("div");
     el.id = "zentor-root";
     document.body.appendChild(el);
-    setContainer(el);
+    elRef.current = el;
+    const root = createRoot(el);
+    rootRef.current = root;
+    import("@/ZentorApp").then(({ default: ZentorApp }) => {
+      root.render(<ZentorApp />);
+    });
     return () => {
-      document.body.removeChild(el);
+      setTimeout(() => {
+        rootRef.current?.unmount();
+        if (elRef.current && elRef.current.parentNode) {
+          elRef.current.parentNode.removeChild(elRef.current);
+        }
+      }, 0);
     };
   }, []);
-  if (!container) return null;
-  return createPortal(
-    <Suspense fallback={null}>
-      <ZentorApp />
-    </Suspense>,
-    container,
-  );
+
+  return null;
 }
