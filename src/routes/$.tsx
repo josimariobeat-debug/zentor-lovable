@@ -1,24 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { BrowserRouter } from "react-router";
-import { AuthProvider } from "@/context/AuthContext";
-import { SubscriptionProvider } from "@/context/SubscriptionContext";
-import { Toaster } from "@/components/ui/toaster";
-import App from "@/App";
+import { lazy, Suspense } from "react";
 
 export const Route = createFileRoute("/$")({
   ssr: false,
   component: ZentorAppShell,
 });
 
+const ZentorApp = lazy(() => import("@/ZentorApp"));
+
 function ZentorAppShell() {
   return (
-    <AuthProvider>
-      <SubscriptionProvider>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-        <Toaster richColors position="top-right" />
-      </SubscriptionProvider>
-    </AuthProvider>
+    <Suspense fallback={null}>
+      <ZentorApp />
+    </Suspense>
   );
 }
