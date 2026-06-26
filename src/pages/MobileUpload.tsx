@@ -42,77 +42,39 @@ export default function MobileUpload() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
-  // Escutar mudanças na sessão (fechamento)
+  // Poll session status (substitui realtime)
   useEffect(() => {
-    if (!supabase || !session) return;
-
-    const channel = supabase.
-    channel(`session_${session.id}`).
-    on(
-      'postgres_changes',
-      {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'upload_sessions',
-        filter: `id=eq.${session.id}`
-      },
-      (payload) => {
-        const updated = payload.new as UploadSession;
-        if (updated.status === 'closed') {
-          setStatus('closed');
-        } else if (updated.status === 'expired') {
-          setStatus('expired');
-        }
+    if (!session || !token) return;
+    const interval = setInterval(async () => {
+      try {
+        const res = await getSessionStatus({ data: { token } });
+        if (res.status !== 'active') setStatus(res.status);
+      } catch {
+        /* ignore */
       }
-    ).
-    subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [session]);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [session, token]);
 
   const loadSession = async () => {
-    if (!supabase || !token) {
+    if (!token) {
       setStatus('error');
       return;
     }
 
     try {
-      const { data, error } = await supabase.
-      from('upload_sessions').
-      select('*').
-      eq('token', token).
-      single();
-
-      if (error || !data) {
-        setStatus('error');
+      const res = await getUploadSessionByToken({ data: { token } });
+      if (res.status !== 'active' || !res.session) {
+        setStatus(res.status);
         return;
       }
-
-      // Verificar expiração
-      if (new Date(data.expires_at) < new Date()) {
-        setStatus('expired');
-        return;
-      }
-
-      // Verificar status
-      if (data.status === 'closed') {
-        setStatus('closed');
-        return;
-      }
-
-      if (data.status !== 'active') {
-        setStatus('error');
-        return;
-      }
-
-      setSession(data);
+      setSession(res.session);
       setStatus('active');
     } catch (err) {
       console.error('Erro ao carregar sessão:', err);
       setStatus('error');
     }
+
   };
 
   // Adicionar arquivos
