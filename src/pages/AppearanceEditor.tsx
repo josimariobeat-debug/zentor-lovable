@@ -303,8 +303,8 @@ export default function AppearanceEditor() {
                     {cfg.borderStyle === 'pulsar' && (
                       <>
                         <PulseRing style={bubbleStyle} delay="0s" color={cfg.color} />
-                        <PulseRing style={bubbleStyle} delay="3.33s" color={cfg.color} />
-                        <PulseRing style={bubbleStyle} delay="6.66s" color={cfg.color} />
+                        <PulseRing style={bubbleStyle} delay="2.66s" color={cfg.color} />
+                        <PulseRing style={bubbleStyle} delay="5.33s" color={cfg.color} />
                       </>
                     )}
                     <div style={bubbleStyle}>
