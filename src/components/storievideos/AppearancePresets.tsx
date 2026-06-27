@@ -90,7 +90,7 @@ export default function AppearancePresets() {
       <div className="flex justify-end mt-6">
         <button
           onClick={() => navigate(`/app/${appId}/aparencia/new?kind=${kind}`)}
-          className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold shadow-sm"
+          className="inline-flex items-center gap-2 text-[13.5px] font-medium text-white bg-neutral-900 hover:bg-neutral-800 px-4 py-2.5 rounded-xl transition-colors"
         >
           <Plus className="w-4 h-4" /> Adicionar
         </button>
