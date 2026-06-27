@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
-import { ArrowLeft, Loader2, Smartphone, Monitor, X } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, Loader2, Monitor, Pause, Play, Smartphone, Volume2, VolumeX, X } from 'lucide-react';
 import TopBar from '@/components/layout/TopBar';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
@@ -9,6 +9,83 @@ import { Switch } from '@/components/ui/switch';
 import previewVideoAsset from '@/assets/widget-preview.mp4.asset.json';
 
 const PREVIEW_VIDEO_URL = previewVideoAsset.url;
+
+function StoryViewer({ onClose }: { onClose: () => void }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [paused, setPaused] = useState(false);
+  const [muted, setMuted] = useState(true);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  function togglePlay() {
+    const v = videoRef.current; if (!v) return;
+    if (v.paused) { v.play(); setPaused(false); } else { v.pause(); setPaused(true); }
+  }
+  function toggleMute() {
+    const v = videoRef.current; if (!v) return;
+    v.muted = !v.muted; setMuted(v.muted);
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-[9999] grid place-items-center bg-black/70 backdrop-blur-sm animate-in fade-in duration-200"
+      onClick={onClose}
+    >
+      <div className="relative" style={{ width: 340, maxWidth: '92vw' }} onClick={(e) => e.stopPropagation()}>
+        {/* progress bar */}
+        <div className="absolute top-3 left-3 right-3 h-[3px] bg-white/30 rounded-full overflow-hidden z-20">
+          <div className="h-full w-1/3 bg-white rounded-full" />
+        </div>
+        {/* top controls */}
+        <div className="absolute top-7 right-3 z-20 flex items-center gap-2">
+          <button onClick={togglePlay} className="w-9 h-9 rounded-full bg-black/40 hover:bg-black/60 text-white grid place-items-center">
+            {paused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
+          </button>
+          <button onClick={toggleMute} className="w-9 h-9 rounded-full bg-black/40 hover:bg-black/60 text-white grid place-items-center">
+            {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+          </button>
+          <button onClick={onClose} className="w-9 h-9 rounded-full bg-black/40 hover:bg-black/60 text-white grid place-items-center">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+        {/* nav arrows */}
+        <button className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 text-white grid place-items-center">
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+        <button className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 text-white grid place-items-center">
+          <ChevronRight className="w-5 h-5" />
+        </button>
+
+        <div className="relative rounded-2xl overflow-hidden bg-black shadow-2xl" style={{ aspectRatio: '9 / 16' }}>
+          <video
+            ref={videoRef}
+            src={PREVIEW_VIDEO_URL}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          {/* product card */}
+          <div className="absolute left-3 right-3 bottom-3 bg-white rounded-xl shadow-lg p-2 flex items-center gap-3">
+            <div className="w-12 h-12 rounded-lg overflow-hidden bg-neutral-200 shrink-0">
+              <video src={PREVIEW_VIDEO_URL} autoPlay loop muted playsInline className="w-full h-full object-cover" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-[13px] font-semibold text-neutral-900 truncate">Produto de teste…</div>
+              <div className="text-[13px] font-bold text-neutral-900">R$ 79,90</div>
+            </div>
+          </div>
+          <div className="absolute bottom-1 right-2 text-[10px] font-bold text-white/80 tracking-wider">PLANWEB</div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function PreviewMedia({ fit }: { fit: MediaFit }) {
   return (
