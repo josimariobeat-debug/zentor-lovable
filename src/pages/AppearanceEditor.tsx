@@ -6,6 +6,31 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/components/ui/toaster';
 import { Switch } from '@/components/ui/switch';
+import previewVideoAsset from '@/assets/widget-preview.mp4.asset.json';
+
+const PREVIEW_VIDEO_URL = previewVideoAsset.url;
+
+function PreviewMedia({ fit }: { fit: MediaFit }) {
+  return (
+    <video
+      src={PREVIEW_VIDEO_URL}
+      autoPlay
+      muted
+      loop
+      playsInline
+      preload="auto"
+      style={{
+        position: 'absolute',
+        inset: 0,
+        width: '100%',
+        height: '100%',
+        objectFit: fit,
+        borderRadius: 'inherit',
+        pointerEvents: 'none',
+      }}
+    />
+  );
+}
 
 type Kind = 'floating' | 'carousel';
 type Shape = 'circular' | 'quadrado' | 'personalizado';
@@ -77,8 +102,6 @@ const MEDIA_FITS: { value: MediaFit; label: string }[] = [
   { value: 'contain', label: 'Encaixar (contain)' },
 ];
 
-const PREVIEW_IMG =
-  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=320&h=320&fit=crop&crop=faces';
 
 export default function AppearanceEditor() {
   const { user } = useAuth();
