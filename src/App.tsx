@@ -19,7 +19,7 @@ import AdicionarStory from '@/pages/AdicionarStory';
 import MobileUpload from '@/pages/MobileUpload';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
-import Instalacao from '@/pages/Instalacao';
+
 
 export default function App() {
   useEffect(() => {
