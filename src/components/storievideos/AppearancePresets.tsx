@@ -37,13 +37,13 @@ const DEFAULT_CONFIG: Config = {
 
 export default function AppearancePresets() {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const { appId } = useParams();
   const [kind, setKind] = useState<Kind>('floating');
   const [items, setItems] = useState<Preset[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(16);
-  const [editing, setEditing] = useState<Preset | null>(null);
-  const [creating, setCreating] = useState(false);
 
   async function load() {
     if (!user) return;
