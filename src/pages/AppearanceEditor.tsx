@@ -712,6 +712,7 @@ export default function AppearanceEditor() {
           </div>
         </div>
       </main>
+      {viewerOpen && <StoryViewer onClose={() => setViewerOpen(false)} />}
     </>
   );
 }
