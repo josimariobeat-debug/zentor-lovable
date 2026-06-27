@@ -19,7 +19,7 @@ import AdicionarStory from '@/pages/AdicionarStory';
 import MobileUpload from '@/pages/MobileUpload';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
-import Instalacao from '@/pages/Instalacao';
+
 
 export default function App() {
   useEffect(() => {
@@ -43,7 +43,7 @@ export default function App() {
         <Route path="tutoriais" element={<Tutoriais />} />
         <Route path="assinaturas" element={<Assinaturas />} />
         <Route path="perfil" element={<Perfil />} />
-        <Route path="instalacao" element={<Instalacao />} />
+        
         <Route path="app/:appId" element={<StoriesVideosApp />} />
         <Route path="app/:appId/story/:storyId" element={<AdicionarStory />} />
       </Route>

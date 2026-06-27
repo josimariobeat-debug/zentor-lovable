@@ -12,6 +12,7 @@ import { useAuth } from '@/context/AuthContext';
 import type { Tables } from '@/integrations/supabase/helpers';
 import { MediaThumbnail } from '@/components/ui/MediaThumbnail';
 import { GalleryCard } from '@/components/ui/GalleryCard';
+import IntegracaoTab from '@/components/storievideos/IntegracaoTab';
 import {
   Search,
   Plus,
@@ -461,11 +462,15 @@ export default function StoriesVideosApp() {
             }
           </TabsContent>
 
-          {TABS.filter((t) => t.value !== 'stories' && t.value !== 'midias').map((t) =>
+          {TABS.filter((t) => t.value !== 'stories' && t.value !== 'midias' && t.value !== 'integracao').map((t) =>
           <TabsContent key={t.value} value={t.value} className="mt-0">
               <PlaceholderTab label={t.label} />
             </TabsContent>
           )}
+
+          <TabsContent value="integracao" className="mt-0">
+            <IntegracaoTab />
+          </TabsContent>
         </Tabs>
       </main>
 
