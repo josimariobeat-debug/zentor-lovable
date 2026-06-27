@@ -10,33 +10,76 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SplatRouteImport } from './routes/$'
+import { Route as ApiPublicTrackRouteImport } from './routes/api/public/track'
+import { Route as ApiPublicStoreStoreIdRouteImport } from './routes/api/public/store.$storeId'
+import { Route as ApiPublicStoreStoreIdStoriesRouteImport } from './routes/api/public/store.$storeId.stories'
 
 const SplatRoute = SplatRouteImport.update({
   id: '/$',
   path: '/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicTrackRoute = ApiPublicTrackRouteImport.update({
+  id: '/api/public/track',
+  path: '/api/public/track',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicStoreStoreIdRoute = ApiPublicStoreStoreIdRouteImport.update({
+  id: '/api/public/store/$storeId',
+  path: '/api/public/store/$storeId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicStoreStoreIdStoriesRoute =
+  ApiPublicStoreStoreIdStoriesRouteImport.update({
+    id: '/stories',
+    path: '/stories',
+    getParentRoute: () => ApiPublicStoreStoreIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/$': typeof SplatRoute
+  '/api/public/track': typeof ApiPublicTrackRoute
+  '/api/public/store/$storeId': typeof ApiPublicStoreStoreIdRouteWithChildren
+  '/api/public/store/$storeId/stories': typeof ApiPublicStoreStoreIdStoriesRoute
 }
 export interface FileRoutesByTo {
   '/$': typeof SplatRoute
+  '/api/public/track': typeof ApiPublicTrackRoute
+  '/api/public/store/$storeId': typeof ApiPublicStoreStoreIdRouteWithChildren
+  '/api/public/store/$storeId/stories': typeof ApiPublicStoreStoreIdStoriesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/$': typeof SplatRoute
+  '/api/public/track': typeof ApiPublicTrackRoute
+  '/api/public/store/$storeId': typeof ApiPublicStoreStoreIdRouteWithChildren
+  '/api/public/store/$storeId/stories': typeof ApiPublicStoreStoreIdStoriesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/$'
+  fullPaths:
+    | '/$'
+    | '/api/public/track'
+    | '/api/public/store/$storeId'
+    | '/api/public/store/$storeId/stories'
   fileRoutesByTo: FileRoutesByTo
-  to: '/$'
-  id: '__root__' | '/$'
+  to:
+    | '/$'
+    | '/api/public/track'
+    | '/api/public/store/$storeId'
+    | '/api/public/store/$storeId/stories'
+  id:
+    | '__root__'
+    | '/$'
+    | '/api/public/track'
+    | '/api/public/store/$storeId'
+    | '/api/public/store/$storeId/stories'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   SplatRoute: typeof SplatRoute
+  ApiPublicTrackRoute: typeof ApiPublicTrackRoute
+  ApiPublicStoreStoreIdRoute: typeof ApiPublicStoreStoreIdRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -48,22 +91,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/track': {
+      id: '/api/public/track'
+      path: '/api/public/track'
+      fullPath: '/api/public/track'
+      preLoaderRoute: typeof ApiPublicTrackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/store/$storeId': {
+      id: '/api/public/store/$storeId'
+      path: '/api/public/store/$storeId'
+      fullPath: '/api/public/store/$storeId'
+      preLoaderRoute: typeof ApiPublicStoreStoreIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/store/$storeId/stories': {
+      id: '/api/public/store/$storeId/stories'
+      path: '/stories'
+      fullPath: '/api/public/store/$storeId/stories'
+      preLoaderRoute: typeof ApiPublicStoreStoreIdStoriesRouteImport
+      parentRoute: typeof ApiPublicStoreStoreIdRoute
+    }
   }
 }
 
+interface ApiPublicStoreStoreIdRouteChildren {
+  ApiPublicStoreStoreIdStoriesRoute: typeof ApiPublicStoreStoreIdStoriesRoute
+}
+
+const ApiPublicStoreStoreIdRouteChildren: ApiPublicStoreStoreIdRouteChildren = {
+  ApiPublicStoreStoreIdStoriesRoute: ApiPublicStoreStoreIdStoriesRoute,
+}
+
+const ApiPublicStoreStoreIdRouteWithChildren =
+  ApiPublicStoreStoreIdRoute._addFileChildren(
+    ApiPublicStoreStoreIdRouteChildren,
+  )
+
 const rootRouteChildren: RootRouteChildren = {
   SplatRoute: SplatRoute,
+  ApiPublicTrackRoute: ApiPublicTrackRoute,
+  ApiPublicStoreStoreIdRoute: ApiPublicStoreStoreIdRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
