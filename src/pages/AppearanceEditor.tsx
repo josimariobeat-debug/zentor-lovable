@@ -574,10 +574,10 @@ function PulseRing({ style, delay, color }: { style: React.CSSProperties; delay:
     ...style,
     backgroundImage: 'none',
     backgroundColor: 'transparent',
-    border: `2px solid ${color}`,
+    border: `4px solid ${color}`,
     zIndex: 1,
     pointerEvents: 'none',
-    animation: `zt-pulse-ring 2.4s cubic-bezier(.22,.61,.36,1) ${delay} infinite`,
+    animation: `zt-pulse-ring 3.6s cubic-bezier(.22,.61,.36,1) ${delay} infinite`,
     willChange: 'transform, opacity',
   };
   return (
