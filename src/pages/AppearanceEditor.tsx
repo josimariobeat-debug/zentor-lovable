@@ -103,11 +103,6 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
             disableRemotePlayback
             className="absolute inset-0 w-full h-full object-cover"
           />
-            playsInline
-            preload="auto"
-            disableRemotePlayback
-            className="absolute inset-0 w-full h-full object-cover"
-          />
           {/* product card */}
           <div className="absolute left-3 right-3 bottom-3 bg-white rounded-xl shadow-lg p-2 flex items-center gap-3">
             <div className="w-12 h-12 rounded-lg overflow-hidden bg-neutral-200 shrink-0">
