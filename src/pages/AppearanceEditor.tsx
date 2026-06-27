@@ -170,7 +170,7 @@ export default function AppearanceEditor() {
     } as React.CSSProperties;
   }, [cfg]);
 
-  const ctaStyle = useMemo<React.CSSProperties>(() => {
+  const ctaBase = useMemo<React.CSSProperties>(() => {
     const isBottom = cfg.position.startsWith('bottom');
     const isLeft = cfg.position.endsWith('left');
     const bubbleW =
@@ -180,14 +180,12 @@ export default function AppearanceEditor() {
         ? 100
         : cfg.width;
     const bubbleH = cfg.shape === 'personalizado' ? cfg.height : cfg.width;
-    // CTA sits to the RIGHT of the bubble, vertically centered with it.
     const verticalCenter = cfg.spacingBottom + bubbleH / 2;
     const horizontalAfter = cfg.spacingLeft + bubbleW + 10;
     return {
       position: 'absolute',
       [isBottom ? 'bottom' : 'top']: verticalCenter,
       [isLeft ? 'left' : 'right']: horizontalAfter,
-      transform: 'translateY(50%)',
       background: cfg.color,
       color: '#fff',
       fontSize: cfg.ctaSize,
@@ -197,10 +195,16 @@ export default function AppearanceEditor() {
       fontWeight: 700,
       letterSpacing: 0.3,
       whiteSpace: 'nowrap',
-      boxShadow: '0 4px 12px rgba(0,0,0,.15)',
-      transition: 'opacity .4s ease, transform .4s ease',
+      boxShadow: '0 6px 18px rgba(0,0,0,.18)',
+      willChange: 'transform, opacity',
+      transition: 'opacity 380ms cubic-bezier(.22,.61,.36,1), transform 380ms cubic-bezier(.22,.61,.36,1)',
+      transformOrigin: 'center',
     } as React.CSSProperties;
   }, [cfg]);
+
+  // Translate Y baseline keeps pill vertically aligned with bubble center.
+  const ctaShown: React.CSSProperties = { opacity: 1, transform: 'translateY(50%) scale(1)' };
+  const ctaHidden: React.CSSProperties = { opacity: 0, transform: 'translateY(calc(50% + 8px)) scale(0.9)', pointerEvents: 'none' };
 
   // CTA visibility timer: shows on mount, hides after ctaDuration seconds, loops every (duration+2)s.
   const [ctaVisible, setCtaVisible] = useState(true);
