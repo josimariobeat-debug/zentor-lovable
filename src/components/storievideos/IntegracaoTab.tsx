@@ -4,6 +4,8 @@ import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/components/ui/toaster';
 import { Copy, Check, ExternalLink, Code2, Eye, Loader2 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/helpers';
+import AppearancePresets from './AppearancePresets';
+
 
 type Store = Tables<'stores'>;
 type Theme = { mode: 'dark' | 'light'; position: string; accent: string };
