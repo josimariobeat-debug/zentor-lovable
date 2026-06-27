@@ -424,7 +424,10 @@ export default function AppearanceEditor() {
                               <PulseRing style={bubbleStyle} delay="5.33s" color={cfg.color} />
                             </>
                           )}
-                          <div style={bubbleStyle}>
+                          <div
+                            style={{ ...bubbleStyle, cursor: 'pointer' }}
+                            onClick={(e) => { e.stopPropagation(); setViewerOpen(true); }}
+                          >
                             <PreviewMedia fit={cfg.mediaFit} />
                             {cfg.allowClose && (
                               <div className="absolute top-1 right-1 w-5 h-5 grid place-items-center rounded-full bg-black/60 text-white">
