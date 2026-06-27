@@ -336,8 +336,8 @@ export default function AppearanceEditor() {
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </main>
+    </>
   );
 }
 
