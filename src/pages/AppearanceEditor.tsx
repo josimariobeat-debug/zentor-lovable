@@ -173,22 +173,52 @@ export default function AppearanceEditor() {
   const ctaStyle = useMemo<React.CSSProperties>(() => {
     const isBottom = cfg.position.startsWith('bottom');
     const isLeft = cfg.position.endsWith('left');
-    const offsetSide = cfg.spacingLeft + (typeof bubbleStyle.width === 'number' ? bubbleStyle.width as number : 100) / 2;
+    const bubbleW =
+      cfg.shape === 'personalizado' && cfg.widthUnit === 'px'
+        ? cfg.width
+        : cfg.shape === 'personalizado'
+        ? 100
+        : cfg.width;
+    const bubbleH = cfg.shape === 'personalizado' ? cfg.height : cfg.width;
+    // CTA sits to the RIGHT of the bubble, vertically centered with it.
+    const verticalCenter = cfg.spacingBottom + bubbleH / 2;
+    const horizontalAfter = cfg.spacingLeft + bubbleW + 10;
     return {
       position: 'absolute',
-      [isBottom ? 'bottom' : 'top']: Math.max(0, cfg.spacingBottom - 18),
-      [isLeft ? 'left' : 'right']: offsetSide,
-      transform: 'translateX(-50%)',
+      [isBottom ? 'bottom' : 'top']: verticalCenter,
+      [isLeft ? 'left' : 'right']: horizontalAfter,
+      transform: 'translateY(50%)',
       background: cfg.color,
       color: '#fff',
       fontSize: cfg.ctaSize,
       lineHeight: 1,
-      padding: '4px 10px',
+      padding: '6px 12px',
       borderRadius: 999,
-      fontWeight: 600,
+      fontWeight: 700,
+      letterSpacing: 0.3,
       whiteSpace: 'nowrap',
+      boxShadow: '0 4px 12px rgba(0,0,0,.15)',
+      transition: 'opacity .4s ease, transform .4s ease',
     } as React.CSSProperties;
-  }, [cfg, bubbleStyle.width]);
+  }, [cfg]);
+
+  // CTA visibility timer: shows on mount, hides after ctaDuration seconds, loops every (duration+2)s.
+  const [ctaVisible, setCtaVisible] = useState(true);
+  useEffect(() => {
+    setCtaVisible(true);
+    if (!cfg.cta || cfg.ctaDuration <= 0) return;
+    let hideTimer: ReturnType<typeof setTimeout>;
+    let showTimer: ReturnType<typeof setTimeout>;
+    const loop = () => {
+      setCtaVisible(true);
+      hideTimer = setTimeout(() => {
+        setCtaVisible(false);
+        showTimer = setTimeout(loop, 1500);
+      }, cfg.ctaDuration * 1000);
+    };
+    loop();
+    return () => { clearTimeout(hideTimer); clearTimeout(showTimer); };
+  }, [cfg.cta, cfg.ctaDuration]);
 
   if (loading) {
     return (
