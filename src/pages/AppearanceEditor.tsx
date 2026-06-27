@@ -570,24 +570,71 @@ function ToggleRow({
 }
 
 function PulseRing({ style, delay, color }: { style: React.CSSProperties; delay: string; color: string }) {
-  const ringStyle: React.CSSProperties = {
+  // Aurora-style animated backdrop: multiple radial-gradient blobs, each
+  // animated independently with translate3d + scale + slight rotation so the
+  // effect is fluid (not a single image sliding). ~24-28s cycles, 60fps GPU.
+  const containerStyle: React.CSSProperties = {
     ...style,
     backgroundImage: 'none',
     backgroundColor: 'transparent',
-    border: `2px solid ${color}`,
-    zIndex: 1,
+    border: 'none',
+    overflow: 'hidden',
     pointerEvents: 'none',
-    animation: `zt-pulse-ring 2.4s cubic-bezier(.22,.61,.36,1) ${delay} infinite`,
-    willChange: 'transform, opacity',
+    zIndex: 1,
+    // Slight outward expansion so aurora bleeds around the bubble
+    transform: 'scale(1.35)',
+    filter: 'blur(14px)',
+    opacity: 0.85,
+    willChange: 'transform',
   };
+
+  const blob = (animName: string, dur: string, dly: string, bg: string): React.CSSProperties => ({
+    position: 'absolute',
+    inset: '-40%',
+    background: bg,
+    borderRadius: '50%',
+    mixBlendMode: 'screen',
+    willChange: 'transform, opacity',
+    animation: `${animName} ${dur} cubic-bezier(.45,.05,.55,.95) ${dly} infinite`,
+  });
+
+  // Use the configured color plus two harmonized variants (lighter/darker hue shift via opacity)
+  const c = color || '#000';
   return (
     <>
-      <style>{`@keyframes zt-pulse-ring {
-        0%   { transform: scale(1);    opacity: 0.55; }
-        80%  { transform: scale(2.1);  opacity: 0; }
-        100% { transform: scale(2.1);  opacity: 0; }
-      }`}</style>
-      <div style={ringStyle} />
+      <style>{`
+        @keyframes zt-aurora-a {
+          0%   { transform: translate3d(-12%, -8%, 0) scale(1)   rotate(0deg); opacity: .9; }
+          25%  { transform: translate3d( 10%,  6%, 0) scale(1.15) rotate(35deg); opacity: 1; }
+          50%  { transform: translate3d( 14%, -10%,0) scale(1.05) rotate(70deg); opacity: .85;}
+          75%  { transform: translate3d(-8%,  12%, 0) scale(1.2)  rotate(110deg); opacity: 1;}
+          100% { transform: translate3d(-12%, -8%, 0) scale(1)    rotate(180deg); opacity: .9;}
+        }
+        @keyframes zt-aurora-b {
+          0%   { transform: translate3d( 14%,  10%, 0) scale(1.1) rotate(0deg);  opacity: .8;}
+          33%  { transform: translate3d(-10%,  -6%, 0) scale(1.25) rotate(-40deg);opacity: 1;}
+          66%  { transform: translate3d(  6%, -14%, 0) scale(1)    rotate(-90deg);opacity: .9;}
+          100% { transform: translate3d( 14%,  10%, 0) scale(1.1)  rotate(-180deg);opacity: .8;}
+        }
+        @keyframes zt-aurora-c {
+          0%   { transform: translate3d( -6%,  14%, 0) scale(1.2)  rotate(0deg);  opacity: .85;}
+          40%  { transform: translate3d( 12%, -10%, 0) scale(1)    rotate(60deg); opacity: 1;}
+          80%  { transform: translate3d(-14%,  -4%, 0) scale(1.15) rotate(140deg);opacity: .9;}
+          100% { transform: translate3d( -6%,  14%, 0) scale(1.2)  rotate(220deg);opacity: .85;}
+        }
+        @keyframes zt-aurora-d {
+          0%   { transform: translate3d(  8%,  -6%, 0) scale(1.05) rotate(0deg);  opacity: .7;}
+          50%  { transform: translate3d(-12%,  10%, 0) scale(1.3)  rotate(-80deg);opacity: 1;}
+          100% { transform: translate3d(  8%,  -6%, 0) scale(1.05) rotate(-160deg);opacity: .7;}
+        }
+      `}</style>
+      <div style={containerStyle} aria-hidden>
+        <div style={blob('zt-aurora-a', '24s', delay, `radial-gradient(closest-side, ${c} 0%, transparent 70%)`)} />
+        <div style={blob('zt-aurora-b', '28s', `calc(${delay} - 3s)`, `radial-gradient(closest-side, ${c} 0%, transparent 65%)`)} />
+        <div style={blob('zt-aurora-c', '22s', `calc(${delay} - 6s)`, `radial-gradient(closest-side, ${c} 0%, transparent 60%)`)} />
+        <div style={blob('zt-aurora-d', '26s', `calc(${delay} - 9s)`, `radial-gradient(closest-side, ${c} 0%, transparent 75%)`)} />
+      </div>
     </>
   );
 }
+
