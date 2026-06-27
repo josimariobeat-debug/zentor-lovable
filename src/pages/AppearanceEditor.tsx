@@ -299,6 +299,14 @@ export default function AppearanceEditor() {
                 </div>
                 {!cfg.hideStories && (
                   <>
+                    {/* Pulsing rings behind bubble (only when borderStyle = pulsar) */}
+                    {cfg.borderStyle === 'pulsar' && (
+                      <>
+                        <PulseRing style={bubbleStyle} delay="0s" color={cfg.color} />
+                        <PulseRing style={bubbleStyle} delay="0.9s" color={cfg.color} />
+                        <PulseRing style={bubbleStyle} delay="1.8s" color={cfg.color} />
+                      </>
+                    )}
                     <div style={bubbleStyle}>
                       {cfg.allowClose && (
                         <div className="absolute top-1 right-1 w-5 h-5 grid place-items-center rounded-full bg-black/60 text-white">
@@ -307,13 +315,7 @@ export default function AppearanceEditor() {
                       )}
                     </div>
                     {cfg.cta && (
-                      <div
-                        style={{
-                          ...ctaStyle,
-                          opacity: ctaVisible ? 1 : 0,
-                          pointerEvents: ctaVisible ? 'auto' : 'none',
-                        }}
-                      >
+                      <div style={{ ...ctaBase, ...(ctaVisible ? ctaShown : ctaHidden) }}>
                         {cfg.cta.toUpperCase()}
                       </div>
                     )}
