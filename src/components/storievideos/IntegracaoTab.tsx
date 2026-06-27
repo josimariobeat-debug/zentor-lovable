@@ -4,6 +4,8 @@ import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/components/ui/toaster';
 import { Copy, Check, ExternalLink, Code2, Eye, Loader2 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/helpers';
+import AppearancePresets from './AppearancePresets';
+
 
 type Store = Tables<'stores'>;
 type Theme = { mode: 'dark' | 'light'; position: string; accent: string };
@@ -157,45 +159,8 @@ export default function IntegracaoTab() {
         </div>
       </div>
 
-      <div className="bg-white border border-neutral-200 rounded-2xl p-6">
-        <h3 className="text-base font-semibold text-neutral-900">Aparência</h3>
-        <p className="text-sm text-neutral-500 mt-1">Personalize como o widget aparece na loja do cliente.</p>
-        <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <label className="flex flex-col gap-1.5 text-sm">
-            <span className="text-neutral-700 font-medium">Modo</span>
-            <select
-              className="h-10 rounded-xl border border-neutral-200 px-3 bg-white"
-              value={theme.mode}
-              onChange={(e) => update({ theme: { ...theme, mode: e.target.value as 'dark' | 'light' } })}
-              disabled={saving}
-            >
-              <option value="dark">Escuro</option>
-              <option value="light">Claro</option>
-            </select>
-          </label>
-          <label className="flex flex-col gap-1.5 text-sm">
-            <span className="text-neutral-700 font-medium">Posição</span>
-            <select
-              className="h-10 rounded-xl border border-neutral-200 px-3 bg-white"
-              value={theme.position}
-              onChange={(e) => update({ theme: { ...theme, position: e.target.value } })}
-              disabled={saving}
-            >
-              {POSITIONS.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
-            </select>
-          </label>
-          <label className="flex flex-col gap-1.5 text-sm">
-            <span className="text-neutral-700 font-medium">Cor de destaque</span>
-            <input
-              type="color"
-              className="h-10 w-full rounded-xl border border-neutral-200 bg-white cursor-pointer"
-              value={theme.accent || '#111111'}
-              onChange={(e) => update({ theme: { ...theme, accent: e.target.value } })}
-              disabled={saving}
-            />
-          </label>
-        </div>
-      </div>
+      <AppearancePresets />
+
 
       {stats && (
         <div className="grid grid-cols-3 gap-4">

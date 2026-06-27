@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      appearance_presets: {
+        Row: {
+          config: Json
+          created_at: string
+          id: string
+          kind: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          id?: string
+          kind: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          id?: string
+          kind?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       installed_apps: {
         Row: {
           app_id: string | null
@@ -198,6 +228,7 @@ export type Database = {
           active: boolean
           aparencia: string
           app_id: string | null
+          appearance_preset_id: string | null
           cover_type: string | null
           cover_url: string | null
           created_at: string
@@ -217,6 +248,7 @@ export type Database = {
           active?: boolean
           aparencia?: string
           app_id?: string | null
+          appearance_preset_id?: string | null
           cover_type?: string | null
           cover_url?: string | null
           created_at?: string
@@ -236,6 +268,7 @@ export type Database = {
           active?: boolean
           aparencia?: string
           app_id?: string | null
+          appearance_preset_id?: string | null
           cover_type?: string | null
           cover_url?: string | null
           created_at?: string
@@ -257,6 +290,13 @@ export type Database = {
             columns: ["app_id"]
             isOneToOne: false
             referencedRelation: "installed_apps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stories_appearance_preset_id_fkey"
+            columns: ["appearance_preset_id"]
+            isOneToOne: false
+            referencedRelation: "appearance_presets"
             referencedColumns: ["id"]
           },
         ]
