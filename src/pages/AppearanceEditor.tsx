@@ -165,12 +165,12 @@ export default function AppearanceEditor() {
       backgroundColor: '#d1d5db',
       [isBottom ? 'bottom' : 'top']: cfg.spacingBottom,
       [isLeft ? 'left' : 'right']: cfg.spacingLeft,
-      boxShadow: cfg.borderStyle === 'pulsar' ? `0 0 0 6px ${cfg.color}22` : undefined,
-      animation: cfg.borderStyle === 'pulsar' ? 'pulse 2s ease-in-out infinite' : undefined,
+      zIndex: 2,
     } as React.CSSProperties;
   }, [cfg]);
 
-  const ctaStyle = useMemo<React.CSSProperties>(() => {
+
+  const ctaBase = useMemo<React.CSSProperties>(() => {
     const isBottom = cfg.position.startsWith('bottom');
     const isLeft = cfg.position.endsWith('left');
     const bubbleW =
@@ -180,14 +180,12 @@ export default function AppearanceEditor() {
         ? 100
         : cfg.width;
     const bubbleH = cfg.shape === 'personalizado' ? cfg.height : cfg.width;
-    // CTA sits to the RIGHT of the bubble, vertically centered with it.
     const verticalCenter = cfg.spacingBottom + bubbleH / 2;
     const horizontalAfter = cfg.spacingLeft + bubbleW + 10;
     return {
       position: 'absolute',
       [isBottom ? 'bottom' : 'top']: verticalCenter,
       [isLeft ? 'left' : 'right']: horizontalAfter,
-      transform: 'translateY(50%)',
       background: cfg.color,
       color: '#fff',
       fontSize: cfg.ctaSize,
@@ -197,10 +195,16 @@ export default function AppearanceEditor() {
       fontWeight: 700,
       letterSpacing: 0.3,
       whiteSpace: 'nowrap',
-      boxShadow: '0 4px 12px rgba(0,0,0,.15)',
-      transition: 'opacity .4s ease, transform .4s ease',
+      boxShadow: '0 6px 18px rgba(0,0,0,.18)',
+      willChange: 'transform, opacity',
+      transition: 'opacity 380ms cubic-bezier(.22,.61,.36,1), transform 380ms cubic-bezier(.22,.61,.36,1)',
+      transformOrigin: 'center',
     } as React.CSSProperties;
   }, [cfg]);
+
+  // Translate Y baseline keeps pill vertically aligned with bubble center.
+  const ctaShown: React.CSSProperties = { opacity: 1, transform: 'translateY(50%) scale(1)' };
+  const ctaHidden: React.CSSProperties = { opacity: 0, transform: 'translateY(calc(50% + 8px)) scale(0.9)', pointerEvents: 'none' };
 
   // CTA visibility timer: shows on mount, hides after ctaDuration seconds, loops every (duration+2)s.
   const [ctaVisible, setCtaVisible] = useState(true);
@@ -295,6 +299,14 @@ export default function AppearanceEditor() {
                 </div>
                 {!cfg.hideStories && (
                   <>
+                    {/* Pulsing rings behind bubble (only when borderStyle = pulsar) */}
+                    {cfg.borderStyle === 'pulsar' && (
+                      <>
+                        <PulseRing style={bubbleStyle} delay="0s" color={cfg.color} />
+                        <PulseRing style={bubbleStyle} delay="0.9s" color={cfg.color} />
+                        <PulseRing style={bubbleStyle} delay="1.8s" color={cfg.color} />
+                      </>
+                    )}
                     <div style={bubbleStyle}>
                       {cfg.allowClose && (
                         <div className="absolute top-1 right-1 w-5 h-5 grid place-items-center rounded-full bg-black/60 text-white">
@@ -303,13 +315,7 @@ export default function AppearanceEditor() {
                       )}
                     </div>
                     {cfg.cta && (
-                      <div
-                        style={{
-                          ...ctaStyle,
-                          opacity: ctaVisible ? 1 : 0,
-                          pointerEvents: ctaVisible ? 'auto' : 'none',
-                        }}
-                      >
+                      <div style={{ ...ctaBase, ...(ctaVisible ? ctaShown : ctaHidden) }}>
                         {cfg.cta.toUpperCase()}
                       </div>
                     )}
@@ -560,5 +566,28 @@ function ToggleRow({
       <span className="text-sm font-medium text-neutral-800">{label}</span>
       <Switch checked={checked} onCheckedChange={(v) => onChange(!!v)} />
     </div>
+  );
+}
+
+function PulseRing({ style, delay, color }: { style: React.CSSProperties; delay: string; color: string }) {
+  const ringStyle: React.CSSProperties = {
+    ...style,
+    backgroundImage: 'none',
+    backgroundColor: 'transparent',
+    border: `2px solid ${color}`,
+    zIndex: 1,
+    pointerEvents: 'none',
+    animation: `zt-pulse-ring 2.4s cubic-bezier(.22,.61,.36,1) ${delay} infinite`,
+    willChange: 'transform, opacity',
+  };
+  return (
+    <>
+      <style>{`@keyframes zt-pulse-ring {
+        0%   { transform: scale(1);    opacity: 0.55; }
+        80%  { transform: scale(2.1);  opacity: 0; }
+        100% { transform: scale(2.1);  opacity: 0; }
+      }`}</style>
+      <div style={ringStyle} />
+    </>
   );
 }
