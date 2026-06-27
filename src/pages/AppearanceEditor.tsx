@@ -346,6 +346,7 @@ export default function AppearanceEditor() {
                             </>
                           )}
                           <div style={bubbleStyle}>
+                            <PreviewMedia fit={cfg.mediaFit} />
                             {cfg.allowClose && (
                               <div className="absolute top-1 right-1 w-5 h-5 grid place-items-center rounded-full bg-black/60 text-white">
                                 <X className="w-3 h-3" />
@@ -397,6 +398,7 @@ export default function AppearanceEditor() {
                             </>
                           )}
                           <div style={bubbleStyle}>
+                            <PreviewMedia fit={cfg.mediaFit} />
                             {cfg.allowClose && (
                               <div className="absolute top-1 right-1 w-5 h-5 grid place-items-center rounded-full bg-black/60 text-white">
                                 <X className="w-3 h-3" />
