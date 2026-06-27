@@ -21,6 +21,37 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
 
+  // Guarantee autoplay: muted + playsInline + explicit play() with retry on user gesture.
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = true;
+    v.defaultMuted = true;
+    (v as HTMLVideoElement & { playsInline?: boolean }).playsInline = true;
+    let cancelled = false;
+    const tryPlay = () => {
+      if (cancelled || !v) return;
+      const p = v.play();
+      if (p && typeof p.then === 'function') {
+        p.then(() => setPaused(false)).catch(() => {
+          // Autoplay blocked — resume on first user interaction.
+          const resume = () => { v.play().then(() => setPaused(false)).catch(() => {}); cleanup(); };
+          const cleanup = () => {
+            window.removeEventListener('pointerdown', resume);
+            window.removeEventListener('keydown', resume);
+            window.removeEventListener('touchstart', resume);
+          };
+          window.addEventListener('pointerdown', resume, { once: true });
+          window.addEventListener('keydown', resume, { once: true });
+          window.addEventListener('touchstart', resume, { once: true });
+        });
+      }
+    };
+    if (v.readyState >= 2) tryPlay();
+    else v.addEventListener('canplay', tryPlay, { once: true });
+    return () => { cancelled = true; v.removeEventListener('canplay', tryPlay); };
+  }, []);
+
   function togglePlay() {
     const v = videoRef.current; if (!v) return;
     if (v.paused) { v.play(); setPaused(false); } else { v.pause(); setPaused(true); }
@@ -68,6 +99,8 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
             loop
             muted
             playsInline
+            preload="auto"
+            disableRemotePlayback
             className="absolute inset-0 w-full h-full object-cover"
           />
           {/* product card */}
