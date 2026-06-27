@@ -13,6 +13,7 @@ import type { Tables } from '@/integrations/supabase/helpers';
 import { MediaThumbnail } from '@/components/ui/MediaThumbnail';
 import { GalleryCard } from '@/components/ui/GalleryCard';
 import IntegracaoTab from '@/components/storievideos/IntegracaoTab';
+import AppearancePresets from '@/components/storievideos/AppearancePresets';
 import {
   Search,
   Plus,
