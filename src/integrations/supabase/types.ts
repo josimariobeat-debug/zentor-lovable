@@ -157,6 +157,42 @@ export type Database = {
         }
         Relationships: []
       }
+      stores: {
+        Row: {
+          active: boolean
+          created_at: string
+          domain: string | null
+          id: string
+          name: string
+          store_id: string
+          theme: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          domain?: string | null
+          id?: string
+          name?: string
+          store_id: string
+          theme?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          domain?: string | null
+          id?: string
+          name?: string
+          store_id?: string
+          theme?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       stories: {
         Row: {
           active: boolean
@@ -169,6 +205,7 @@ export type Database = {
           format: string
           id: string
           scroll: string
+          store_id: string | null
           thumbnail_url: string | null
           title: string
           updated_at: string
@@ -187,6 +224,7 @@ export type Database = {
           format?: string
           id?: string
           scroll?: string
+          store_id?: string | null
           thumbnail_url?: string | null
           title: string
           updated_at?: string
@@ -205,6 +243,7 @@ export type Database = {
           format?: string
           id?: string
           scroll?: string
+          store_id?: string | null
           thumbnail_url?: string | null
           title?: string
           updated_at?: string
@@ -378,12 +417,48 @@ export type Database = {
           },
         ]
       }
+      widget_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          referrer: string | null
+          session_id: string | null
+          store_id: string
+          story_id: string | null
+          url: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          referrer?: string | null
+          session_id?: string | null
+          store_id: string
+          story_id?: string | null
+          url?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          referrer?: string | null
+          session_id?: string | null
+          store_id?: string
+          story_id?: string | null
+          url?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_store_id: { Args: never; Returns: string }
     }
     Enums: {
       [_ in never]: never
