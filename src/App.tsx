@@ -16,6 +16,7 @@ import Assinaturas from '@/pages/Assinaturas';
 import Perfil from '@/pages/Perfil';
 import StoriesVideosApp from '@/pages/StoriesVideosApp';
 import AdicionarStory from '@/pages/AdicionarStory';
+import AppearanceEditor from '@/pages/AppearanceEditor';
 import MobileUpload from '@/pages/MobileUpload';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
@@ -45,6 +46,7 @@ export default function App() {
         <Route path="perfil" element={<Perfil />} />
         
         <Route path="app/:appId" element={<StoriesVideosApp />} />
+        <Route path="app/:appId/aparencia/:presetId" element={<AppearanceEditor />} />
         <Route path="app/:appId/story/:storyId" element={<AdicionarStory />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

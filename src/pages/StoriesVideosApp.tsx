@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { useNavigate, useParams, useSearchParams } from 'react-router';
 import TopBar from '@/components/layout/TopBar';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
@@ -53,6 +53,8 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 export default function StoriesVideosApp() {
   const navigate = useNavigate();
   const { appId } = useParams();
+  const [sp, setSp] = useSearchParams();
+  const tab = sp.get('tab') || 'stories';
   const { user } = useAuth();
   const [stories, setStories] = useState<StoryWithMedia[] | null>(null);
   const [search, setSearch] = useState('');
@@ -224,7 +226,7 @@ export default function StoriesVideosApp() {
     <>
       <TopBar title="Stories Vídeos" breadcrumb="Meus apps" backTo="/" />
       <main data-ev-id="ev_7d87e18d92" className="px-10 py-8 fade-in">
-        <Tabs defaultValue="stories">
+        <Tabs value={tab} onValueChange={(v) => setSp({ tab: v }, { replace: true })}>
           <TabsList className="flex w-full justify-start gap-7 bg-transparent p-0 mb-9 border-b border-neutral-200 rounded-none h-auto">
             {TABS.map((t) =>
             <TabsTrigger

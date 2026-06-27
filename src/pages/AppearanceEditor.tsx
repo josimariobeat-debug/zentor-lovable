@@ -1,0 +1,379 @@
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router';
+import { ArrowLeft, Loader2, Smartphone, Monitor } from 'lucide-react';
+import TopBar from '@/components/layout/TopBar';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
+import { toast } from '@/components/ui/toaster';
+import { Switch } from '@/components/ui/switch';
+
+type Kind = 'floating' | 'carousel';
+type Shape = 'circular' | 'quadrado';
+type Position = 'bottom-left' | 'bottom-right' | 'top-left' | 'top-right';
+
+interface Config {
+  useAllDevices: boolean;
+  shape: Shape;
+  width: number;
+  position: Position;
+  spacingBottom: number;
+  spacingLeft: number;
+  cta: string;
+  ctaSize: number;
+  borderColor: string;
+  accent: string;
+  showLabel: boolean;
+}
+
+const DEFAULT_CONFIG: Config = {
+  useAllDevices: true,
+  shape: 'circular',
+  width: 100,
+  position: 'bottom-left',
+  spacingBottom: 20,
+  spacingLeft: 20,
+  cta: '',
+  ctaSize: 15,
+  borderColor: '#e11d48',
+  accent: '#7c3aed',
+  showLabel: true,
+};
+
+const POSITIONS: { value: Position; label: string }[] = [
+  { value: 'bottom-left', label: 'Inferior Esquerdo' },
+  { value: 'bottom-right', label: 'Inferior Direito' },
+  { value: 'top-left', label: 'Superior Esquerdo' },
+  { value: 'top-right', label: 'Superior Direito' },
+];
+
+export default function AppearanceEditor() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { appId, presetId } = useParams();
+  const [search] = useSearchParams();
+  const kind: Kind = (search.get('kind') as Kind) === 'carousel' ? 'carousel' : 'floating';
+
+  const isNew = !presetId || presetId === 'new';
+  const [loading, setLoading] = useState(!isNew);
+  const [saving, setSaving] = useState(false);
+  const [name, setName] = useState('');
+  const [cfg, setCfg] = useState<Config>(DEFAULT_CONFIG);
+  const [device, setDevice] = useState<'mobile' | 'desktop'>('mobile');
+
+  useEffect(() => {
+    if (isNew || !user) return;
+    (async () => {
+      const { data } = await supabase
+        .from('appearance_presets')
+        .select('*')
+        .eq('id', presetId!)
+        .maybeSingle();
+      if (data) {
+        setName(data.name);
+        setCfg({ ...DEFAULT_CONFIG, ...((data.config as Partial<Config>) ?? {}) });
+      }
+      setLoading(false);
+    })();
+  }, [isNew, presetId, user]);
+
+  function backToTab() {
+    navigate(`/app/${appId}?tab=aparencia`);
+  }
+
+  async function save() {
+    if (!name.trim()) {
+      toast.error('Dê um nome ao padrão');
+      return;
+    }
+    if (!user) return;
+    setSaving(true);
+    if (isNew) {
+      const { error } = await supabase.from('appearance_presets').insert({
+        user_id: user.id,
+        name: name.trim(),
+        kind,
+        config: cfg as unknown as never,
+      });
+      if (error) {
+        setSaving(false);
+        toast.error('Erro ao criar');
+        return;
+      }
+    } else {
+      const { error } = await supabase
+        .from('appearance_presets')
+        .update({ name: name.trim(), config: cfg as unknown as never })
+        .eq('id', presetId!);
+      if (error) {
+        setSaving(false);
+        toast.error('Erro ao salvar');
+        return;
+      }
+    }
+    setSaving(false);
+    toast.success('Padrão salvo');
+    backToTab();
+  }
+
+  const bubbleStyle = useMemo<React.CSSProperties>(() => {
+    const isBottom = cfg.position.startsWith('bottom');
+    const isLeft = cfg.position.endsWith('left');
+    return {
+      position: 'absolute',
+      width: cfg.width,
+      height: cfg.width,
+      borderRadius: cfg.shape === 'circular' ? '50%' : 16,
+      border: `3px solid ${cfg.borderColor}`,
+      backgroundColor: '#d1d5db',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      [isBottom ? 'bottom' : 'top']: cfg.spacingBottom,
+      [isLeft ? 'left' : 'right']: cfg.spacingLeft,
+      overflow: 'hidden',
+      backgroundImage: 'linear-gradient(135deg,#a78bfa,#f472b6)',
+    } as React.CSSProperties;
+  }, [cfg]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen grid place-items-center text-neutral-500">
+        <Loader2 className="w-5 h-5 animate-spin" />
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <TopBar title={isNew ? 'Nova aparência' : 'Editar aparência'} breadcrumb="Stories Vídeos" backTo={`/app/${appId}?tab=aparencia`} />
+      <main className="px-10 py-8 fade-in">
+        <button
+          onClick={backToTab}
+          className="inline-flex items-center gap-2 text-sm text-neutral-600 hover:text-neutral-900 mb-4"
+        >
+          <ArrowLeft className="w-4 h-4" /> Voltar para Aparência
+        </button>
+
+        <div className="bg-white border border-neutral-200 rounded-2xl p-6">
+          <label className="flex flex-col gap-1.5 text-sm mb-6">
+            <span className="text-neutral-700 font-medium">Aparência</span>
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Ex: Story vídeo redondo"
+              className="h-11 rounded-xl border border-neutral-200 px-3 max-w-md"
+            />
+          </label>
+
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">
+            {/* Preview */}
+            <div className="rounded-2xl border border-neutral-200 bg-neutral-50/60 p-4 min-h-[520px]">
+              <div className="flex justify-center mb-4">
+                <div className="inline-flex bg-white border border-neutral-200 rounded-xl p-1">
+                  <button
+                    onClick={() => setDevice('mobile')}
+                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium ${
+                      device === 'mobile' ? 'bg-neutral-100 text-neutral-900' : 'text-neutral-500'
+                    }`}
+                  >
+                    <Smartphone className="w-4 h-4" /> Mobile
+                  </button>
+                  <button
+                    onClick={() => setDevice('desktop')}
+                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium ${
+                      device === 'desktop' ? 'bg-neutral-100 text-neutral-900' : 'text-neutral-500'
+                    }`}
+                  >
+                    <Monitor className="w-4 h-4" /> Desktop
+                  </button>
+                </div>
+              </div>
+
+              <div className="relative mx-auto bg-white border border-neutral-200 rounded-2xl overflow-hidden"
+                style={{
+                  width: device === 'mobile' ? 320 : '100%',
+                  maxWidth: device === 'mobile' ? 320 : 680,
+                  height: 460,
+                }}
+              >
+                <div className="grid grid-cols-4 gap-3 p-4">
+                  {Array.from({ length: 16 }).map((_, i) => (
+                    <div key={i} className="aspect-square rounded-xl bg-neutral-200/80" />
+                  ))}
+                </div>
+                <div style={bubbleStyle}>
+                  {cfg.cta && cfg.showLabel && (
+                    <div className="absolute inset-x-0 bottom-0 text-center text-white text-[10px] font-semibold py-1 bg-black/40">
+                      {cfg.cta}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Controls */}
+            <div className="flex flex-col gap-5">
+              <div className="flex items-start gap-3">
+                <Switch
+                  checked={cfg.useAllDevices}
+                  onCheckedChange={(v) => setCfg({ ...cfg, useAllDevices: !!v })}
+                />
+                <div>
+                  <div className="text-sm font-medium text-neutral-900">
+                    Usar aparência em todos os dispositivos
+                  </div>
+                  <p className="text-xs text-neutral-500 mt-1">
+                    Quando ativado, a mesma aparência será aplicada no mobile e no desktop.
+                  </p>
+                </div>
+              </div>
+
+              <Field label="Forma">
+                <select
+                  className="h-10 rounded-xl border border-neutral-200 px-3 bg-white w-full"
+                  value={cfg.shape}
+                  onChange={(e) => setCfg({ ...cfg, shape: e.target.value as Shape })}
+                >
+                  <option value="circular">Circular</option>
+                  <option value="quadrado">Quadrado</option>
+                </select>
+              </Field>
+
+              <Slider
+                label={`Largura (${cfg.width}px)`}
+                min={48}
+                max={400}
+                value={cfg.width}
+                onChange={(v) => setCfg({ ...cfg, width: v })}
+              />
+
+              <Field label="Posição">
+                <select
+                  className="h-10 rounded-xl border border-neutral-200 px-3 bg-white w-full"
+                  value={cfg.position}
+                  onChange={(e) => setCfg({ ...cfg, position: e.target.value as Position })}
+                >
+                  {POSITIONS.map((p) => (
+                    <option key={p.value} value={p.value}>
+                      {p.label}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+
+              <Slider
+                label={`Espaçamento Inferior (${cfg.spacingBottom}px)`}
+                min={0}
+                max={400}
+                value={cfg.spacingBottom}
+                onChange={(v) => setCfg({ ...cfg, spacingBottom: v })}
+              />
+
+              <Slider
+                label={`Espaçamento Esquerdo (${cfg.spacingLeft}px)`}
+                min={0}
+                max={400}
+                value={cfg.spacingLeft}
+                onChange={(v) => setCfg({ ...cfg, spacingLeft: v })}
+              />
+
+              <Field label="Chamada para Ação">
+                <input
+                  value={cfg.cta}
+                  onChange={(e) => setCfg({ ...cfg, cta: e.target.value })}
+                  placeholder="Digite o texto da chamada para ação"
+                  className="h-10 rounded-xl border border-neutral-200 px-3 w-full"
+                />
+                <p className="text-xs text-neutral-500 mt-1">
+                  Deixe vazio para ocultar a chamada para ação
+                </p>
+                <p className="text-xs text-neutral-500">
+                  Defina transparente para ocultar a chamada para ação
+                </p>
+              </Field>
+
+              <Slider
+                label={`Tamanho da Chamada para Ação (${cfg.ctaSize}px)`}
+                min={8}
+                max={40}
+                value={cfg.ctaSize}
+                onChange={(v) => setCfg({ ...cfg, ctaSize: v })}
+              />
+
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Cor da borda">
+                  <input
+                    type="color"
+                    value={cfg.borderColor}
+                    onChange={(e) => setCfg({ ...cfg, borderColor: e.target.value })}
+                    className="h-10 w-full rounded-xl border border-neutral-200 bg-white cursor-pointer"
+                  />
+                </Field>
+                <Field label="Cor de destaque">
+                  <input
+                    type="color"
+                    value={cfg.accent}
+                    onChange={(e) => setCfg({ ...cfg, accent: e.target.value })}
+                    className="h-10 w-full rounded-xl border border-neutral-200 bg-white cursor-pointer"
+                  />
+                </Field>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-neutral-100">
+                <button
+                  onClick={backToTab}
+                  className="h-10 px-4 rounded-xl border border-neutral-200 text-sm font-medium hover:bg-neutral-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={save}
+                  disabled={saving}
+                  className="h-10 px-5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold inline-flex items-center gap-2"
+                >
+                  {saving && <Loader2 className="w-4 h-4 animate-spin" />} Salvar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="flex flex-col gap-1.5 text-sm">
+      <span className="text-neutral-700 font-medium">{label}</span>
+      {children}
+    </label>
+  );
+}
+
+function Slider({
+  label,
+  min,
+  max,
+  value,
+  onChange,
+}: {
+  label: string;
+  min: number;
+  max: number;
+  value: number;
+  onChange: (v: number) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5 text-sm">
+      <span className="text-neutral-700 font-medium">{label}</span>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="accent-blue-600"
+      />
+    </div>
+  );
+}
