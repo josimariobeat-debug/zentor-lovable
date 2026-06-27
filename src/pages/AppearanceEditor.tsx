@@ -583,9 +583,9 @@ function PulseRing({ style, delay, color }: { style: React.CSSProperties; delay:
   return (
     <>
       <style>{`@keyframes zt-pulse-ring {
-        0%   { transform: scale(1);    opacity: 0.55; }
-        80%  { transform: scale(2.1);  opacity: 0; }
-        100% { transform: scale(2.1);  opacity: 0; }
+        0%   { transform: scale(1);    opacity: 0.6; }
+        80%  { transform: scale(1.35); opacity: 0; }
+        100% { transform: scale(1.35); opacity: 0; }
       }`}</style>
       <div style={ringStyle} />
     </>
