@@ -72,7 +72,7 @@ export default function AppearancePresets() {
       user_id: user!.id,
       name: `${p.name} (cópia)`,
       kind: p.kind,
-      config: p.config as Record<string, unknown>,
+      config: p.config as unknown as never,
     });
     if (error) { toast.error('Erro ao duplicar'); return; }
     toast.success('Padrão duplicado');
@@ -234,13 +234,13 @@ function PresetEditor({
     if (preset) {
       const { error } = await supabase
         .from('appearance_presets')
-        .update({ name: name.trim(), config: cfg as unknown as Record<string, unknown> })
+        .update({ name: name.trim(), config: cfg as unknown as never })
         .eq('id', preset.id);
       if (error) { setSaving(false); toast.error('Erro ao salvar'); return; }
     } else {
       const { error } = await supabase
         .from('appearance_presets')
-        .insert({ user_id: userId, kind, name: name.trim(), config: cfg as unknown as Record<string, unknown> });
+        .insert({ user_id: userId, kind, name: name.trim(), config: cfg as unknown as never });
       if (error) { setSaving(false); toast.error('Erro ao criar'); return; }
     }
     setSaving(false);
