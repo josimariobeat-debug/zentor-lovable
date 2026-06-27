@@ -570,38 +570,22 @@ function ToggleRow({
 }
 
 function PulseRing({ style, delay, color }: { style: React.CSSProperties; delay: string; color: string }) {
-  const RING = 6; // ring thickness in px
-  const numOr = (v: any) => (typeof v === 'number' ? v : 0);
-  const w = style.width;
-  const h = style.height;
-  const sizeExpr = (v: any) =>
-    typeof v === 'number' ? `${v + RING * 2}px` : `calc(${v} + ${RING * 2}px)`;
-  const offset = (v: any) =>
-    typeof v === 'number' ? `${v - RING}px` : `calc(${v} - ${RING}px)`;
-
   const ringStyle: React.CSSProperties = {
-    position: 'absolute',
-    boxSizing: 'border-box',
-    width: sizeExpr(w),
-    height: sizeExpr(h),
-    borderRadius: style.borderRadius === '50%' ? '50%' : `calc(${typeof style.borderRadius === 'number' ? style.borderRadius + 'px' : style.borderRadius} + ${RING}px)`,
-    border: `${RING}px solid ${color}`,
+    ...style,
+    backgroundImage: 'none',
     backgroundColor: 'transparent',
+    border: `12px solid ${color}`,
     zIndex: 1,
     pointerEvents: 'none',
     animation: `zt-pulse-ring 10s cubic-bezier(.22,.61,.36,1) ${delay} infinite`,
     willChange: 'transform, opacity',
-    top: style.top !== undefined ? offset(style.top) : undefined,
-    bottom: style.bottom !== undefined ? offset(style.bottom) : undefined,
-    left: style.left !== undefined ? offset(style.left) : undefined,
-    right: style.right !== undefined ? offset(style.right) : undefined,
   };
   return (
     <>
       <style>{`@keyframes zt-pulse-ring {
-        0%   { transform: scale(1);    opacity: 0.8; }
-        10%  { transform: scale(1.06); opacity: 0; }
-        100% { transform: scale(1.06); opacity: 0; }
+        0%   { transform: scale(1);    opacity: 0.75; }
+        12%  { transform: scale(1.08); opacity: 0; }
+        100% { transform: scale(1.08); opacity: 0; }
       }`}</style>
       <div style={ringStyle} />
     </>
