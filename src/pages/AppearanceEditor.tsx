@@ -143,9 +143,9 @@ export default function AppearanceEditor() {
   }
 
   return (
-    <div className="min-h-screen">
-      <TopBar title={isNew ? 'Nova aparência' : 'Editar aparência'} backTo={`/app/${appId}?tab=aparencia`} />
-      <div className="p-6 max-w-[1400px] mx-auto">
+    <>
+      <TopBar title={isNew ? 'Nova aparência' : 'Editar aparência'} breadcrumb="Stories Vídeos" backTo={`/app/${appId}?tab=aparencia`} />
+      <main className="px-10 py-8 fade-in">
         <button
           onClick={backToTab}
           className="inline-flex items-center gap-2 text-sm text-neutral-600 hover:text-neutral-900 mb-4"
