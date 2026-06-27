@@ -461,11 +461,15 @@ export default function StoriesVideosApp() {
             }
           </TabsContent>
 
-          {TABS.filter((t) => t.value !== 'stories' && t.value !== 'midias').map((t) =>
+          {TABS.filter((t) => t.value !== 'stories' && t.value !== 'midias' && t.value !== 'integracao').map((t) =>
           <TabsContent key={t.value} value={t.value} className="mt-0">
               <PlaceholderTab label={t.label} />
             </TabsContent>
           )}
+
+          <TabsContent value="integracao" className="mt-0">
+            <IntegracaoTab />
+          </TabsContent>
         </Tabs>
       </main>
 
