@@ -120,21 +120,21 @@ export default function AppearancePresets() {
                 <button
                   title="Duplicar"
                   onClick={() => duplicate(p)}
-                  className="w-9 h-9 rounded-full bg-violet-600 hover:bg-violet-700 text-white grid place-items-center"
+                  className="w-9 h-9 rounded-lg hover:bg-neutral-100 flex items-center justify-center text-neutral-700 transition-colors"
                 >
                   <Copy className="w-4 h-4" />
                 </button>
                 <button
                   title="Editar"
                   onClick={() => navigate(`/app/${appId}/aparencia/${p.id}?kind=${p.kind}`)}
-                  className="w-9 h-9 rounded-full bg-yellow-400 hover:bg-yellow-500 text-neutral-900 grid place-items-center"
+                  className="w-9 h-9 rounded-lg hover:bg-neutral-100 flex items-center justify-center text-neutral-700 transition-colors"
                 >
                   <Pencil className="w-4 h-4" />
                 </button>
                 <button
                   title="Excluir"
                   onClick={() => remove(p)}
-                  className="w-9 h-9 rounded-full bg-red-500 hover:bg-red-600 text-white grid place-items-center"
+                  className="w-9 h-9 rounded-lg hover:bg-red-50 hover:text-red-600 flex items-center justify-center text-neutral-700 transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
