@@ -224,7 +224,7 @@ export default function StoriesVideosApp() {
     <>
       <TopBar title="Stories Vídeos" breadcrumb="Meus apps" backTo="/" />
       <main data-ev-id="ev_7d87e18d92" className="px-10 py-8 fade-in">
-        <Tabs defaultValue="stories">
+        <Tabs value={tab} onValueChange={(v) => setSp({ tab: v }, { replace: true })}>
           <TabsList className="flex w-full justify-start gap-7 bg-transparent p-0 mb-9 border-b border-neutral-200 rounded-none h-auto">
             {TABS.map((t) =>
             <TabsTrigger
