@@ -66,28 +66,27 @@ export default function AppearancePresets() {
   }
 
   return (
-    <div className="bg-white border border-neutral-200 rounded-2xl p-6">
-      {/* Tabs */}
-      <div className="flex items-center gap-1 border-b border-neutral-200 -mt-2 -mx-2 px-2">
-        {[
-          { v: 'floating' as const, label: 'Widget Flutuante' },
-          { v: 'carousel' as const, label: 'Carrossel' },
-        ].map((t) => (
-          <button
-            key={t.v}
-            onClick={() => { setKind(t.v); setPage(1); }}
-            className={`px-4 py-2.5 text-sm font-medium rounded-t-lg -mb-px border-b-2 transition-colors ${
-              kind === t.v
-                ? 'text-neutral-900 border-neutral-900 bg-neutral-50'
-                : 'text-neutral-500 border-transparent hover:text-neutral-800'
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-
-      <div className="flex justify-end mt-6">
+    <div>
+      {/* Header row — mirrors the Stories tab pattern (controls left, Adicionar right, outside the card) */}
+      <div className="flex items-center justify-between gap-4 mb-6">
+        <div className="flex items-center gap-1 border-b border-neutral-200">
+          {[
+            { v: 'floating' as const, label: 'Widget Flutuante' },
+            { v: 'carousel' as const, label: 'Carrossel' },
+          ].map((t) => (
+            <button
+              key={t.v}
+              onClick={() => { setKind(t.v); setPage(1); }}
+              className={`px-4 py-2.5 text-sm font-medium rounded-t-lg -mb-px border-b-2 transition-colors ${
+                kind === t.v
+                  ? 'text-neutral-900 border-neutral-900 bg-neutral-50'
+                  : 'text-neutral-500 border-transparent hover:text-neutral-800'
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
         <button
           onClick={() => navigate(`/app/${appId}/aparencia/new?kind=${kind}`)}
           className="inline-flex items-center gap-2 text-[13.5px] font-medium text-white bg-neutral-900 hover:bg-neutral-800 px-4 py-2.5 rounded-xl transition-colors"
@@ -95,6 +94,9 @@ export default function AppearancePresets() {
           <Plus className="w-4 h-4" /> Adicionar
         </button>
       </div>
+
+      <div className="bg-white border border-neutral-200 rounded-2xl p-6">
+
 
       <div className="mt-4 overflow-hidden">
         <div className="grid grid-cols-[1fr_auto] text-xs uppercase tracking-wide text-neutral-500 font-medium border-b border-neutral-200 pb-3">
@@ -179,6 +181,7 @@ export default function AppearancePresets() {
         </div>
       </div>
 
+      </div>
     </div>
   );
 }
