@@ -302,7 +302,17 @@ export default function AppearanceEditor() {
                         </div>
                       )}
                     </div>
-                    {cfg.cta && <div style={ctaStyle}>{cfg.cta.toUpperCase()}</div>}
+                    {cfg.cta && (
+                      <div
+                        style={{
+                          ...ctaStyle,
+                          opacity: ctaVisible ? 1 : 0,
+                          pointerEvents: ctaVisible ? 'auto' : 'none',
+                        }}
+                      >
+                        {cfg.cta.toUpperCase()}
+                      </div>
+                    )}
                   </>
                 )}
               </div>
