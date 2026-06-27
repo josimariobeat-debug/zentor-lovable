@@ -46,6 +46,7 @@ export default function App() {
         <Route path="perfil" element={<Perfil />} />
         
         <Route path="app/:appId" element={<StoriesVideosApp />} />
+        <Route path="app/:appId/aparencia/:presetId" element={<AppearanceEditor />} />
         <Route path="app/:appId/story/:storyId" element={<AdicionarStory />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
