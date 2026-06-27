@@ -6,6 +6,7 @@ import {
   GraduationCap,
   CreditCard,
   User,
+  Code2,
   Megaphone,
   MessageCircle } from
 'lucide-react';
@@ -14,6 +15,7 @@ import { cn } from '@/lib/utils';
 const items = [
 { key: 'meus-apps', label: 'Meus apps', icon: LayoutGrid, path: '/' },
 { key: 'loja', label: 'Loja de apps', icon: Store, path: '/loja' },
+{ key: 'instalacao', label: 'Instalação', icon: Code2, path: '/instalacao' },
 { key: 'tutoriais', label: 'Tutoriais', icon: GraduationCap, path: '/tutoriais' },
 { key: 'assinaturas', label: 'Assinaturas', icon: CreditCard, path: '/assinaturas' },
 { key: 'perfil', label: 'Perfil', icon: User, path: '/perfil' }];
