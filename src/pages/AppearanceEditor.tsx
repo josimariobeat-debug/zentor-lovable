@@ -574,7 +574,7 @@ function PulseRing({ style, delay, color }: { style: React.CSSProperties; delay:
     ...style,
     backgroundImage: 'none',
     backgroundColor: 'transparent',
-    border: `8px solid ${color}`,
+    border: `12px solid ${color}`,
     zIndex: 1,
     pointerEvents: 'none',
     animation: `zt-pulse-ring 10s cubic-bezier(.22,.61,.36,1) ${delay} infinite`,
@@ -583,9 +583,9 @@ function PulseRing({ style, delay, color }: { style: React.CSSProperties; delay:
   return (
     <>
       <style>{`@keyframes zt-pulse-ring {
-        0%   { transform: scale(1);    opacity: 0.6; }
-        80%  { transform: scale(1.35); opacity: 0; }
-        100% { transform: scale(1.35); opacity: 0; }
+        0%   { transform: scale(1);    opacity: 0.7; }
+        25%  { transform: scale(1.18); opacity: 0; }
+        100% { transform: scale(1.18); opacity: 0; }
       }`}</style>
       <div style={ringStyle} />
     </>
