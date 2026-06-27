@@ -159,7 +159,6 @@ export default function IntegracaoTab() {
         </div>
       </div>
 
-      <AppearancePresets />
 
 
       {stats && (
