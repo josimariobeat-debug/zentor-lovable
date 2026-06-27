@@ -3,37 +3,14 @@ import { useNavigate, useParams } from 'react-router';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/components/ui/toaster';
-import { Plus, Copy, Pencil, Trash2, X, Loader2 } from 'lucide-react';
+import { Plus, Copy, Pencil, Trash2, Loader2 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/helpers';
 
 type Preset = Tables<'appearance_presets'>;
 type Kind = 'floating' | 'carousel';
 
-const POSITIONS = [
-  { value: 'bottom-left', label: 'Inferior esquerda' },
-  { value: 'bottom-right', label: 'Inferior direita' },
-  { value: 'top-left', label: 'Superior esquerda' },
-  { value: 'top-right', label: 'Superior direita' },
-];
 const PAGE_SIZE_OPTIONS = [8, 16, 32, 64];
 
-type Config = {
-  mode: 'dark' | 'light';
-  position: string;
-  accent: string;
-  borderColor: string;
-  bubbleSize: number;
-  showLabel: boolean;
-};
-
-const DEFAULT_CONFIG: Config = {
-  mode: 'dark',
-  position: 'bottom-left',
-  accent: '#7c3aed',
-  borderColor: '#e11d48',
-  bubbleSize: 64,
-  showLabel: true,
-};
 
 export default function AppearancePresets() {
   const { user } = useAuth();
