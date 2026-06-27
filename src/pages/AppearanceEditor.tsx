@@ -165,8 +165,11 @@ export default function AppearanceEditor() {
       backgroundColor: '#d1d5db',
       [isBottom ? 'bottom' : 'top']: cfg.spacingBottom,
       [isLeft ? 'left' : 'right']: cfg.spacingLeft,
-      boxShadow: cfg.borderStyle === 'pulsar' ? `0 0 0 6px ${cfg.color}22` : undefined,
-      animation: cfg.borderStyle === 'pulsar' ? 'pulse 2s ease-in-out infinite' : undefined,
+      zIndex: 2,
+    } as React.CSSProperties;
+  }, [cfg]);
+
+  // Border style for bubble itself — pulsar removes the border to avoid duplication with rings.
     } as React.CSSProperties;
   }, [cfg]);
 
