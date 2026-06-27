@@ -16,6 +16,7 @@ import Assinaturas from '@/pages/Assinaturas';
 import Perfil from '@/pages/Perfil';
 import StoriesVideosApp from '@/pages/StoriesVideosApp';
 import AdicionarStory from '@/pages/AdicionarStory';
+import AppearanceEditor from '@/pages/AppearanceEditor';
 import MobileUpload from '@/pages/MobileUpload';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
