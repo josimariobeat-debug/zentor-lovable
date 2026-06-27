@@ -568,3 +568,26 @@ function ToggleRow({
     </div>
   );
 }
+
+function PulseRing({ style, delay, color }: { style: React.CSSProperties; delay: string; color: string }) {
+  const ringStyle: React.CSSProperties = {
+    ...style,
+    backgroundImage: 'none',
+    backgroundColor: 'transparent',
+    border: `2px solid ${color}`,
+    zIndex: 1,
+    pointerEvents: 'none',
+    animation: `zt-pulse-ring 2.4s cubic-bezier(.22,.61,.36,1) ${delay} infinite`,
+    willChange: 'transform, opacity',
+  };
+  return (
+    <>
+      <style>{`@keyframes zt-pulse-ring {
+        0%   { transform: scale(1);    opacity: 0.55; }
+        80%  { transform: scale(2.1);  opacity: 0; }
+        100% { transform: scale(2.1);  opacity: 0; }
+      }`}</style>
+      <div style={ringStyle} />
+    </>
+  );
+}
