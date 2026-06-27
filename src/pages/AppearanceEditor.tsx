@@ -144,7 +144,7 @@ export default function AppearanceEditor() {
 
   return (
     <div className="min-h-screen">
-      <TopBar />
+      <TopBar title={isNew ? 'Nova aparência' : 'Editar aparência'} backTo={`/app/${appId}?tab=aparencia`} />
       <div className="p-6 max-w-[1400px] mx-auto">
         <button
           onClick={backToTab}
