@@ -53,6 +53,8 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 export default function StoriesVideosApp() {
   const navigate = useNavigate();
   const { appId } = useParams();
+  const [sp, setSp] = useSearchParams();
+  const tab = sp.get('tab') || 'stories';
   const { user } = useAuth();
   const [stories, setStories] = useState<StoryWithMedia[] | null>(null);
   const [search, setSearch] = useState('');
