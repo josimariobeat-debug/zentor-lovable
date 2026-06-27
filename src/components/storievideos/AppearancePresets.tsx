@@ -147,7 +147,7 @@ export default function AppearancePresets() {
                 </button>
                 <button
                   title="Editar"
-                  onClick={() => setEditing(p)}
+                  onClick={() => navigate(`/app/${appId}/aparencia/${p.id}?kind=${p.kind}`)}
                   className="w-9 h-9 rounded-full bg-yellow-400 hover:bg-yellow-500 text-neutral-900 grid place-items-center"
                 >
                   <Pencil className="w-4 h-4" />
