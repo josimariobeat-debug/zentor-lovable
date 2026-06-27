@@ -169,9 +169,6 @@ export default function AppearanceEditor() {
     } as React.CSSProperties;
   }, [cfg]);
 
-  // Border style for bubble itself — pulsar removes the border to avoid duplication with rings.
-    } as React.CSSProperties;
-  }, [cfg]);
 
   const ctaBase = useMemo<React.CSSProperties>(() => {
     const isBottom = cfg.position.startsWith('bottom');
