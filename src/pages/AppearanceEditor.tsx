@@ -284,44 +284,119 @@ export default function AppearanceEditor() {
                 </div>
               </div>
 
-              <div
-                className="relative mx-auto bg-white border border-neutral-200 rounded-2xl overflow-hidden"
-                style={{
-                  width: device === 'mobile' ? 320 : '100%',
-                  maxWidth: device === 'mobile' ? 320 : 680,
-                  height: 460,
-                }}
-              >
-                <div className="grid grid-cols-4 gap-3 p-4">
-                  {Array.from({ length: 16 }).map((_, i) => (
-                    <div key={i} className="aspect-square rounded-xl bg-neutral-200/80" />
-                  ))}
-                </div>
-                {!cfg.hideStories && (
-                  <>
-                    {/* Pulsing rings behind bubble (only when borderStyle = pulsar) */}
-                    {cfg.borderStyle === 'pulsar' && (
-                      <>
-                        <PulseRing style={bubbleStyle} delay="0s" color={cfg.color} />
-                        <PulseRing style={bubbleStyle} delay="2.66s" color={cfg.color} />
-                        <PulseRing style={bubbleStyle} delay="5.33s" color={cfg.color} />
-                      </>
-                    )}
-                    <div style={bubbleStyle}>
-                      {cfg.allowClose && (
-                        <div className="absolute top-1 right-1 w-5 h-5 grid place-items-center rounded-full bg-black/60 text-white">
-                          <X className="w-3 h-3" />
+              {device === 'mobile' ? (
+                <div
+                  className="relative mx-auto"
+                  style={{ width: 300, height: 600 }}
+                >
+                  {/* Phone outer frame */}
+                  <div
+                    className="absolute inset-0 bg-neutral-900 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.35)]"
+                    style={{ borderRadius: 44, padding: 12 }}
+                  >
+                    {/* Screen */}
+                    <div
+                      className="relative w-full h-full overflow-hidden bg-white"
+                      style={{ borderRadius: 32 }}
+                    >
+                      {/* Notch */}
+                      <div className="absolute top-0 left-1/2 -translate-x-1/2 z-10 bg-neutral-900 h-6 w-32 rounded-b-2xl" />
+                      {/* Status bar */}
+                      <div className="flex items-center justify-between px-6 pt-2 text-[10px] font-semibold text-neutral-800">
+                        <span>9:41</span>
+                        <span />
+                      </div>
+                      {/* Fake store content */}
+                      <div className="px-3 pt-6">
+                        <div className="h-6 bg-neutral-200 rounded-md w-2/3 mb-3" />
+                        <div className="grid grid-cols-2 gap-2.5">
+                          {Array.from({ length: 8 }).map((_, i) => (
+                            <div key={i} className="aspect-square rounded-xl bg-neutral-200/80" />
+                          ))}
                         </div>
+                      </div>
+                      {/* Widget overlay */}
+                      {!cfg.hideStories && (
+                        <>
+                          {cfg.borderStyle === 'pulsar' && (
+                            <>
+                              <PulseRing style={bubbleStyle} delay="0s" color={cfg.color} />
+                              <PulseRing style={bubbleStyle} delay="2.66s" color={cfg.color} />
+                              <PulseRing style={bubbleStyle} delay="5.33s" color={cfg.color} />
+                            </>
+                          )}
+                          <div style={bubbleStyle}>
+                            {cfg.allowClose && (
+                              <div className="absolute top-1 right-1 w-5 h-5 grid place-items-center rounded-full bg-black/60 text-white">
+                                <X className="w-3 h-3" />
+                              </div>
+                            )}
+                          </div>
+                          {cfg.cta && (
+                            <div style={{ ...ctaBase, ...(ctaVisible ? ctaShown : ctaHidden) }}>
+                              {cfg.cta.toUpperCase()}
+                            </div>
+                          )}
+                        </>
                       )}
                     </div>
-                    {cfg.cta && (
-                      <div style={{ ...ctaBase, ...(ctaVisible ? ctaShown : ctaHidden) }}>
-                        {cfg.cta.toUpperCase()}
+                  </div>
+                </div>
+              ) : (
+                <div className="relative mx-auto w-full" style={{ maxWidth: 760 }}>
+                  {/* Browser window */}
+                  <div className="bg-neutral-100 border border-neutral-300 rounded-t-xl overflow-hidden shadow-[0_20px_50px_-12px_rgba(0,0,0,0.25)]">
+                    {/* Title bar */}
+                    <div className="flex items-center gap-2 px-4 h-9 bg-neutral-200/80 border-b border-neutral-300">
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-3 h-3 rounded-full bg-[#ff5f57]" />
+                        <span className="w-3 h-3 rounded-full bg-[#febc2e]" />
+                        <span className="w-3 h-3 rounded-full bg-[#28c840]" />
                       </div>
-                    )}
-                  </>
-                )}
-              </div>
+                      <div className="mx-auto bg-white border border-neutral-300 rounded-md h-6 px-3 flex items-center text-[11px] text-neutral-500 min-w-[240px] max-w-[360px] w-full justify-center">
+                        minhaloja.com.br
+                      </div>
+                    </div>
+                    {/* Viewport */}
+                    <div className="relative bg-white" style={{ height: 460 }}>
+                      <div className="px-6 pt-5">
+                        <div className="h-7 bg-neutral-200 rounded-md w-1/3 mb-4" />
+                        <div className="grid grid-cols-4 gap-4">
+                          {Array.from({ length: 12 }).map((_, i) => (
+                            <div key={i} className="aspect-square rounded-xl bg-neutral-200/80" />
+                          ))}
+                        </div>
+                      </div>
+                      {!cfg.hideStories && (
+                        <>
+                          {cfg.borderStyle === 'pulsar' && (
+                            <>
+                              <PulseRing style={bubbleStyle} delay="0s" color={cfg.color} />
+                              <PulseRing style={bubbleStyle} delay="2.66s" color={cfg.color} />
+                              <PulseRing style={bubbleStyle} delay="5.33s" color={cfg.color} />
+                            </>
+                          )}
+                          <div style={bubbleStyle}>
+                            {cfg.allowClose && (
+                              <div className="absolute top-1 right-1 w-5 h-5 grid place-items-center rounded-full bg-black/60 text-white">
+                                <X className="w-3 h-3" />
+                              </div>
+                            )}
+                          </div>
+                          {cfg.cta && (
+                            <div style={{ ...ctaBase, ...(ctaVisible ? ctaShown : ctaHidden) }}>
+                              {cfg.cta.toUpperCase()}
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  {/* Monitor stand */}
+                  <div className="mx-auto w-32 h-3 bg-neutral-300 rounded-b-xl" />
+                  <div className="mx-auto w-48 h-1.5 bg-neutral-400/70 rounded-full mt-1" />
+                </div>
+              )}
             </div>
 
             {/* Controls */}
