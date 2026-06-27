@@ -98,7 +98,10 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
             autoPlay
             loop
             muted
+            defaultMuted
             playsInline
+            preload="auto"
+            disableRemotePlayback
             className="absolute inset-0 w-full h-full object-cover"
           />
           {/* product card */}
