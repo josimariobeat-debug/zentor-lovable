@@ -303,8 +303,8 @@ export default function AppearanceEditor() {
                     {cfg.borderStyle === 'pulsar' && (
                       <>
                         <PulseRing style={bubbleStyle} delay="0s" color={cfg.color} />
-                        <PulseRing style={bubbleStyle} delay="0.9s" color={cfg.color} />
-                        <PulseRing style={bubbleStyle} delay="1.8s" color={cfg.color} />
+                        <PulseRing style={bubbleStyle} delay="1.2s" color={cfg.color} />
+                        <PulseRing style={bubbleStyle} delay="2.4s" color={cfg.color} />
                       </>
                     )}
                     <div style={bubbleStyle}>
@@ -574,10 +574,10 @@ function PulseRing({ style, delay, color }: { style: React.CSSProperties; delay:
     ...style,
     backgroundImage: 'none',
     backgroundColor: 'transparent',
-    border: `2px solid ${color}`,
+    border: `4px solid ${color}`,
     zIndex: 1,
     pointerEvents: 'none',
-    animation: `zt-pulse-ring 2.4s cubic-bezier(.22,.61,.36,1) ${delay} infinite`,
+    animation: `zt-pulse-ring 3.6s cubic-bezier(.22,.61,.36,1) ${delay} infinite`,
     willChange: 'transform, opacity',
   };
   return (
