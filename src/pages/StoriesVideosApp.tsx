@@ -1323,147 +1323,68 @@ function AddMeasureModelModal({
 // Measure Preview Modal — mannequin outline + measurements table
 // ============================================================
 
+import mannequinUrl from '@/assets/mannequin.svg';
+
+// Guide anchors expressed in the user-supplied mannequin viewBox (242 x 727).
+// Tuned to match the anatomical landmarks of src/assets/mannequin.svg.
+const MANNEQUIN_VB = { w: 242, h: 727 };
+const ANCHORS = {
+  shoulder: 118,
+  bust: 215,
+  biceps: 245,
+  waist: 285,
+  hip: 360,
+  crotch: 420,
+  ankle: 705,
+};
+
 function MannequinSVG({ activeTypes }: { activeTypes: MeasureType[] }) {
   const isActive = (t: MeasureType) => activeTypes.includes(t);
   const GUIDE = '#ef4444';
-  const STROKE = '#111827';
   const LABEL = '#4b5563';
-  // Anchors used by both the body paths and the guide lines so the dashed
-  // references always land on the correct anatomical landmark.
-  const Y = {
-    bust: 232,
-    waist: 296,
-    hip: 372,
-    biceps: 268,
-    shoulder: 168,
-    ankle: 706,
-    crotch: 432,
-  };
+  const { w, h } = MANNEQUIN_VB;
   return (
-    <svg viewBox="0 0 400 760" className="w-full h-auto max-h-[560px]" aria-hidden="true">
-      <g fill="none" stroke={STROKE} strokeWidth="1.3" strokeLinejoin="round" strokeLinecap="round">
-        {/* Head */}
-        <ellipse cx="200" cy="78" rx="32" ry="42" />
-        {/* Jaw hint */}
-        <path d="M178 102 C188 118 212 118 222 102" opacity="0.35" />
-        {/* Ear hints */}
-        <path d="M168 80 C166 86 166 92 168 96" opacity="0.4" />
-        <path d="M232 80 C234 86 234 92 232 96" opacity="0.4" />
-        {/* Neck */}
-        <path d="M186 118 C186 132 184 142 178 152" />
-        <path d="M214 118 C214 132 216 142 222 152" />
-        {/* Collarbone */}
-        <path d="M170 162 C188 170 212 170 230 162" opacity="0.5" />
-        <path d="M200 152 L200 178" opacity="0.35" />
-        {/* Shoulders → torso silhouette (one continuous outline) */}
-        <path d="
-          M178 152
-          C158 156 142 162 130 172
-          C124 178 122 184 124 190
-          C134 196 146 200 158 200
-          C162 214 168 226 176 236
-          C184 246 188 256 188 266
-          C184 280 178 296 176 312
-          C176 332 184 352 196 372
-          C204 392 208 412 208 432
-        " />
-        <path d="
-          M222 152
-          C242 156 258 162 270 172
-          C276 178 278 184 276 190
-          C266 196 254 200 242 200
-          C238 214 232 226 224 236
-          C216 246 212 256 212 266
-          C216 280 222 296 224 312
-          C224 332 216 352 204 372
-          C196 392 192 412 192 432
-        " />
-        {/* Bust curves */}
-        <path d="M172 214 C182 232 194 240 200 240 C206 240 218 232 228 214" opacity="0.7" />
-        <circle cx="184" cy="226" r="1.4" fill={STROKE} opacity="0.55" />
-        <circle cx="216" cy="226" r="1.4" fill={STROKE} opacity="0.55" />
-        {/* Sternum */}
-        <path d="M200 192 L200 240" opacity="0.25" />
-        {/* Navel */}
-        <circle cx="200" cy="316" r="1.6" fill={STROKE} opacity="0.55" />
-        {/* Inner thigh seam */}
-        <path d="M200 392 L200 432" opacity="0.3" />
-
-        {/* Arms — left (outer + inner) */}
-        <path d="M130 172 C118 210 110 252 108 296 C108 336 114 372 122 404 C126 420 130 432 134 442" />
-        <path d="M158 200 C152 232 148 268 148 304 C150 334 156 362 164 388 C168 404 172 416 176 426" />
-        {/* Hand left */}
-        <path d="M134 442 C130 454 128 466 132 472 C140 472 148 466 152 458 C154 452 154 444 152 438 L152 438" />
-        <path d="M176 426 C172 438 168 452 170 460 C172 466 178 470 184 466" opacity="0.6" />
-        {/* Arms — right */}
-        <path d="M270 172 C282 210 290 252 292 296 C292 336 286 372 278 404 C274 420 270 432 266 442" />
-        <path d="M242 200 C248 232 252 268 252 304 C250 334 244 362 236 388 C232 404 228 416 224 426" />
-        {/* Hand right */}
-        <path d="M266 442 C270 454 272 466 268 472 C260 472 252 466 248 458 C246 452 246 444 248 438" />
-        <path d="M224 426 C228 438 232 452 230 460 C228 466 222 470 216 466" opacity="0.6" />
-
-        {/* Legs — left */}
-        <path d="
-          M188 432
-          C180 470 172 512 168 556
-          C166 596 168 636 172 672
-          C174 692 178 702 184 710
-        " />
-        <path d="
-          M200 432
-          C200 472 200 512 198 552
-          C196 596 196 636 196 672
-          C196 692 192 702 188 710
-        " />
-        {/* Legs — right */}
-        <path d="
-          M212 432
-          C220 470 228 512 232 556
-          C234 596 232 636 228 672
-          C226 692 222 702 216 710
-        " />
-        <path d="
-          M200 432
-          C200 472 200 512 202 552
-          C204 596 204 636 204 672
-          C204 692 208 702 212 710
-        " opacity="0.6" />
-        {/* Knees */}
-        <path d="M178 558 C184 562 192 562 196 558" opacity="0.45" />
-        <path d="M204 558 C208 562 216 562 222 558" opacity="0.45" />
-        {/* Feet */}
-        <path d="M184 710 C180 720 178 728 184 732 C194 732 200 726 200 718 L200 712" />
-        <path d="M216 710 C220 720 222 728 216 732 C206 732 200 726 200 718" />
-      </g>
-
-      {/* Measurement guides — red dashed references */}
-      <g stroke={GUIDE} strokeWidth="1.4" strokeDasharray="5 5" fill="none">
-        {isActive('Busto')    && <line x1="58"  y1={Y.bust}    x2="340" y2={Y.bust} />}
-        {isActive('Cintura')  && <line x1="58"  y1={Y.waist}   x2="340" y2={Y.waist} />}
-        {isActive('Quadril')  && <line x1="58"  y1={Y.hip}     x2="340" y2={Y.hip} />}
-        {isActive('Bíceps')   && <line x1="78"  y1={Y.biceps}  x2="322" y2={Y.biceps} />}
-        {isActive('Manga')    && <line x1="86"  y1={Y.shoulder} x2="86"  y2={Y.ankle - 280} />}
-        {isActive('Comprimento') && <line x1="320" y1={Y.shoulder} x2="320" y2={Y.ankle} />}
-        {isActive('Dentro da Perna') && <line x1="200" y1={Y.crotch}  x2="200" y2={Y.ankle} />}
-      </g>
-
-      {/* Labels */}
-      <g fontFamily="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" fontSize="13" fill={LABEL}>
-        {isActive('Busto')    && <text x="62" y={Y.bust - 6}>Busto</text>}
-        {isActive('Cintura')  && <text x="62" y={Y.waist - 6}>Cintura</text>}
-        {isActive('Quadril')  && <text x="62" y={Y.hip - 6}>Quadril</text>}
-        {isActive('Bíceps')   && <text x="82" y={Y.biceps - 6}>Bíceps</text>}
-        {isActive('Manga')    && <text x="54" y={Y.shoulder - 6}>Manga</text>}
-        {isActive('Comprimento') && (
-          <text x="332" y={(Y.shoulder + Y.ankle) / 2} transform={`rotate(90 332 ${(Y.shoulder + Y.ankle) / 2})`} textAnchor="middle">Comprimento</text>
-        )}
-        {isActive('Dentro da Perna') && (
-          <text x="212" y={(Y.crotch + Y.ankle) / 2} transform={`rotate(90 212 ${(Y.crotch + Y.ankle) / 2})`} textAnchor="middle">Dentro da Perna</text>
-        )}
-      </g>
-    </svg>
+    <div className="relative mx-auto w-full max-w-[320px]" style={{ aspectRatio: `${w} / ${h}` }}>
+      <img
+        src={mannequinUrl}
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 h-full w-full object-contain select-none pointer-events-none"
+        draggable={false}
+      />
+      <svg
+        viewBox={`0 0 ${w} ${h}`}
+        preserveAspectRatio="xMidYMid meet"
+        className="absolute inset-0 h-full w-full"
+        aria-hidden="true"
+      >
+        <g stroke={GUIDE} strokeWidth="1.4" strokeDasharray="5 4" fill="none">
+          {isActive('Busto')    && <line x1="0"   y1={ANCHORS.bust}    x2={w} y2={ANCHORS.bust} />}
+          {isActive('Cintura')  && <line x1="0"   y1={ANCHORS.waist}   x2={w} y2={ANCHORS.waist} />}
+          {isActive('Quadril')  && <line x1="0"   y1={ANCHORS.hip}     x2={w} y2={ANCHORS.hip} />}
+          {isActive('Bíceps')   && <line x1="12"  y1={ANCHORS.biceps}  x2={w - 12} y2={ANCHORS.biceps} />}
+          {isActive('Manga')    && <line x1="18"  y1={ANCHORS.shoulder} x2="18" y2={ANCHORS.crotch - 20} />}
+          {isActive('Comprimento') && <line x1={w - 18} y1={ANCHORS.shoulder} x2={w - 18} y2={ANCHORS.ankle} />}
+          {isActive('Dentro da Perna') && <line x1={w / 2} y1={ANCHORS.crotch} x2={w / 2} y2={ANCHORS.ankle} />}
+        </g>
+        <g fontFamily="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" fontSize="13" fill={LABEL}>
+          {isActive('Busto')    && <text x="4" y={ANCHORS.bust - 4}>Busto</text>}
+          {isActive('Cintura')  && <text x="4" y={ANCHORS.waist - 4}>Cintura</text>}
+          {isActive('Quadril')  && <text x="4" y={ANCHORS.hip - 4}>Quadril</text>}
+          {isActive('Bíceps')   && <text x="14" y={ANCHORS.biceps - 4}>Bíceps</text>}
+          {isActive('Manga')    && <text x="22" y={ANCHORS.shoulder - 4}>Manga</text>}
+          {isActive('Comprimento') && (
+            <text x={w - 6} y={(ANCHORS.shoulder + ANCHORS.ankle) / 2} transform={`rotate(90 ${w - 6} ${(ANCHORS.shoulder + ANCHORS.ankle) / 2})`} textAnchor="middle">Comprimento</text>
+          )}
+          {isActive('Dentro da Perna') && (
+            <text x={w / 2 + 10} y={(ANCHORS.crotch + ANCHORS.ankle) / 2} transform={`rotate(90 ${w / 2 + 10} ${(ANCHORS.crotch + ANCHORS.ankle) / 2})`} textAnchor="middle">Dentro da Perna</text>
+          )}
+        </g>
+      </svg>
+    </div>
   );
 }
+
 
 function MeasurePreviewModal({ model, onClose }: { model: MeasureModel | null; onClose: () => void }) {
   const open = !!model;
