@@ -1186,7 +1186,8 @@ function AddMeasureModelModal({
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
-      <DialogContent className="w-[calc(100%-2rem)] sm:w-full max-w-2xl mx-auto my-auto p-0 overflow-hidden">
+      <DialogContent className="w-full max-w-[min(100%,42rem)] sm:max-w-2xl mx-auto my-auto p-0 overflow-hidden max-h-[calc(100vh-2rem)] flex flex-col">
+
         <form onSubmit={handleSubmit} noValidate>
           <div className="px-6 pt-5">
             <DialogHeader>
