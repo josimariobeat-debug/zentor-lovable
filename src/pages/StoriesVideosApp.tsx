@@ -279,11 +279,7 @@ export default function StoriesVideosApp() {
               </div>
               <div data-ev-id="ev_aacd465337" className="flex items-center gap-2">
                 <button data-ev-id="ev_e16aead214"
-                onClick={() =>
-                toast.message('Configurar Aparência', {
-                  description: 'Em breve você editará cores e formato do widget.'
-                })
-                }
+                onClick={() => setSp({ tab: 'aparencia' }, { replace: true })}
                 className="inline-flex items-center gap-2 text-[13.5px] font-medium text-neutral-700 border border-neutral-200 hover:bg-neutral-50 px-4 py-2.5 rounded-xl transition-colors">
 
                   <Settings2 className="w-4 h-4" /> Configurar Aparência
