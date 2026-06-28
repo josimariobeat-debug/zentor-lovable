@@ -57,10 +57,18 @@ function TabsTrigger({ value, children, className }: {value: string;children: Re
 
 function TabsContent({ value, children, className }: {value: string;children: React.ReactNode;className?: string;}) {
   const ctx = React.useContext(TabsContext)!;
-  if (ctx.value !== value) return null;
+  const isActive = ctx.value === value;
 
+  // Keep all tab panels mounted so their child state (and any fetched data)
+  // persists across tab switches — no skeleton flicker on re-entry.
   return (
-    <div data-ev-id="ev_15019aad3f" className={cn('fade-in', className)}>
+    <div
+      data-ev-id="ev_15019aad3f"
+      role="tabpanel"
+      data-state={isActive ? 'active' : 'inactive'}
+      hidden={!isActive}
+      className={cn(isActive && 'fade-in', className)}
+    >
       {children}
     </div>);
 
