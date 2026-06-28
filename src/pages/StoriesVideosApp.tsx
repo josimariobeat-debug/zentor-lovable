@@ -870,11 +870,11 @@ function AddProductModal({
             Voltar
           </button>
           <button
-            disabled={!valid}
+            disabled={!valid || saving}
             onClick={() => onAdd({ name: name.trim(), price: price.trim(), currency, url: url.trim(), image })}
             className="inline-flex items-center gap-2 h-10 px-4 text-[13.5px] font-medium text-white bg-neutral-900 hover:bg-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl transition-colors">
 
-            <Plus className="w-4 h-4" /> Adicionar produto
+            <Plus className="w-4 h-4" /> {saving ? 'Salvando…' : 'Adicionar produto'}
           </button>
         </div>
       </DialogContent>
