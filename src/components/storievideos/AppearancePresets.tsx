@@ -3,7 +3,8 @@ import { useNavigate, useParams } from 'react-router';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/components/ui/toaster';
-import { Plus, Copy, Pencil, Trash2, Loader2, Sparkles, LayoutGrid } from 'lucide-react';
+import { Plus, Copy, Pencil, Trash2, Sparkles, LayoutGrid } from 'lucide-react';
+import { StoriesRowsSkeleton } from '@/components/ui/skeleton';
 import type { Tables } from '@/integrations/supabase/helpers';
 
 type Preset = Tables<'appearance_presets'>;
@@ -96,9 +97,7 @@ export default function AppearancePresets() {
       </div>
 
       {loading ? (
-        <div className="bg-white border border-neutral-200 rounded-2xl p-16 flex items-center gap-2 text-sm text-neutral-500 justify-center">
-          <Loader2 className="w-4 h-4 animate-spin" /> Carregando…
-        </div>
+        <StoriesRowsSkeleton count={3} />
       ) : pageItems.length === 0 ? (
         <div className="border border-dashed border-neutral-300 rounded-2xl p-16 text-center text-neutral-500">
           Nenhum padrão criado ainda. Clique em <b className="text-neutral-700">Adicionar</b> para começar.
