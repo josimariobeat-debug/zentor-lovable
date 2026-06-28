@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/components/ui/toaster';
-import { Plus, Copy, Pencil, Trash2, Loader2 } from 'lucide-react';
+import { Plus, Copy, Pencil, Trash2, Loader2, Sparkles, LayoutGrid } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/helpers';
 
 type Preset = Tables<'appearance_presets'>;
@@ -95,27 +95,34 @@ export default function AppearancePresets() {
         </button>
       </div>
 
-      <div className="bg-white border border-neutral-200 rounded-2xl p-6">
-
-
-      <div className="mt-4 overflow-hidden">
-        <div className="grid grid-cols-[1fr_auto] text-xs uppercase tracking-wide text-neutral-500 font-medium border-b border-neutral-200 pb-3">
-          <div>Nome</div>
-          <div className="text-right pr-1">Ações</div>
+      {loading ? (
+        <div className="bg-white border border-neutral-200 rounded-2xl p-16 flex items-center gap-2 text-sm text-neutral-500 justify-center">
+          <Loader2 className="w-4 h-4 animate-spin" /> Carregando…
         </div>
-
-        {loading ? (
-          <div className="flex items-center gap-2 py-10 text-sm text-neutral-500 justify-center">
-            <Loader2 className="w-4 h-4 animate-spin" /> Carregando…
-          </div>
-        ) : pageItems.length === 0 ? (
-          <div className="py-12 text-center text-sm text-neutral-500">
-            Nenhum padrão criado ainda. Clique em <strong>Adicionar</strong> para começar.
-          </div>
-        ) : (
-          pageItems.map((p) => (
-            <div key={p.id} className="grid grid-cols-[1fr_auto] items-center py-4 border-b border-neutral-100">
-              <div className="text-sm text-neutral-800">{p.name}</div>
+      ) : pageItems.length === 0 ? (
+        <div className="border border-dashed border-neutral-300 rounded-2xl p-16 text-center text-neutral-500">
+          Nenhum padrão criado ainda. Clique em <b className="text-neutral-700">Adicionar</b> para começar.
+        </div>
+      ) : (
+        <div className="bg-white border border-neutral-200 rounded-2xl overflow-hidden">
+          {pageItems.map((p, idx) => (
+            <div
+              key={p.id}
+              className={`flex items-center gap-4 px-5 py-4 ${idx !== pageItems.length - 1 ? 'border-b border-neutral-100' : ''}`}
+            >
+              <div className="w-14 shrink-0 aspect-[3/4] bg-neutral-100 rounded-lg flex items-center justify-center text-neutral-400">
+                {p.kind === 'carousel'
+                  ? <LayoutGrid className="w-5 h-5" />
+                  : <Sparkles className="w-5 h-5" />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="text-[14.5px] font-semibold text-neutral-900 truncate">{p.name}</h4>
+                <div className="flex items-center gap-3 mt-1 text-[12.5px] text-neutral-500">
+                  <span className="uppercase tracking-wider font-semibold text-[10px] bg-neutral-100 text-neutral-700 px-2 py-0.5 rounded">
+                    {p.kind === 'carousel' ? 'Carrossel' : 'Widget Flutuante'}
+                  </span>
+                </div>
+              </div>
               <div className="flex items-center gap-2">
                 <button
                   title="Duplicar"
@@ -140,9 +147,9 @@ export default function AppearancePresets() {
                 </button>
               </div>
             </div>
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Pagination */}
       <div className="flex flex-wrap items-center justify-between gap-3 mt-5 text-sm text-neutral-600">
@@ -180,9 +187,8 @@ export default function AppearancePresets() {
           </div>
         </div>
       </div>
-
-      </div>
     </div>
   );
 }
+
 
