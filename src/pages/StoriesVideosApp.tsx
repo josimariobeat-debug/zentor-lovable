@@ -26,7 +26,8 @@ import {
   Upload,
   Check,
   CheckSquare,
-  Package } from
+  Package,
+  Loader2 } from
 'lucide-react';
 
 type Story = Tables<'stories'>;
