@@ -1231,32 +1231,77 @@ function AddMeasureModelModal({
                 </div>
                 <div className="divide-y divide-neutral-100">
                   {rows.map((r) =>
-                  <div key={r.id} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_64px_36px] sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_110px_36px] gap-1.5 sm:gap-2 p-2">
-                      <Input
-                      value={r.tamanho}
-                      onChange={(e) => updateRow(r.id, { tamanho: e.target.value })}
-                      placeholder="Tam."
-                      className="h-10 rounded-lg border-neutral-200 min-w-0" />
-                      <select
-                      value={r.medida}
-                      onChange={(e) => updateRow(r.id, { medida: e.target.value as MeasureType })}
-                      aria-label="Medida"
-                      className="h-10 rounded-lg border border-neutral-200 bg-white px-2 text-[13px] sm:text-[13.5px] text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900/10 min-w-0">
-                        {MEASURE_TYPES.map((m) => <option key={m} value={m}>{m}</option>)}
-                      </select>
-                      <Input
-                      value={r.valor}
-                      onChange={(e) => updateRow(r.id, { valor: e.target.value.replace(/[^\d.,]/g, '') })}
-                      placeholder="0"
-                      inputMode="decimal"
-                      className="h-10 rounded-lg border-neutral-200 min-w-0 px-2 text-center sm:text-left" />
-                      <button
-                      type="button"
-                      onClick={() => removeRow(r.id)}
-                      aria-label="Remover linha"
-                      className="w-9 h-10 rounded-lg hover:bg-red-50 hover:text-red-600 flex items-center justify-center text-neutral-500 transition-colors justify-self-end shrink-0">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                  <div key={r.id} className="p-2 sm:p-2">
+                      {/* Mobile: stacked card with labels */}
+                      <div className="sm:hidden flex flex-col gap-2 p-1">
+                        <div className="flex items-start gap-2">
+                          <div className="flex-1 min-w-0">
+                            <label className="text-[11px] font-medium text-neutral-500 uppercase tracking-wide block mb-1">Tamanho</label>
+                            <Input
+                              value={r.tamanho}
+                              onChange={(e) => updateRow(r.id, { tamanho: e.target.value })}
+                              placeholder="Ex.: P, M, G"
+                              className="h-10 rounded-lg border-neutral-200 min-w-0" />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeRow(r.id)}
+                            aria-label="Remover linha"
+                            className="w-9 h-10 mt-[22px] rounded-lg hover:bg-red-50 hover:text-red-600 flex items-center justify-center text-neutral-500 transition-colors shrink-0">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-[minmax(0,1fr)_96px] gap-2">
+                          <div className="min-w-0">
+                            <label className="text-[11px] font-medium text-neutral-500 uppercase tracking-wide block mb-1">Medida</label>
+                            <select
+                              value={r.medida}
+                              onChange={(e) => updateRow(r.id, { medida: e.target.value as MeasureType })}
+                              aria-label="Medida"
+                              className="w-full h-10 rounded-lg border border-neutral-200 bg-white px-2 text-[13px] text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900/10 min-w-0">
+                              {MEASURE_TYPES.map((m) => <option key={m} value={m}>{m}</option>)}
+                            </select>
+                          </div>
+                          <div className="min-w-0">
+                            <label className="text-[11px] font-medium text-neutral-500 uppercase tracking-wide block mb-1">Valor (cm)</label>
+                            <Input
+                              value={r.valor}
+                              onChange={(e) => updateRow(r.id, { valor: e.target.value.replace(/[^\d.,]/g, '') })}
+                              placeholder="0"
+                              inputMode="decimal"
+                              className="h-10 rounded-lg border-neutral-200 min-w-0 px-2 text-center" />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Desktop: table-style grid */}
+                      <div className="hidden sm:grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_110px_36px] gap-2">
+                        <Input
+                          value={r.tamanho}
+                          onChange={(e) => updateRow(r.id, { tamanho: e.target.value })}
+                          placeholder="Tam."
+                          className="h-10 rounded-lg border-neutral-200 min-w-0" />
+                        <select
+                          value={r.medida}
+                          onChange={(e) => updateRow(r.id, { medida: e.target.value as MeasureType })}
+                          aria-label="Medida"
+                          className="h-10 rounded-lg border border-neutral-200 bg-white px-2 text-[13.5px] text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900/10 min-w-0">
+                          {MEASURE_TYPES.map((m) => <option key={m} value={m}>{m}</option>)}
+                        </select>
+                        <Input
+                          value={r.valor}
+                          onChange={(e) => updateRow(r.id, { valor: e.target.value.replace(/[^\d.,]/g, '') })}
+                          placeholder="0"
+                          inputMode="decimal"
+                          className="h-10 rounded-lg border-neutral-200 min-w-0 px-2" />
+                        <button
+                          type="button"
+                          onClick={() => removeRow(r.id)}
+                          aria-label="Remover linha"
+                          className="w-9 h-10 rounded-lg hover:bg-red-50 hover:text-red-600 flex items-center justify-center text-neutral-500 transition-colors justify-self-end shrink-0">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   )}
                   {rows.length === 0 &&
@@ -1266,6 +1311,7 @@ function AddMeasureModelModal({
                   }
                 </div>
               </div>
+
               {touched && rowsError && <p className="text-[12px] text-red-600 mt-1">{rowsError}</p>}
             </div>
           </div>
