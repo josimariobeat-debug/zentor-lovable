@@ -568,8 +568,8 @@ function PlaceholderTab({ label }: {label: string;}) {
 }
 
 type ProductRow = {id: string;name: string;price: string;currency: string;url: string;image: string | null;};
-type MeasureType = 'Busto' | 'Quadril' | 'Cintura' | 'Manga' | 'Comprimento' | 'Dentro da Perna' | 'Bíceps';
-const MEASURE_TYPES: MeasureType[] = ['Busto', 'Quadril', 'Cintura', 'Manga', 'Comprimento', 'Dentro da Perna', 'Bíceps'];
+type MeasureType = 'Busto' | 'Quadril' | 'Cintura' | 'Manga' | 'Altura' | 'Dentro da Perna' | 'Bíceps';
+const MEASURE_TYPES: MeasureType[] = ['Busto', 'Quadril', 'Cintura', 'Manga', 'Altura', 'Dentro da Perna', 'Bíceps'];
 type MeasureRow = {id: string;tamanho: string;medida: MeasureType;valor: string;};
 type MeasureModel = {id: string;name: string;rows: MeasureRow[]};
 
@@ -1336,7 +1336,7 @@ const HORIZONTAL_MEASURES: Partial<Record<MeasureType, { y: number; x1?: number;
 
 // Vertical guide segments keyed by measure type: { x, y1, y2 }.
 const VERTICAL_MEASURES: Partial<Record<MeasureType, { x: number; y1: number; y2: number }>> = {
-  Comprimento:        { x: 220, y1: 70,  y2: 700 }, // shoulder → ankle (side)
+  Altura:        { x: 220, y1: 70,  y2: 700 }, // shoulder → ankle (side)
   Manga:              { x: 36,  y1: 175, y2: 360 }, // shoulder → wrist (arm)
   'Dentro da Perna':  { x: 121, y1: 372, y2: 695 }, // crotch → ankle (inner leg)
 };
@@ -1393,8 +1393,8 @@ function MannequinSVG({ activeTypes }: { activeTypes: MeasureType[] }) {
           {(Object.entries(VERTICAL_MEASURES) as [MeasureType, { x: number; y1: number; y2: number }][])
             .filter(([m]) => isActive(m))
             .map(([label, cfg]) => {
-              const cy = (cfg.y1 + cfg.y2) / 2 + (label === 'Comprimento' ? 20 : 0);
-              const tx = cfg.x + (label === 'Comprimento' ? 15 : 10);
+              const cy = (cfg.y1 + cfg.y2) / 2 + (label === 'Altura' ? 20 : 0);
+              const tx = cfg.x + (label === 'Altura' ? 15 : 10);
               return (
                 <g key={label}>
                   <line x1={cfg.x} x2={cfg.x} y1={cfg.y1} y2={cfg.y2} stroke="#ef4444" strokeWidth={1.2} strokeDasharray="4 3" />
