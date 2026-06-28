@@ -63,12 +63,8 @@ export function ConfirmDeleteDialog({
               <AlertTriangle className="w-5 h-5 text-red-600" />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-[16px] font-semibold text-neutral-900">
-                <DialogTitle>{title}</DialogTitle>
-              </div>
-              <div className="mt-1 text-[13.5px] text-neutral-600 leading-relaxed">
-                <DialogDescription>{description ?? defaultDescription}</DialogDescription>
-              </div>
+              <DialogTitle>{title}</DialogTitle>
+              <DialogDescription>{description ?? defaultDescription}</DialogDescription>
             </div>
           </div>
         </DialogHeader>
