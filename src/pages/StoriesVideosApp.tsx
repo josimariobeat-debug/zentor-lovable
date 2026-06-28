@@ -1334,9 +1334,8 @@ const MEASURE_Y: Record<string, number> = {
 };
 
 function MannequinSVG({ activeTypes }: { activeTypes: MeasureType[] }) {
-  const lines = (['Busto', 'Cintura', 'Quadril'] as const).filter((m) =>
-    activeTypes.includes(m as MeasureType),
-  );
+  const ALWAYS = ['Busto', 'Cintura', 'Quadril'] as const;
+  const lines = ALWAYS.filter((m) => activeTypes.length === 0 || activeTypes.includes(m as MeasureType));
 
   return (
     <div className="mx-auto flex w-full justify-center">
