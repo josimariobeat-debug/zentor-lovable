@@ -1188,8 +1188,8 @@ function AddMeasureModelModal({
     <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
       <DialogContent className="w-full max-w-[min(100%,42rem)] sm:max-w-2xl mx-auto my-auto p-0 overflow-hidden max-h-[calc(100vh-2rem)] flex flex-col">
 
-        <form onSubmit={handleSubmit} noValidate>
-          <div className="px-6 pt-5">
+        <form onSubmit={handleSubmit} noValidate className="flex flex-col min-h-0 flex-1">
+          <div className="px-4 sm:px-6 pt-5 shrink-0">
             <DialogHeader>
               <DialogTitle>{isEdit ? 'Editar modelo' : 'Adicionar modelo'}</DialogTitle>
               <DialogDescription>
@@ -1198,7 +1198,7 @@ function AddMeasureModelModal({
             </DialogHeader>
           </div>
 
-          <div className="px-6 py-4 space-y-5">
+          <div className="px-4 sm:px-6 py-4 space-y-5 overflow-y-auto flex-1 min-h-0">
             <div>
               <label className="text-[12.5px] font-medium text-neutral-600 mb-1.5 block">Nome do Modelo</label>
               <Input
@@ -1212,18 +1212,18 @@ function AddMeasureModelModal({
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-2 gap-2">
                 <label className="text-[12.5px] font-medium text-neutral-600">Tabela de Medidas</label>
                 <button
                   type="button"
                   onClick={addRow}
-                  className="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-neutral-700 hover:bg-neutral-100 px-2.5 py-1.5 rounded-lg transition-colors">
+                  className="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-neutral-700 hover:bg-neutral-100 px-2.5 py-1.5 rounded-lg transition-colors shrink-0">
                   <Plus className="w-3.5 h-3.5" /> Adicionar linha
                 </button>
               </div>
 
               <div className="border border-neutral-200 rounded-xl overflow-hidden">
-                <div className="hidden sm:grid grid-cols-[1fr_1fr_110px_36px] gap-2 px-3 py-2 bg-neutral-50 text-[11.5px] font-medium text-neutral-500 uppercase tracking-wide">
+                <div className="hidden sm:grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_110px_36px] gap-2 px-3 py-2 bg-neutral-50 text-[11.5px] font-medium text-neutral-500 uppercase tracking-wide">
                   <div>Nome do Tamanho</div>
                   <div>Medida</div>
                   <div>Valor (cm)</div>
@@ -1231,17 +1231,17 @@ function AddMeasureModelModal({
                 </div>
                 <div className="divide-y divide-neutral-100">
                   {rows.map((r) =>
-                  <div key={r.id} className="grid grid-cols-2 sm:grid-cols-[1fr_1fr_110px_36px] gap-2 p-2">
+                  <div key={r.id} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_64px_36px] sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_110px_36px] gap-1.5 sm:gap-2 p-2">
                       <Input
                       value={r.tamanho}
                       onChange={(e) => updateRow(r.id, { tamanho: e.target.value })}
-                      placeholder="Ex.: P, M, G"
-                      className="h-10 rounded-lg border-neutral-200" />
+                      placeholder="Tam."
+                      className="h-10 rounded-lg border-neutral-200 min-w-0" />
                       <select
                       value={r.medida}
                       onChange={(e) => updateRow(r.id, { medida: e.target.value as MeasureType })}
                       aria-label="Medida"
-                      className="h-10 rounded-lg border border-neutral-200 bg-white px-2.5 text-[13.5px] text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900/10">
+                      className="h-10 rounded-lg border border-neutral-200 bg-white px-2 text-[13px] sm:text-[13.5px] text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900/10 min-w-0">
                         {MEASURE_TYPES.map((m) => <option key={m} value={m}>{m}</option>)}
                       </select>
                       <Input
@@ -1249,12 +1249,12 @@ function AddMeasureModelModal({
                       onChange={(e) => updateRow(r.id, { valor: e.target.value.replace(/[^\d.,]/g, '') })}
                       placeholder="0"
                       inputMode="decimal"
-                      className="h-10 rounded-lg border-neutral-200" />
+                      className="h-10 rounded-lg border-neutral-200 min-w-0 px-2 text-center sm:text-left" />
                       <button
                       type="button"
                       onClick={() => removeRow(r.id)}
                       aria-label="Remover linha"
-                      className="w-9 h-10 rounded-lg hover:bg-red-50 hover:text-red-600 flex items-center justify-center text-neutral-500 transition-colors justify-self-end">
+                      className="w-9 h-10 rounded-lg hover:bg-red-50 hover:text-red-600 flex items-center justify-center text-neutral-500 transition-colors justify-self-end shrink-0">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -1270,7 +1270,8 @@ function AddMeasureModelModal({
             </div>
           </div>
 
-          <div className="px-6 py-4 border-t border-neutral-100 flex items-center justify-end gap-2">
+          <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-neutral-100 flex items-center justify-end gap-2 shrink-0 bg-white">
+
             <button
               type="button"
               onClick={onClose}
