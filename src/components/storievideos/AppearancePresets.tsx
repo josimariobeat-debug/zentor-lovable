@@ -6,6 +6,7 @@ import { toast } from '@/components/ui/toaster';
 import { Plus, Copy, Pencil, Trash2, Sparkles, LayoutGrid } from 'lucide-react';
 import { StoriesRowsSkeleton } from '@/components/ui/skeleton';
 import type { Tables } from '@/integrations/supabase/helpers';
+import { ConfirmDeleteDialog } from '@/components/ui/ConfirmDeleteDialog';
 
 type Preset = Tables<'appearance_presets'>;
 type Kind = 'floating' | 'carousel';
@@ -28,6 +29,7 @@ export default function AppearancePresets() {
   const [loading, setLoading] = useState(!initialCached);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(16);
+  const [toDelete, setToDelete] = useState<Preset | null>(null);
 
   async function load() {
     if (!user) return;
@@ -73,8 +75,7 @@ export default function AppearancePresets() {
     load();
   }
 
-  async function remove(p: Preset) {
-    if (!confirm(`Excluir "${p.name}"?`)) return;
+  async function confirmRemove(p: Preset) {
     const { error } = await supabase.from('appearance_presets').delete().eq('id', p.id);
     if (error) { toast.error('Erro ao excluir'); return; }
     toast.success('Padrão excluído');
@@ -154,7 +155,7 @@ export default function AppearancePresets() {
                 </button>
                 <button
                   title="Excluir"
-                  onClick={() => remove(p)}
+                  onClick={() => setToDelete(p)}
                   className="w-9 h-9 rounded-lg hover:bg-red-50 hover:text-red-600 flex items-center justify-center text-neutral-700 transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -201,6 +202,19 @@ export default function AppearancePresets() {
           </div>
         </div>
       </div>
+
+      <ConfirmDeleteDialog
+        open={!!toDelete}
+        onOpenChange={() => setToDelete(null)}
+        title="Excluir aparência"
+        itemName={toDelete?.name}
+        onConfirm={async () => {
+          if (toDelete) {
+            await confirmRemove(toDelete);
+            setToDelete(null);
+          }
+        }}
+      />
     </div>
   );
 }

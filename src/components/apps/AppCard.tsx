@@ -1,7 +1,7 @@
 import { Play, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { memo, useCallback, useState, type MouseEvent } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { ConfirmDeleteDialog } from '@/components/ui/ConfirmDeleteDialog';
 import { toast } from '@/components/ui/toaster';
 
 interface App {
@@ -77,31 +77,13 @@ function AppCard({ app, onDelete, isExpired = false }: AppCardProps) {
         </button>
       </div>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Excluir aplicativo</DialogTitle>
-            <DialogDescription>
-              Tem certeza que deseja excluir o aplicativo "{app.name}"? Esta ação não pode ser desfeita.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <button data-ev-id="ev_2d82b5d2c6"
-            onClick={() => setShowDeleteConfirm(false)}
-            className="px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100 rounded-lg transition-colors">
-
-              Cancelar
-            </button>
-            <button data-ev-id="ev_bd9f917019"
-            onClick={confirmDelete}
-            className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors">
-
-              Excluir
-            </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmDeleteDialog
+        open={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
+        title="Excluir aplicativo"
+        itemName={app.name}
+        onConfirm={confirmDelete}
+      />
     </>);
 
 }

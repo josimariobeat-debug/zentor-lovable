@@ -6,6 +6,7 @@ import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Skeleton, StoriesRowsSkeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { ConfirmDeleteDialog } from '@/components/ui/ConfirmDeleteDialog';
 import { toast } from '@/components/ui/toaster';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
@@ -484,30 +485,13 @@ export default function StoriesVideosApp() {
       </main>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Excluir story</DialogTitle>
-            <DialogDescription>
-              Tem certeza que deseja excluir o story "{deleteConfirm?.title}"? Esta ação não pode ser desfeita.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <button data-ev-id="ev_8215792ab1"
-            onClick={() => setDeleteConfirm(null)}
-            className="px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100 rounded-lg transition-colors">
-
-              Cancelar
-            </button>
-            <button data-ev-id="ev_f2d9160305"
-            onClick={handleDelete}
-            className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors">
-
-              Excluir
-            </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmDeleteDialog
+        open={!!deleteConfirm}
+        onOpenChange={() => setDeleteConfirm(null)}
+        title="Excluir story"
+        itemName={deleteConfirm?.title}
+        onConfirm={handleDelete}
+      />
 
       {/* Video Preview Dialog */}
       <MediaPreviewModal
@@ -524,30 +508,13 @@ export default function StoriesVideosApp() {
       />
 
       {/* Delete Gallery Item Confirmation */}
-      <Dialog open={!!deleteGalleryConfirm} onOpenChange={() => setDeleteGalleryConfirm(null)}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Excluir mídia</DialogTitle>
-            <DialogDescription>
-              Tem certeza que deseja excluir "{deleteGalleryConfirm?.name || 'esta mídia'}" da galeria? Esta ação não pode ser desfeita.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <button data-ev-id="ev_aa7d6d9c42"
-            onClick={() => setDeleteGalleryConfirm(null)}
-            className="px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100 rounded-lg transition-colors">
-
-              Cancelar
-            </button>
-            <button data-ev-id="ev_994e8cf1c4"
-            onClick={handleDeleteGalleryItem}
-            className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors">
-
-              Excluir
-            </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmDeleteDialog
+        open={!!deleteGalleryConfirm}
+        onOpenChange={() => setDeleteGalleryConfirm(null)}
+        title="Excluir mídia"
+        itemName={deleteGalleryConfirm?.name || 'esta mídia'}
+        onConfirm={handleDeleteGalleryItem}
+      />
     </>);
 
 }
@@ -595,6 +562,8 @@ function ProdutosTab() {
   const [measuresLoading, setMeasuresLoading] = useState(!initialMeasures);
   const [savingMeasure, setSavingMeasure] = useState(false);
   const [previewMeasure, setPreviewMeasure] = useState<MeasureModel | null>(null);
+  const [deleteProduct, setDeleteProduct] = useState<ProductRow | null>(null);
+  const [deleteMeasure, setDeleteMeasure] = useState<MeasureModel | null>(null);
 
 
   useEffect(() => {
@@ -807,7 +776,7 @@ function ProdutosTab() {
                   <Edit2 className="w-4 h-4" />
                 </button>
                 <button
-            onClick={() => handleDelete(p.id)}
+            onClick={() => setDeleteProduct(p)}
             aria-label="Remover produto"
             className="w-9 h-9 rounded-lg hover:bg-red-50 hover:text-red-600 flex items-center justify-center text-neutral-700 transition-colors">
 
@@ -852,7 +821,7 @@ function ProdutosTab() {
                   <Edit2 className="w-4 h-4" />
                 </button>
                 <button
-            onClick={() => deleteMeasureModel(m.id)}
+            onClick={() => setDeleteMeasure(m)}
             aria-label="Remover modelo"
             className="w-9 h-9 rounded-lg hover:bg-red-50 hover:text-red-600 flex items-center justify-center text-neutral-700 transition-colors">
                   <Trash2 className="w-4 h-4" />
@@ -879,6 +848,32 @@ function ProdutosTab() {
       <MeasurePreviewModal
         model={previewMeasure}
         onClose={() => setPreviewMeasure(null)} />
+
+      <ConfirmDeleteDialog
+        open={!!deleteProduct}
+        onOpenChange={() => setDeleteProduct(null)}
+        title="Excluir produto"
+        itemName={deleteProduct?.name}
+        onConfirm={async () => {
+          if (deleteProduct) {
+            await handleDelete(deleteProduct.id);
+            setDeleteProduct(null);
+          }
+        }}
+      />
+
+      <ConfirmDeleteDialog
+        open={!!deleteMeasure}
+        onOpenChange={() => setDeleteMeasure(null)}
+        title="Excluir modelo de medidas"
+        itemName={deleteMeasure?.name}
+        onConfirm={async () => {
+          if (deleteMeasure) {
+            await deleteMeasureModel(deleteMeasure.id);
+            setDeleteMeasure(null);
+          }
+        }}
+      />
 
     </div>);
 
