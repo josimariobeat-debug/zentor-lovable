@@ -1325,67 +1325,19 @@ function AddMeasureModelModal({
 
 import mannequinUrl from '@/assets/mannequin.svg';
 
-// Y positions (in the SVG's own 242x727 viewBox) of the cut marks
-// that exist on the mannequin asset for bust / waist / hip.
-const MEASURE_Y: Record<string, number> = {
-  Busto: 173,
-  Cintura: 227,
-  Quadril: 318,
-};
-
 function MannequinSVG({ activeTypes }: { activeTypes: MeasureType[] }) {
-  const lines = (['Busto', 'Cintura', 'Quadril'] as const).filter((m) =>
-    activeTypes.includes(m as MeasureType),
-  );
+  void activeTypes;
 
   return (
     <div className="mx-auto flex w-full justify-center">
-      <div className="relative w-full max-w-[200px] sm:max-w-[210px]">
-        <img
-          src={mannequinUrl}
-          alt="Manequim"
-          width={242}
-          height={727}
-          className="block h-auto w-full select-none object-contain"
-          draggable={false}
-        />
-        <svg
-          viewBox="0 0 242 727"
-          preserveAspectRatio="xMidYMid meet"
-          className="pointer-events-none absolute inset-0 h-full w-full"
-          aria-hidden
-        >
-          {lines.map((label) => {
-            const y = MEASURE_Y[label];
-            return (
-              <g key={label}>
-                <line
-                  x1={8}
-                  x2={234}
-                  y1={y}
-                  y2={y}
-                  stroke="#ef4444"
-                  strokeWidth={1.2}
-                  strokeDasharray="4 3"
-                />
-                <text
-                  x={238}
-                  y={y - 3}
-                  textAnchor="end"
-                  fontSize={11}
-                  fontWeight={600}
-                  fill="#ef4444"
-                  style={{ paintOrder: 'stroke' }}
-                  stroke="#fff"
-                  strokeWidth={3}
-                >
-                  {label}
-                </text>
-              </g>
-            );
-          })}
-        </svg>
-      </div>
+      <img
+        src={mannequinUrl}
+        alt="Manequim"
+        width={242}
+        height={727}
+        className="block h-auto w-full max-w-[242px] select-none object-contain"
+        draggable={false}
+      />
     </div>
   );
 }
