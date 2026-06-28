@@ -26,7 +26,8 @@ import {
   Upload,
   Check,
   CheckSquare,
-  Package } from
+  Package,
+  Loader2 } from
 'lucide-react';
 
 type Story = Tables<'stories'>;
@@ -789,11 +790,15 @@ function AddProductModal({
   const [currency, setCurrency] = useState('BRL');
   const [url, setUrl] = useState('');
   const [image, setImage] = useState<string | null>(null);
+  const [errors, setErrors] = useState<{name?: string;price?: string;url?: string;}>({});
+  const [touched, setTouched] = useState<{name?: boolean;price?: boolean;url?: boolean;}>({});
   const fileRef = useRef<HTMLInputElement>(null);
+  const nameRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!open) {
       setName('');setPrice('');setCurrency('BRL');setUrl('');setImage(null);
+      setErrors({});setTouched({});
       return;
     }
     if (editing) {
@@ -805,126 +810,194 @@ function AddProductModal({
     } else {
       setName('');setPrice('');setCurrency('BRL');setUrl('');setImage(null);
     }
+    setErrors({});setTouched({});
+    // Foco inicial no nome
+    const t = setTimeout(() => nameRef.current?.focus(), 50);
+    return () => clearTimeout(t);
   }, [open, editing]);
 
   const handlePickImage = (file?: File | null) => {
     if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('Arquivo inválido', { description: 'Selecione uma imagem.' });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Imagem muito grande', { description: 'Limite de 5MB.' });
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => setImage(reader.result as string);
     reader.readAsDataURL(file);
   };
 
-  const valid = name.trim().length > 0;
+  const validate = (fields: { name: string; price: string; url: string }) => {
+    const next: {name?: string;price?: string;url?: string;} = {};
+    if (!fields.name.trim()) next.name = 'Informe o nome do produto.';
+    else if (fields.name.trim().length > 120) next.name = 'Máximo de 120 caracteres.';
+    if (!fields.price.trim()) next.price = 'Informe o preço.';
+    else {
+      const normalized = fields.price.replace(',', '.');
+      const n = Number(normalized);
+      if (!isFinite(n) || n <= 0) next.price = 'Preço inválido.';
+    }
+    if (fields.url.trim()) {
+      try {
+        const u = new URL(fields.url.trim());
+        if (!/^https?:$/.test(u.protocol)) next.url = 'URL deve começar com http(s)://';
+      } catch {
+        next.url = 'URL inválida.';
+      }
+    }
+    return next;
+  };
+
   const isEdit = !!editing;
 
+  const handleSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    const next = validate({ name, price, url });
+    setErrors(next);
+    setTouched({ name: true, price: true, url: true });
+    if (Object.keys(next).length > 0) return;
+    onSave({ name: name.trim(), price: price.trim(), currency, url: url.trim(), image });
+  };
+
+  const onBlur = (field: 'name' | 'price' | 'url') => {
+    setTouched((t) => ({ ...t, [field]: true }));
+    setErrors(validate({ name, price, url }));
+  };
+
+  const showErr = (field: 'name' | 'price' | 'url') => touched[field] && errors[field];
+
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-2xl p-0 overflow-hidden">
-        <div className="px-6 pt-6">
-          <DialogHeader>
-            <DialogTitle>{isEdit ? 'Editar produto' : 'Adicionar produto manualmente'}</DialogTitle>
-            <DialogDescription>
-              {isEdit ? 'Atualize as informações do produto.' : 'Cadastre as informações principais do produto.'}
-            </DialogDescription>
-          </DialogHeader>
-        </div>
+    <Dialog open={open} onOpenChange={(o) => { if (!o && !saving) onClose(); }}>
+      <DialogContent className="w-[calc(100%-2rem)] sm:w-full max-w-2xl mx-auto p-0 overflow-hidden">
+        <form onSubmit={handleSubmit} noValidate>
+          <div className="px-6 pt-6">
+            <DialogHeader>
+              <DialogTitle>{isEdit ? 'Editar produto' : 'Adicionar produto manualmente'}</DialogTitle>
+              <DialogDescription>
+                {isEdit ? 'Atualize as informações do produto.' : 'Cadastre as informações principais do produto.'}
+              </DialogDescription>
+            </DialogHeader>
+          </div>
 
-        <div className="px-6 py-6">
-          <div className="flex flex-col sm:flex-row items-start gap-5">
-            {/* Imagem */}
-            <div className="relative shrink-0">
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => handlePickImage(e.target.files?.[0])} />
+          <div className="px-6 py-6">
+            <div className="flex flex-col sm:flex-row items-start gap-5">
+              {/* Imagem */}
+              <div className="relative shrink-0">
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => handlePickImage(e.target.files?.[0])} />
 
-              <div className="w-24 h-24 rounded-2xl bg-neutral-100 border border-neutral-200 flex items-center justify-center overflow-hidden">
-                {image ?
-                <img src={image} alt="" className="w-full h-full object-cover" /> :
-
-                <Package className="w-8 h-8 text-neutral-400" strokeWidth={1.5} />
-                }
-              </div>
-              <div className="absolute -bottom-1.5 -right-1.5 flex items-center gap-1">
-                {image &&
-                <button
-                  onClick={() => setImage(null)}
-                  type="button"
-                  aria-label="Remover imagem"
-                  className="w-7 h-7 rounded-full bg-white border border-neutral-200 shadow-sm hover:bg-red-50 hover:text-red-600 text-neutral-700 flex items-center justify-center transition-colors">
-
-                    <Trash2 className="w-3.5 h-3.5" />
+                <div className="w-24 h-24 rounded-2xl bg-neutral-100 border border-neutral-200 flex items-center justify-center overflow-hidden">
+                  {image ?
+                  <img src={image} alt="" className="w-full h-full object-cover" /> :
+                  <Package className="w-8 h-8 text-neutral-400" strokeWidth={1.5} />
+                  }
+                </div>
+                <div className="absolute -bottom-1.5 -right-1.5 flex items-center gap-1">
+                  {image &&
+                  <button
+                    onClick={() => setImage(null)}
+                    type="button"
+                    aria-label="Remover imagem"
+                    className="w-7 h-7 rounded-full bg-white border border-neutral-200 shadow-sm hover:bg-red-50 hover:text-red-600 text-neutral-700 flex items-center justify-center transition-colors">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  }
+                  <button
+                    onClick={() => fileRef.current?.click()}
+                    type="button"
+                    aria-label="Editar imagem"
+                    className="w-7 h-7 rounded-full bg-neutral-900 hover:bg-neutral-800 text-white shadow-sm flex items-center justify-center transition-colors">
+                    <Edit2 className="w-3.5 h-3.5" />
                   </button>
-                }
-                <button
-                  onClick={() => fileRef.current?.click()}
-                  type="button"
-                  aria-label="Editar imagem"
-                  className="w-7 h-7 rounded-full bg-neutral-900 hover:bg-neutral-800 text-white shadow-sm flex items-center justify-center transition-colors">
-
-                  <Edit2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-
-            {/* Campos */}
-            <div className="flex-1 w-full space-y-3">
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Nome do produto"
-                className="h-11 rounded-xl border-neutral-200" />
-
-
-              <div className="grid grid-cols-[1fr_120px] gap-3">
-                <Input
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value.replace(/[^\d.,]/g, ''))}
-                  placeholder="Preço"
-                  inputMode="decimal"
-                  className="h-11 rounded-xl border-neutral-200" />
-
-                <select
-                  value={currency}
-                  onChange={(e) => setCurrency(e.target.value)}
-                  className="h-11 rounded-xl border border-neutral-200 bg-white px-3 text-[14px] text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900/10">
-
-                  <option value="BRL">Reais</option>
-                  <option value="USD">Dólar</option>
-                  <option value="EUR">Euro</option>
-                </select>
+                </div>
               </div>
 
-              <Input
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                placeholder="URL do produto"
-                className="h-11 rounded-xl border-neutral-200" />
+              {/* Campos */}
+              <div className="flex-1 w-full space-y-3">
+                <div>
+                  <Input
+                    ref={nameRef}
+                    value={name}
+                    onChange={(e) => { setName(e.target.value); if (touched.name) setErrors((p) => ({ ...p, name: undefined })); }}
+                    onBlur={() => onBlur('name')}
+                    placeholder="Nome do produto"
+                    aria-invalid={!!showErr('name')}
+                    aria-describedby={showErr('name') ? 'product-name-error' : undefined}
+                    className={`h-11 rounded-xl ${showErr('name') ? 'border-red-400 focus-visible:ring-red-200' : 'border-neutral-200'}`} />
+                  {showErr('name') && <p id="product-name-error" className="text-[12px] text-red-600 mt-1">{errors.name}</p>}
+                </div>
 
+                <div>
+                  <div className="grid grid-cols-[1fr_120px] gap-3">
+                    <Input
+                      value={price}
+                      onChange={(e) => { setPrice(e.target.value.replace(/[^\d.,]/g, '')); if (touched.price) setErrors((p) => ({ ...p, price: undefined })); }}
+                      onBlur={() => onBlur('price')}
+                      placeholder="Preço"
+                      inputMode="decimal"
+                      aria-invalid={!!showErr('price')}
+                      aria-describedby={showErr('price') ? 'product-price-error' : undefined}
+                      className={`h-11 rounded-xl ${showErr('price') ? 'border-red-400 focus-visible:ring-red-200' : 'border-neutral-200'}`} />
+                    <select
+                      value={currency}
+                      onChange={(e) => setCurrency(e.target.value)}
+                      aria-label="Moeda"
+                      className="h-11 rounded-xl border border-neutral-200 bg-white px-3 text-[14px] text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900/10">
+                      <option value="BRL">Reais</option>
+                      <option value="USD">Dólar</option>
+                      <option value="EUR">Euro</option>
+                    </select>
+                  </div>
+                  {showErr('price') && <p id="product-price-error" className="text-[12px] text-red-600 mt-1">{errors.price}</p>}
+                </div>
+
+                <div>
+                  <Input
+                    value={url}
+                    onChange={(e) => { setUrl(e.target.value); if (touched.url) setErrors((p) => ({ ...p, url: undefined })); }}
+                    onBlur={() => onBlur('url')}
+                    placeholder="URL do produto (opcional)"
+                    inputMode="url"
+                    aria-invalid={!!showErr('url')}
+                    aria-describedby={showErr('url') ? 'product-url-error' : undefined}
+                    className={`h-11 rounded-xl ${showErr('url') ? 'border-red-400 focus-visible:ring-red-200' : 'border-neutral-200'}`} />
+                  {showErr('url') && <p id="product-url-error" className="text-[12px] text-red-600 mt-1">{errors.url}</p>}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="px-6 py-4 border-t border-neutral-100 flex items-center justify-end gap-2">
-          <button
-            onClick={onClose}
-            className="h-10 px-4 text-[13.5px] font-medium text-neutral-700 rounded-xl hover:bg-neutral-100 transition-colors">
-
-            Voltar
-          </button>
-          <button
-            disabled={!valid || saving}
-            onClick={() => onSave({ name: name.trim(), price: price.trim(), currency, url: url.trim(), image })}
-            className="inline-flex items-center gap-2 h-10 px-4 text-[13.5px] font-medium text-white bg-neutral-900 hover:bg-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl transition-colors">
-
-            {isEdit ? <Edit2 className="w-4 h-4" /> : <Plus className="w-4 h-4" />} {saving ? 'Salvando…' : isEdit ? 'Salvar alterações' : 'Adicionar produto'}
-          </button>
-        </div>
+          <div className="px-6 py-4 border-t border-neutral-100 flex items-center justify-end gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={saving}
+              className="h-10 px-4 text-[13.5px] font-medium text-neutral-700 rounded-xl hover:bg-neutral-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="inline-flex items-center gap-2 h-10 px-4 text-[13.5px] font-medium text-white bg-neutral-900 hover:bg-neutral-800 disabled:opacity-60 disabled:cursor-not-allowed rounded-xl transition-colors">
+              {saving ?
+                <Loader2 className="w-4 h-4 animate-spin" /> :
+                isEdit ? <Edit2 className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+              {saving ? 'Salvando…' : isEdit ? 'Salvar alterações' : 'Adicionar produto'}
+            </button>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>);
 
 }
+
 
 
