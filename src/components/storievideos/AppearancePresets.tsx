@@ -160,7 +160,6 @@ export default function AppearancePresets() {
                 </button>
               </div>
             </div>
-            </div>
           ))}
         </div>
       )}
