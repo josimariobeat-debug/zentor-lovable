@@ -192,7 +192,30 @@ export default function AdicionarStory() {
     setLoading(false);
   };
 
-  const addUrl = () => setUrls([...urls, { value: '', type: 'contem', ignore_params: false }]);
+  const goToAppearance = (target: 'new' | string) => {
+    // Persiste o formulário atual para restaurar ao voltar do editor de aparência.
+    try {
+      const snapshot = {
+        title,
+        format,
+        scroll,
+        active,
+        cta,
+        urls,
+        // Não persistimos arquivos pendentes (File objects não serializam).
+        media: media
+          .filter((m) => !m.file)
+          .map((m) => ({ id: m.id, url: m.url, type: m.type, name: m.name, cover: m.cover })),
+      };
+      sessionStorage.setItem(stateKey, JSON.stringify(snapshot));
+    } catch (err) {
+      console.error('Erro ao salvar estado do story:', err);
+    }
+    const returnTo = `/app/${appId}/story/${storyId || 'novo'}`;
+    const url = `/app/${appId}/aparencia/${target}?kind=floating&returnTo=${encodeURIComponent(returnTo)}`;
+    navigate(url);
+  };
+
   const removeUrl = (i: number) => setUrls(urls.filter((_, x) => x !== i));
   const updateUrl = (i: number, k: keyof UrlEntry, v: string | boolean) =>
   setUrls(urls.map((u, x) => x === i ? { ...u, [k]: v } : u));
