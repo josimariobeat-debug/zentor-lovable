@@ -601,11 +601,14 @@ function PlaceholderTab({ label }: {label: string;}) {
 
 }
 
+type ProductRow = {id: string;name: string;price: string;currency: string;url: string;image: string | null;};
+
 function ProdutosTab() {
   const { user } = useAuth();
   const [view, setView] = useState<'produtos' | 'medidas'>('produtos');
   const [addOpen, setAddOpen] = useState(false);
-  const [products, setProducts] = useState<{id: string;name: string;price: string;currency: string;url: string;image: string | null;}[]>([]);
+  const [editing, setEditing] = useState<ProductRow | null>(null);
+  const [products, setProducts] = useState<ProductRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -630,9 +633,26 @@ function ProdutosTab() {
     return () => { cancelled = true; };
   }, [user]);
 
-  const handleAdd = async (p: {name: string;price: string;currency: string;url: string;image: string | null;}) => {
+  const handleSave = async (p: {name: string;price: string;currency: string;url: string;image: string | null;}) => {
     if (!user) return;
     setSaving(true);
+    if (editing) {
+      const { data, error } = await supabase
+        .from('products')
+        .update(p)
+        .eq('id', editing.id)
+        .select('id,name,price,currency,url,image')
+        .single();
+      setSaving(false);
+      if (error) {
+        toast.error('Erro ao salvar produto', { description: error.message });
+        return;
+      }
+      setProducts((arr) => arr.map((x) => x.id === editing.id ? (data as any) : x));
+      setEditing(null);
+      toast.success('Produto atualizado');
+      return;
+    }
     const { data, error } = await supabase
       .from('products')
       .insert({ user_id: user.id, ...p })
@@ -657,6 +677,9 @@ function ProdutosTab() {
       toast.error('Erro ao remover produto', { description: error.message });
     }
   };
+
+  const modalOpen = addOpen || editing !== null;
+  const closeModal = () => { setAddOpen(false); setEditing(null); };
 
   return (
     <div className="fade-in">
@@ -718,7 +741,15 @@ function ProdutosTab() {
                   {p.currency === 'BRL' ? 'R$' : p.currency} {p.price}
                 </div>
                 <button
+            onClick={() => setEditing(p)}
+            aria-label="Editar produto"
+            className="w-9 h-9 rounded-lg hover:bg-neutral-100 flex items-center justify-center text-neutral-700 transition-colors">
+
+                  <Edit2 className="w-4 h-4" />
+                </button>
+                <button
             onClick={() => handleDelete(p.id)}
+            aria-label="Remover produto"
             className="w-9 h-9 rounded-lg hover:bg-red-50 hover:text-red-600 flex items-center justify-center text-neutral-700 transition-colors">
 
                   <Trash2 className="w-4 h-4" />
@@ -735,21 +766,24 @@ function ProdutosTab() {
       }
 
       <AddProductModal
-        open={addOpen}
-        onClose={() => setAddOpen(false)}
+        open={modalOpen}
+        editing={editing}
+        onClose={closeModal}
         saving={saving}
-        onAdd={handleAdd} />
+        onSave={handleSave} />
 
     </div>);
 
 }
 
+
 function AddProductModal({
   open,
+  editing,
   onClose,
-  onAdd,
+  onSave,
   saving
-}: {open: boolean;onClose: () => void;onAdd: (p: {name: string;price: string;currency: string;url: string;image: string | null;}) => void;saving?: boolean;}) {
+}: {open: boolean;editing?: ProductRow | null;onClose: () => void;onSave: (p: {name: string;price: string;currency: string;url: string;image: string | null;}) => void;saving?: boolean;}) {
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
   const [currency, setCurrency] = useState('BRL');
@@ -760,8 +794,18 @@ function AddProductModal({
   useEffect(() => {
     if (!open) {
       setName('');setPrice('');setCurrency('BRL');setUrl('');setImage(null);
+      return;
     }
-  }, [open]);
+    if (editing) {
+      setName(editing.name);
+      setPrice(editing.price);
+      setCurrency(editing.currency);
+      setUrl(editing.url);
+      setImage(editing.image);
+    } else {
+      setName('');setPrice('');setCurrency('BRL');setUrl('');setImage(null);
+    }
+  }, [open, editing]);
 
   const handlePickImage = (file?: File | null) => {
     if (!file) return;
@@ -771,15 +815,16 @@ function AddProductModal({
   };
 
   const valid = name.trim().length > 0;
+  const isEdit = !!editing;
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-2xl p-0 overflow-hidden">
         <div className="px-6 pt-6">
           <DialogHeader>
-            <DialogTitle>Adicionar produto manualmente</DialogTitle>
+            <DialogTitle>{isEdit ? 'Editar produto' : 'Adicionar produto manualmente'}</DialogTitle>
             <DialogDescription>
-              Cadastre as informações principais do produto.
+              {isEdit ? 'Atualize as informações do produto.' : 'Cadastre as informações principais do produto.'}
             </DialogDescription>
           </DialogHeader>
         </div>
@@ -871,14 +916,15 @@ function AddProductModal({
           </button>
           <button
             disabled={!valid || saving}
-            onClick={() => onAdd({ name: name.trim(), price: price.trim(), currency, url: url.trim(), image })}
+            onClick={() => onSave({ name: name.trim(), price: price.trim(), currency, url: url.trim(), image })}
             className="inline-flex items-center gap-2 h-10 px-4 text-[13.5px] font-medium text-white bg-neutral-900 hover:bg-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl transition-colors">
 
-            <Plus className="w-4 h-4" /> {saving ? 'Salvando…' : 'Adicionar produto'}
+            {isEdit ? <Edit2 className="w-4 h-4" /> : <Plus className="w-4 h-4" />} {saving ? 'Salvando…' : isEdit ? 'Salvar alterações' : 'Adicionar produto'}
           </button>
         </div>
       </DialogContent>
     </Dialog>);
 
 }
+
 
