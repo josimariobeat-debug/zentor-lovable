@@ -776,7 +776,7 @@ function ProdutosTab() {
                   <Edit2 className="w-4 h-4" />
                 </button>
                 <button
-            onClick={() => handleDelete(p.id)}
+            onClick={() => setDeleteProduct(p)}
             aria-label="Remover produto"
             className="w-9 h-9 rounded-lg hover:bg-red-50 hover:text-red-600 flex items-center justify-center text-neutral-700 transition-colors">
 
