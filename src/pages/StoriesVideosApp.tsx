@@ -1333,9 +1333,16 @@ const MEASURE_Y: Record<string, number> = {
   Quadril: 332,
 };
 
+// Vertical guide for full length (Comprimento) — runs along the side of the silhouette.
+const COMPRIMENTO_X = 224;
+const COMPRIMENTO_Y1 = 70;
+const COMPRIMENTO_Y2 = 700;
+
 function MannequinSVG({ activeTypes }: { activeTypes: MeasureType[] }) {
-  const ALWAYS = ['Busto', 'Cintura', 'Quadril'] as const;
-  const lines = ALWAYS.filter((m) => activeTypes.length === 0 || activeTypes.includes(m as MeasureType));
+  const ALWAYS_H = ['Busto', 'Cintura', 'Quadril'] as const;
+  const showAll = activeTypes.length === 0;
+  const hLines = ALWAYS_H.filter((m) => showAll || activeTypes.includes(m as MeasureType));
+  const showComprimento = showAll || activeTypes.includes('Comprimento');
 
   return (
     <div className="mx-auto flex w-full justify-center">
@@ -1354,13 +1361,13 @@ function MannequinSVG({ activeTypes }: { activeTypes: MeasureType[] }) {
           className="pointer-events-none absolute inset-0 h-full w-full"
           aria-hidden
         >
-          {lines.map((label) => {
+          {hLines.map((label) => {
             const y = MEASURE_Y[label];
             return (
               <g key={label}>
                 <line
                   x1={8}
-                  x2={234}
+                  x2={210}
                   y1={y}
                   y2={y}
                   stroke="#ef4444"
@@ -1368,7 +1375,7 @@ function MannequinSVG({ activeTypes }: { activeTypes: MeasureType[] }) {
                   strokeDasharray="4 3"
                 />
                 <text
-                  x={238}
+                  x={206}
                   y={y - 3}
                   textAnchor="end"
                   fontSize={11}
@@ -1383,11 +1390,42 @@ function MannequinSVG({ activeTypes }: { activeTypes: MeasureType[] }) {
               </g>
             );
           })}
+          {showComprimento && (
+            <g>
+              <line
+                x1={COMPRIMENTO_X}
+                x2={COMPRIMENTO_X}
+                y1={COMPRIMENTO_Y1}
+                y2={COMPRIMENTO_Y2}
+                stroke="#ef4444"
+                strokeWidth={1.2}
+                strokeDasharray="4 3"
+              />
+              {/* end caps */}
+              <line x1={COMPRIMENTO_X - 5} x2={COMPRIMENTO_X + 5} y1={COMPRIMENTO_Y1} y2={COMPRIMENTO_Y1} stroke="#ef4444" strokeWidth={1.2} />
+              <line x1={COMPRIMENTO_X - 5} x2={COMPRIMENTO_X + 5} y1={COMPRIMENTO_Y2} y2={COMPRIMENTO_Y2} stroke="#ef4444" strokeWidth={1.2} />
+              <text
+                x={COMPRIMENTO_X - 4}
+                y={(COMPRIMENTO_Y1 + COMPRIMENTO_Y2) / 2}
+                textAnchor="end"
+                fontSize={11}
+                fontWeight={600}
+                fill="#ef4444"
+                style={{ paintOrder: 'stroke' }}
+                stroke="#fff"
+                strokeWidth={3}
+                transform={`rotate(-90 ${COMPRIMENTO_X - 4} ${(COMPRIMENTO_Y1 + COMPRIMENTO_Y2) / 2})`}
+              >
+                Comprimento
+              </text>
+            </g>
+          )}
         </svg>
       </div>
     </div>
   );
 }
+
 
 
 function MeasurePreviewModal({ model, onClose }: { model: MeasureModel | null; onClose: () => void }) {
