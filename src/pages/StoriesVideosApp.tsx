@@ -619,6 +619,21 @@ function ProdutosTab() {
   const [products, setProducts] = useState<ProductRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [measureOpen, setMeasureOpen] = useState(false);
+  const [editingMeasure, setEditingMeasure] = useState<MeasureModel | null>(null);
+  const [measures, setMeasures] = useState<MeasureModel[]>([]);
+  const measuresKey = user ? `storiesvideos:measures:${user.id}` : '';
+  useEffect(() => {
+    if (!measuresKey) return;
+    try {
+      const raw = window.localStorage.getItem(measuresKey);
+      setMeasures(raw ? JSON.parse(raw) : []);
+    } catch { setMeasures([]); }
+  }, [measuresKey]);
+  const persistMeasures = (next: MeasureModel[]) => {
+    setMeasures(next);
+    try { window.localStorage.setItem(measuresKey, JSON.stringify(next)); } catch {}
+  };
 
   useEffect(() => {
     if (!user) return;
