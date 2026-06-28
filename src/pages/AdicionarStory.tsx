@@ -47,6 +47,7 @@ interface UrlEntry {
 export default function AdicionarStory() {
   const { appId, storyId } = useParams();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
   const isEdit = storyId && storyId !== 'novo';
 
@@ -55,12 +56,16 @@ export default function AdicionarStory() {
   const urlRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const stateKey = `story_form:${appId}:${storyId || 'novo'}`;
+
   const [loading, setLoading] = useState(isEdit);
   const [title, setTitle] = useState('');
   const [format, setFormat] = useState('widget');
   const [scroll, setScroll] = useState('vertical');
-  const [aparencia, setAparencia] = useState('Padrão 1');
-  const [aparenciaOptions, setAparenciaOptions] = useState([{ value: 'Padrão 1', label: 'Padrão 1' }]);
+  const [presets, setPresets] = useState<Tables<'appearance_presets'>[]>([]);
+  const [presetsLoaded, setPresetsLoaded] = useState(false);
+  // 'default' = aparência padrão do sistema. Caso contrário guarda o preset.id.
+  const [aparencia, setAparencia] = useState<string>('default');
   const [active, setActive] = useState(true);
   const [cta, setCta] = useState('');
   const [media, setMedia] = useState<Media[]>([]);
