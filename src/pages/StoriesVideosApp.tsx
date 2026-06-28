@@ -1326,96 +1326,139 @@ function AddMeasureModelModal({
 function MannequinSVG({ activeTypes }: { activeTypes: MeasureType[] }) {
   const isActive = (t: MeasureType) => activeTypes.includes(t);
   const GUIDE = '#ef4444';
-  const STROKE = '#1f2937';
-  const LABEL = '#374151';
+  const STROKE = '#111827';
+  const LABEL = '#4b5563';
+  // Anchors used by both the body paths and the guide lines so the dashed
+  // references always land on the correct anatomical landmark.
+  const Y = {
+    bust: 232,
+    waist: 296,
+    hip: 372,
+    biceps: 268,
+    shoulder: 168,
+    ankle: 706,
+    crotch: 432,
+  };
   return (
     <svg viewBox="0 0 400 760" className="w-full h-auto max-h-[560px]" aria-hidden="true">
-      <g fill="none" stroke={STROKE} strokeWidth="1.4" strokeLinejoin="round" strokeLinecap="round">
+      <g fill="none" stroke={STROKE} strokeWidth="1.3" strokeLinejoin="round" strokeLinecap="round">
         {/* Head */}
-        <ellipse cx="200" cy="70" rx="36" ry="44" />
+        <ellipse cx="200" cy="78" rx="32" ry="42" />
+        {/* Jaw hint */}
+        <path d="M178 102 C188 118 212 118 222 102" opacity="0.35" />
+        {/* Ear hints */}
+        <path d="M168 80 C166 86 166 92 168 96" opacity="0.4" />
+        <path d="M232 80 C234 86 234 92 232 96" opacity="0.4" />
         {/* Neck */}
-        <path d="M184 110 C184 124 184 130 178 140 M216 110 C216 124 216 130 222 140" />
-        {/* Shoulders + torso (bust, waist, hip) */}
+        <path d="M186 118 C186 132 184 142 178 152" />
+        <path d="M214 118 C214 132 216 142 222 152" />
+        {/* Collarbone */}
+        <path d="M170 162 C188 170 212 170 230 162" opacity="0.5" />
+        <path d="M200 152 L200 178" opacity="0.35" />
+        {/* Shoulders → torso silhouette (one continuous outline) */}
         <path d="
-          M178 140
-          C150 150 132 160 120 178
-          C128 184 138 188 150 188
-          C158 200 168 214 180 224
-          C188 232 192 240 192 250
-          C188 270 180 290 178 318
-          C176 346 184 372 196 392
-          C204 412 208 432 208 452
-          C208 432 212 412 220 392
-          C232 372 240 346 238 318
-          C236 290 228 270 224 250
-          C224 240 228 232 236 224
-          C248 214 258 200 266 188
-          C278 188 288 184 296 178
-          C284 160 266 150 238 140
+          M178 152
+          C158 156 142 162 130 172
+          C124 178 122 184 124 190
+          C134 196 146 200 158 200
+          C162 214 168 226 176 236
+          C184 246 188 256 188 266
+          C184 280 178 296 176 312
+          C176 332 184 352 196 372
+          C204 392 208 412 208 432
         " />
-        {/* Bust subtle curves */}
-        <path d="M178 200 C188 212 196 218 200 218 C204 218 212 212 222 200" opacity="0.6" />
+        <path d="
+          M222 152
+          C242 156 258 162 270 172
+          C276 178 278 184 276 190
+          C266 196 254 200 242 200
+          C238 214 232 226 224 236
+          C216 246 212 256 212 266
+          C216 280 222 296 224 312
+          C224 332 216 352 204 372
+          C196 392 192 412 192 432
+        " />
+        {/* Bust curves */}
+        <path d="M172 214 C182 232 194 240 200 240 C206 240 218 232 228 214" opacity="0.7" />
+        <circle cx="184" cy="226" r="1.4" fill={STROKE} opacity="0.55" />
+        <circle cx="216" cy="226" r="1.4" fill={STROKE} opacity="0.55" />
+        {/* Sternum */}
+        <path d="M200 192 L200 240" opacity="0.25" />
         {/* Navel */}
-        <circle cx="200" cy="310" r="1.6" fill={STROKE} opacity="0.5" />
-        {/* Arms - left */}
-        <path d="M120 178 C108 220 100 270 96 322 C94 348 96 372 102 396 C108 412 114 422 118 430" />
-        <path d="M150 188 C144 224 140 270 138 322 C138 350 142 376 150 400 C156 416 162 426 168 432" />
-        {/* Hand - left */}
-        <path d="M102 396 C100 416 104 432 118 430 C116 422 116 412 118 402" />
-        {/* Arms - right */}
-        <path d="M280 178 C292 220 300 270 304 322 C306 348 304 372 298 396 C292 412 286 422 282 430" />
-        <path d="M250 188 C256 224 260 270 262 322 C262 350 258 376 250 400 C244 416 238 426 232 432" />
-        {/* Hand - right */}
-        <path d="M298 396 C300 416 296 432 282 430 C284 422 284 412 282 402" />
-        {/* Legs */}
+        <circle cx="200" cy="316" r="1.6" fill={STROKE} opacity="0.55" />
+        {/* Inner thigh seam */}
+        <path d="M200 392 L200 432" opacity="0.3" />
+
+        {/* Arms — left (outer + inner) */}
+        <path d="M130 172 C118 210 110 252 108 296 C108 336 114 372 122 404 C126 420 130 432 134 442" />
+        <path d="M158 200 C152 232 148 268 148 304 C150 334 156 362 164 388 C168 404 172 416 176 426" />
+        {/* Hand left */}
+        <path d="M134 442 C130 454 128 466 132 472 C140 472 148 466 152 458 C154 452 154 444 152 438 L152 438" />
+        <path d="M176 426 C172 438 168 452 170 460 C172 466 178 470 184 466" opacity="0.6" />
+        {/* Arms — right */}
+        <path d="M270 172 C282 210 290 252 292 296 C292 336 286 372 278 404 C274 420 270 432 266 442" />
+        <path d="M242 200 C248 232 252 268 252 304 C250 334 244 362 236 388 C232 404 228 416 224 426" />
+        {/* Hand right */}
+        <path d="M266 442 C270 454 272 466 268 472 C260 472 252 466 248 458 C246 452 246 444 248 438" />
+        <path d="M224 426 C228 438 232 452 230 460 C228 466 222 470 216 466" opacity="0.6" />
+
+        {/* Legs — left */}
         <path d="
-          M196 452
-          C188 488 178 528 174 568
-          C170 608 172 648 176 686
-          C178 710 182 724 188 732
-          L196 732
-          C198 720 198 700 198 680
-          C198 632 198 588 200 560
+          M188 432
+          C180 470 172 512 168 556
+          C166 596 168 636 172 672
+          C174 692 178 702 184 710
         " />
         <path d="
-          M204 452
-          C212 488 222 528 226 568
-          C230 608 228 648 224 686
-          C222 710 218 724 212 732
-          L204 732
-          C202 720 202 700 202 680
-          C202 632 202 588 200 560
+          M200 432
+          C200 472 200 512 198 552
+          C196 596 196 636 196 672
+          C196 692 192 702 188 710
         " />
+        {/* Legs — right */}
+        <path d="
+          M212 432
+          C220 470 228 512 232 556
+          C234 596 232 636 228 672
+          C226 692 222 702 216 710
+        " />
+        <path d="
+          M200 432
+          C200 472 200 512 202 552
+          C204 596 204 636 204 672
+          C204 692 208 702 212 710
+        " opacity="0.6" />
+        {/* Knees */}
+        <path d="M178 558 C184 562 192 562 196 558" opacity="0.45" />
+        <path d="M204 558 C208 562 216 562 222 558" opacity="0.45" />
         {/* Feet */}
-        <path d="M188 732 C182 740 178 744 176 748 C184 750 196 748 198 740" />
-        <path d="M212 732 C218 740 222 744 224 748 C216 750 204 748 202 740" />
-        {/* Collarbone hint */}
-        <path d="M170 152 C188 158 212 158 230 152" opacity="0.5" />
+        <path d="M184 710 C180 720 178 728 184 732 C194 732 200 726 200 718 L200 712" />
+        <path d="M216 710 C220 720 222 728 216 732 C206 732 200 726 200 718" />
       </g>
 
-      {/* Measurement guides — horizontal red dashed lines spanning beyond body */}
-      <g stroke={GUIDE} strokeWidth="1.4" strokeDasharray="4 4" fill="none">
-        {isActive('Busto')    && <line x1="60"  y1="210" x2="340" y2="210" />}
-        {isActive('Cintura')  && <line x1="60"  y1="282" x2="340" y2="282" />}
-        {isActive('Quadril')  && <line x1="60"  y1="380" x2="340" y2="380" />}
-        {isActive('Bíceps')   && <line x1="80"  y1="248" x2="320" y2="248" />}
-        {isActive('Manga')    && <line x1="84"  y1="178" x2="84"  y2="424" />}
-        {isActive('Comprimento') && <line x1="320" y1="140" x2="320" y2="732" />}
-        {isActive('Dentro da Perna') && <line x1="200" y1="452" x2="200" y2="732" />}
+      {/* Measurement guides — red dashed references */}
+      <g stroke={GUIDE} strokeWidth="1.4" strokeDasharray="5 5" fill="none">
+        {isActive('Busto')    && <line x1="58"  y1={Y.bust}    x2="340" y2={Y.bust} />}
+        {isActive('Cintura')  && <line x1="58"  y1={Y.waist}   x2="340" y2={Y.waist} />}
+        {isActive('Quadril')  && <line x1="58"  y1={Y.hip}     x2="340" y2={Y.hip} />}
+        {isActive('Bíceps')   && <line x1="78"  y1={Y.biceps}  x2="322" y2={Y.biceps} />}
+        {isActive('Manga')    && <line x1="86"  y1={Y.shoulder} x2="86"  y2={Y.ankle - 280} />}
+        {isActive('Comprimento') && <line x1="320" y1={Y.shoulder} x2="320" y2={Y.ankle} />}
+        {isActive('Dentro da Perna') && <line x1="200" y1={Y.crotch}  x2="200" y2={Y.ankle} />}
       </g>
 
       {/* Labels */}
-      <g fontFamily="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" fontSize="14" fill={LABEL}>
-        {isActive('Busto')    && <text x="64" y="204">Busto</text>}
-        {isActive('Cintura')  && <text x="64" y="276">Cintura</text>}
-        {isActive('Quadril')  && <text x="64" y="374">Quadril</text>}
-        {isActive('Bíceps')   && <text x="84" y="242">Bíceps</text>}
-        {isActive('Manga')    && <text x="56" y="172">Manga</text>}
+      <g fontFamily="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" fontSize="13" fill={LABEL}>
+        {isActive('Busto')    && <text x="62" y={Y.bust - 6}>Busto</text>}
+        {isActive('Cintura')  && <text x="62" y={Y.waist - 6}>Cintura</text>}
+        {isActive('Quadril')  && <text x="62" y={Y.hip - 6}>Quadril</text>}
+        {isActive('Bíceps')   && <text x="82" y={Y.biceps - 6}>Bíceps</text>}
+        {isActive('Manga')    && <text x="54" y={Y.shoulder - 6}>Manga</text>}
         {isActive('Comprimento') && (
-          <text x="332" y="436" transform="rotate(90 332 436)" textAnchor="middle">Comprimento</text>
+          <text x="332" y={(Y.shoulder + Y.ankle) / 2} transform={`rotate(90 332 ${(Y.shoulder + Y.ankle) / 2})`} textAnchor="middle">Comprimento</text>
         )}
         {isActive('Dentro da Perna') && (
-          <text x="212" y="600" transform="rotate(90 212 600)" textAnchor="middle">Dentro da Perna</text>
+          <text x="212" y={(Y.crotch + Y.ankle) / 2} transform={`rotate(90 212 ${(Y.crotch + Y.ankle) / 2})`} textAnchor="middle">Dentro da Perna</text>
         )}
       </g>
     </svg>
