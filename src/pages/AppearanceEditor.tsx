@@ -323,7 +323,8 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
           )}
 
           {/* Instagram-style tap zones for prev/next.
-              Right side stops before the action column (≈64px) so taps on icons aren't hijacked. */}
+              Right zone stops before the action column so taps on icons aren't hijacked.
+              The reserved gutter mirrors the action column's right offset + icon width. */}
           <button
             aria-label="Anterior"
             onClick={goPrev}
@@ -333,15 +334,25 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
             aria-label="Próximo"
             onClick={goNext}
             className="absolute top-12 bottom-24 z-10 cursor-default"
-            style={{ left: '33.333%', right: 64 }}
+            style={{
+              left: '33.333%',
+              right: 'calc(env(safe-area-inset-right, 0px) + clamp(48px, 12vw, 60px))',
+            }}
           />
 
-          {/* TikTok-style right action column — vertically centered, white icons */}
+          {/* TikTok-style right action column.
+              - `right` uses safe-area-inset-right (iOS notch landscape + Android gesture nav) plus
+                a fluid clamp so the gap to the edge stays visually consistent from mobile→desktop.
+              - Vertical centering offsets half of the bottom safe area so URL bars / gesture pills
+                don't push the column off-center on Android Chrome and iOS Safari. */}
           <div
-            className="absolute top-1/2 -translate-y-1/2 z-20 flex flex-col items-center gap-2"
+            className="absolute z-20 flex flex-col items-center gap-2"
             style={{
-              right: 'max(2px, env(safe-area-inset-right))',
-              paddingBottom: 'env(safe-area-inset-bottom)',
+              right: 'calc(env(safe-area-inset-right, 0px) + clamp(4px, 1.2vw, 12px))',
+              top: 'calc(50% - (env(safe-area-inset-bottom, 0px) - env(safe-area-inset-top, 0px)) / 2)',
+              transform: 'translateY(-50%)',
+              paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+              paddingTop: 'env(safe-area-inset-top, 0px)',
             }}
           >
             <button
