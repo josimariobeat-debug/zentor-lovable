@@ -95,7 +95,7 @@ export function ConfirmDeleteDialog({
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!loading) onOpenChange(v); }}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md sm:max-w-md">
         <div
           role="alertdialog"
           aria-modal="true"
@@ -103,7 +103,7 @@ export function ConfirmDeleteDialog({
           aria-describedby={descId}
           onKeyDown={handleKeyDown}
         >
-          <DialogHeader>
+          <DialogHeader className="px-5 pt-5 pb-2 sm:px-6 sm:pt-6">
             <div className="flex items-start gap-3">
               <div
                 className="shrink-0 w-10 h-10 rounded-full bg-red-50 border border-red-100 flex items-center justify-center"
@@ -112,18 +112,18 @@ export function ConfirmDeleteDialog({
                 <AlertTriangle className="w-5 h-5 text-red-600" />
               </div>
               <div className="flex-1 min-w-0 pt-0.5">
-                <DialogTitle><span id={titleId}>{title}</span></DialogTitle>
-                <DialogDescription><span id={descId}>{description ?? defaultDescription}</span></DialogDescription>
+                <DialogTitle className="break-words"><span id={titleId}>{title}</span></DialogTitle>
+                <DialogDescription className="break-words"><span id={descId}>{description ?? defaultDescription}</span></DialogDescription>
               </div>
             </div>
           </DialogHeader>
-          <DialogFooter>
+          <DialogFooter className="px-5 pb-5 pt-4 sm:px-6 sm:pb-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
             <button
               ref={cancelRef}
               type="button"
               onClick={() => onOpenChange(false)}
               disabled={loading}
-              className="h-10 px-4 inline-flex items-center justify-center text-sm font-medium text-neutral-700 hover:bg-neutral-100 rounded-lg transition-colors disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-offset-2"
+              className="h-10 px-4 inline-flex items-center justify-center text-sm font-medium text-neutral-700 hover:bg-neutral-100 rounded-lg transition-colors disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-offset-2 w-full sm:w-auto"
             >
               {cancelLabel}
             </button>
@@ -132,7 +132,7 @@ export function ConfirmDeleteDialog({
               type="button"
               onClick={handleConfirm}
               disabled={loading}
-              className="h-10 px-4 inline-flex items-center justify-center text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+              className="h-10 px-4 inline-flex items-center justify-center text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 w-full sm:w-auto"
             >
               {loading ? 'Excluindo...' : confirmLabel}
             </button>
