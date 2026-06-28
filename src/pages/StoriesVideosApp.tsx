@@ -1437,8 +1437,8 @@ function MeasurePreviewModal({ model, onClose }: { model: MeasureModel | null; o
       <DialogContent className="w-[calc(100vw-1rem)] sm:w-full max-w-[min(100%,56rem)] sm:max-w-4xl mx-auto my-auto p-0 overflow-hidden max-h-[90vh] max-h-[90dvh] flex flex-col">
         <div className="px-4 sm:px-6 pt-4 sm:pt-5 shrink-0">
           <DialogHeader>
-            <DialogTitle className="text-base sm:text-lg">{model?.name ?? 'Modelo de medidas'}</DialogTitle>
-            <DialogDescription className="text-xs sm:text-[13px]">
+            <DialogTitle>{model?.name ?? 'Modelo de medidas'}</DialogTitle>
+            <DialogDescription>
               Pré-visualização do manequim com as referências de medida e a tabela completa.
             </DialogDescription>
           </DialogHeader>
