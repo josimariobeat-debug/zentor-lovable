@@ -805,17 +805,7 @@ function ProdutosTab() {
 
 
       measuresLoading ?
-      <div className="bg-white border border-neutral-200 rounded-2xl overflow-hidden">
-            {[0, 1, 2].map((i) =>
-        <div key={i} className={`flex items-center gap-4 px-5 py-4 ${i !== 2 ? 'border-b border-neutral-100' : ''}`}>
-                <Skeleton className="w-12 h-12 rounded-xl" />
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-4 w-1/3" />
-                  <Skeleton className="h-3 w-1/4" />
-                </div>
-              </div>
-        )}
-          </div> :
+      <StoriesRowsSkeleton count={3} /> :
       measures.length === 0 ?
       <div className="border border-dashed border-neutral-300 rounded-2xl p-16 text-center text-neutral-500">
             Nenhum modelo de medidas. Clique em <b className="text-neutral-700">Adicionar medidas</b> para começar.
