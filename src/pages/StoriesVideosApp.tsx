@@ -968,7 +968,7 @@ function AddProductModal({
     }
     setErrors({});setTouched({});
     // Foco inicial no nome
-    const t = setTimeout(() => nameRef.current?.focus({ preventScroll: true }), 50);
+    // Foco automático removido a pedido — evita teclado abrir no mobile e scroll inesperado
     return () => clearTimeout(t);
   }, [open, editing]);
 
