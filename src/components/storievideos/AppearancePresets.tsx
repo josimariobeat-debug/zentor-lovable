@@ -75,8 +75,7 @@ export default function AppearancePresets() {
     load();
   }
 
-  async function remove(p: Preset) {
-    if (!confirm(`Excluir "${p.name}"?`)) return;
+  async function confirmRemove(p: Preset) {
     const { error } = await supabase.from('appearance_presets').delete().eq('id', p.id);
     if (error) { toast.error('Erro ao excluir'); return; }
     toast.success('Padrão excluído');
