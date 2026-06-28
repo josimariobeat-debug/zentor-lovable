@@ -693,6 +693,10 @@ function ProdutosTab() {
     return () => { cancelled = true; };
   }, [user]);
 
+  // Mirror state into module-level caches so re-mounts skip the skeleton.
+  useEffect(() => { if (user && !loading) productsCache.set(user.id, products); }, [user, products, loading]);
+  useEffect(() => { if (user && !measuresLoading) measuresCache.set(user.id, measures); }, [user, measures, measuresLoading]);
+
   const handleSave = async (p: {name: string;price: string;currency: string;url: string;image: string | null;}) => {
     if (!user) return;
     setSaving(true);
