@@ -1393,7 +1393,7 @@ function MannequinSVG({ activeTypes }: { activeTypes: MeasureType[] }) {
           {(Object.entries(VERTICAL_MEASURES) as [MeasureType, { x: number; y1: number; y2: number }][])
             .filter(([m]) => isActive(m))
             .map(([label, cfg]) => {
-              const cy = (cfg.y1 + cfg.y2) / 2;
+              const cy = (cfg.y1 + cfg.y2) / 2 + (label === 'Comprimento' ? 20 : 0);
               const tx = cfg.x + (label === 'Comprimento' ? 15 : 10);
               return (
                 <g key={label}>
