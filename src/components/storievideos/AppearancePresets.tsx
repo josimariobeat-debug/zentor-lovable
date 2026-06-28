@@ -187,9 +187,9 @@ export default function AppearancePresets() {
           </div>
         </div>
       </div>
-
-      </div>
     </div>
+  );
+}
   );
 }
 
