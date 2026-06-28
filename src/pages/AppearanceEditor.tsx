@@ -219,6 +219,7 @@ export default function AppearanceEditor() {
   const { appId, presetId } = useParams();
   const [search] = useSearchParams();
   const kind: Kind = (search.get('kind') as Kind) === 'carousel' ? 'carousel' : 'floating';
+  const returnTo = search.get('returnTo');
 
   const isNew = !presetId || presetId === 'new';
   const [loading, setLoading] = useState(!isNew);
@@ -244,6 +245,10 @@ export default function AppearanceEditor() {
   }, [isNew, presetId, user]);
 
   function backToTab() {
+    if (returnTo) {
+      navigate(returnTo);
+      return;
+    }
     navigate(`/app/${appId}?tab=aparencia`);
   }
 
@@ -251,11 +256,13 @@ export default function AppearanceEditor() {
     if (!name.trim()) { toast.error('Dê um nome ao padrão'); return; }
     if (!user) return;
     setSaving(true);
+    let savedId: string | null = presetId && presetId !== 'new' ? presetId : null;
     if (isNew) {
-      const { error } = await supabase.from('appearance_presets').insert({
+      const { data, error } = await supabase.from('appearance_presets').insert({
         user_id: user.id, name: name.trim(), kind, config: cfg as unknown as never,
-      });
+      }).select('id').single();
       if (error) { setSaving(false); toast.error('Erro ao criar'); return; }
+      savedId = data?.id ?? null;
     } else {
       const { error } = await supabase
         .from('appearance_presets')
@@ -265,6 +272,11 @@ export default function AppearanceEditor() {
     }
     setSaving(false);
     toast.success('Padrão salvo');
+    if (returnTo && savedId) {
+      const sep = returnTo.includes('?') ? '&' : '?';
+      navigate(`${returnTo}${sep}selectedPreset=${encodeURIComponent(savedId)}`);
+      return;
+    }
     backToTab();
   }
 
@@ -371,14 +383,14 @@ export default function AppearanceEditor() {
       <TopBar
         title={isNew ? 'Nova aparência' : 'Editar aparência'}
         breadcrumb="Stories Vídeos"
-        backTo={`/app/${appId}?tab=aparencia`}
+        backTo={returnTo || `/app/${appId}?tab=aparencia`}
       />
       <main className="px-10 py-8 fade-in">
         <button
           onClick={backToTab}
           className="inline-flex items-center gap-2 text-sm text-neutral-600 hover:text-neutral-900 mb-4"
         >
-          <ArrowLeft className="w-4 h-4" /> Voltar para Aparência
+          <ArrowLeft className="w-4 h-4" /> {returnTo ? 'Voltar' : 'Voltar para Aparência'}
         </button>
 
         <div className="bg-white border border-neutral-200 rounded-2xl p-6">

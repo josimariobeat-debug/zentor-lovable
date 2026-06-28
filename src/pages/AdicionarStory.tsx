@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { useNavigate, useParams, useSearchParams } from 'react-router';
 import TopBar from '@/components/layout/TopBar';
 import MediaPreviewModal from '@/components/storievideos/MediaPreviewModal';
 import { Input } from '@/components/ui/input';
@@ -47,6 +47,7 @@ interface UrlEntry {
 export default function AdicionarStory() {
   const { appId, storyId } = useParams();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
   const isEdit = storyId && storyId !== 'novo';
 
@@ -55,12 +56,16 @@ export default function AdicionarStory() {
   const urlRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const stateKey = `story_form:${appId}:${storyId || 'novo'}`;
+
   const [loading, setLoading] = useState(isEdit);
   const [title, setTitle] = useState('');
   const [format, setFormat] = useState('widget');
   const [scroll, setScroll] = useState('vertical');
-  const [aparencia, setAparencia] = useState('Padrão 1');
-  const [aparenciaOptions, setAparenciaOptions] = useState([{ value: 'Padrão 1', label: 'Padrão 1' }]);
+  const [presets, setPresets] = useState<Tables<'appearance_presets'>[]>([]);
+  const [presetsLoaded, setPresetsLoaded] = useState(false);
+  // 'default' = aparência padrão do sistema. Caso contrário guarda o preset.id.
+  const [aparencia, setAparencia] = useState<string>('default');
   const [active, setActive] = useState(true);
   const [cta, setCta] = useState('');
   const [media, setMedia] = useState<Media[]>([]);
@@ -74,9 +79,37 @@ export default function AdicionarStory() {
   const [galleryOpen, setGalleryOpen] = useState(false);
 
   useEffect(() => {
-    if (isEdit) {
+    // Restaura estado quando retornamos do editor de aparência
+    const selectedFromUrl = searchParams.get('selectedPreset');
+    let restored = false;
+    if (selectedFromUrl) {
+      try {
+        const raw = sessionStorage.getItem(stateKey);
+        if (raw) {
+          const s = JSON.parse(raw);
+          setTitle(s.title ?? '');
+          setFormat(s.format ?? 'widget');
+          setScroll(s.scroll ?? 'vertical');
+          setActive(s.active ?? true);
+          setCta(s.cta ?? '');
+          if (Array.isArray(s.media)) setMedia(s.media);
+          if (Array.isArray(s.urls) && s.urls.length) setUrls(s.urls);
+          restored = true;
+        }
+      } catch (err) {
+        console.error('Erro ao restaurar formulário do story:', err);
+      }
+      setAparencia(selectedFromUrl);
+      sessionStorage.removeItem(stateKey);
+      // limpa o search param para não re-restaurar em navegações futuras
+      const next = new URLSearchParams(searchParams);
+      next.delete('selectedPreset');
+      setSearchParams(next, { replace: true });
+    }
+
+    if (isEdit && !restored) {
       loadStory();
-    } else {
+    } else if (!isEdit && !restored) {
       // Carregar mídias selecionadas da galeria (se houver)
       const savedMedia = sessionStorage.getItem('gallery_selected_media');
       if (savedMedia) {
@@ -101,6 +134,34 @@ export default function AdicionarStory() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEdit, storyId]);
+
+  // Carrega aparências cadastradas do usuário
+  useEffect(() => {
+    if (!user) return;
+    let cancel = false;
+    (async () => {
+      const { data } = await supabase
+        .from('appearance_presets')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('kind', 'floating')
+        .order('created_at', { ascending: true });
+      if (cancel) return;
+      const list = data ?? [];
+      setPresets(list);
+      setPresetsLoaded(true);
+      setAparencia((current) => {
+        if (current && current !== 'default' && list.some((p) => p.id === current)) return current;
+        // tenta resolver legado (nome salvo no DB) → preset.id
+        if (current && current !== 'default') {
+          const byName = list.find((p) => p.name === current);
+          if (byName) return byName.id;
+        }
+        return list[0]?.id ?? 'default';
+      });
+    })();
+    return () => { cancel = true; };
+  }, [user]);
 
   const loadStory = async () => {
     if (!supabase || !storyId) return;
@@ -129,6 +190,30 @@ export default function AdicionarStory() {
       })));
     }
     setLoading(false);
+  };
+
+  const goToAppearance = (target: 'new' | string) => {
+    // Persiste o formulário atual para restaurar ao voltar do editor de aparência.
+    try {
+      const snapshot = {
+        title,
+        format,
+        scroll,
+        active,
+        cta,
+        urls,
+        // Não persistimos arquivos pendentes (File objects não serializam).
+        media: media
+          .filter((m) => !m.file)
+          .map((m) => ({ id: m.id, url: m.url, type: m.type, name: m.name, cover: m.cover })),
+      };
+      sessionStorage.setItem(stateKey, JSON.stringify(snapshot));
+    } catch (err) {
+      console.error('Erro ao salvar estado do story:', err);
+    }
+    const returnTo = `/app/${appId}/story/${storyId || 'novo'}`;
+    const url = `/app/${appId}/aparencia/${target}?kind=floating&returnTo=${encodeURIComponent(returnTo)}`;
+    navigate(url);
   };
 
   const addUrl = () => setUrls([...urls, { value: '', type: 'contem', ignore_params: false }]);
@@ -398,34 +483,36 @@ export default function AdicionarStory() {
           <div data-ev-id="ev_90d3e83fe4" className="flex items-center gap-3">
             <div data-ev-id="ev_c7cecbe96d" className="flex-1">
               <Select value={aparencia} onValueChange={setAparencia}>
-                <SelectTrigger className="w-full h-11 rounded-xl border-neutral-200"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="w-full h-11 rounded-xl border-neutral-200"><SelectValue placeholder="Selecionar aparência" /></SelectTrigger>
                 <SelectContent>
-                  {aparenciaOptions.map((o) =>
-                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                  {presets.length === 0 && (
+                    <SelectItem value="default">Padrão</SelectItem>
                   )}
+                  {presets.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
             <button data-ev-id="ev_593c0a615b"
-            type="button"
-            onClick={() => {
-              const next = aparenciaOptions.length + 1;
-              const newOpt = { value: `Padrão ${next}`, label: `Padrão ${next}` };
-              setAparenciaOptions([...aparenciaOptions, newOpt]);
-              setAparencia(newOpt.value);
-              toast.success(`Aparência "${newOpt.label}" criada`);
-            }}
-            title="Adicionar aparência"
-            className="w-11 h-11 rounded-full bg-neutral-900 text-white flex items-center justify-center hover:bg-neutral-800 transition-colors shrink-0">
-
+              type="button"
+              onClick={() => goToAppearance('new')}
+              title="Criar nova aparência"
+              className="w-11 h-11 rounded-full bg-neutral-900 text-white flex items-center justify-center hover:bg-neutral-800 transition-colors shrink-0">
               <Plus className="w-4 h-4" strokeWidth={2.25} />
             </button>
             <button data-ev-id="ev_52dc55b214"
-            type="button"
-            onClick={() => toast.message('Editar aparência', { description: 'Em breve você editará cores, formato e bordas.' })}
-            title="Editar aparência"
-            className="w-11 h-11 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center hover:bg-amber-200 transition-colors shrink-0 ring-1 ring-amber-200">
-
+              type="button"
+              onClick={() => {
+                if (aparencia === 'default' || !aparencia) {
+                  toast.message('Selecione uma aparência cadastrada para editar.');
+                  return;
+                }
+                goToAppearance(aparencia);
+              }}
+              disabled={aparencia === 'default' || !aparencia}
+              title="Editar aparência selecionada"
+              className="w-11 h-11 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center hover:bg-amber-200 transition-colors shrink-0 ring-1 ring-amber-200 disabled:opacity-50 disabled:cursor-not-allowed">
               <Pencil className="w-4 h-4" strokeWidth={2} />
             </button>
           </div>
