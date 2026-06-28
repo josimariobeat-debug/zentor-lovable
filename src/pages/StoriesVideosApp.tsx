@@ -1323,84 +1323,100 @@ function AddMeasureModelModal({
 // Measure Preview Modal — mannequin outline + measurements table
 // ============================================================
 
-const MEASURE_GUIDES: Record<MeasureType, { y: number; label: string; side: 'L' | 'R' }> = {
-  'Busto':           { y: 92,  label: 'Busto',           side: 'R' },
-  'Cintura':         { y: 130, label: 'Cintura',         side: 'L' },
-  'Quadril':         { y: 165, label: 'Quadril',         side: 'R' },
-  'Manga':           { y: 110, label: 'Manga',           side: 'L' },
-  'Bíceps':          { y: 100, label: 'Bíceps',          side: 'R' },
-  'Comprimento':     { y: 250, label: 'Comprimento',     side: 'L' },
-  'Dentro da Perna': { y: 230, label: 'Dentro da Perna', side: 'R' },
-};
-
 function MannequinSVG({ activeTypes }: { activeTypes: MeasureType[] }) {
   const isActive = (t: MeasureType) => activeTypes.includes(t);
+  const GUIDE = '#ef4444';
+  const STROKE = '#1f2937';
+  const LABEL = '#374151';
   return (
-    <svg viewBox="0 0 220 320" className="w-full h-auto max-h-[420px]" aria-hidden="true">
-      {/* Body outline */}
-      <g fill="none" stroke="#171717" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round">
+    <svg viewBox="0 0 400 760" className="w-full h-auto max-h-[560px]" aria-hidden="true">
+      <g fill="none" stroke={STROKE} strokeWidth="1.4" strokeLinejoin="round" strokeLinecap="round">
         {/* Head */}
-        <circle cx="110" cy="32" r="18" />
+        <ellipse cx="200" cy="70" rx="36" ry="44" />
         {/* Neck */}
-        <path d="M102 50 L102 58 Q110 62 118 58 L118 50" />
-        {/* Torso + arms + legs silhouette */}
+        <path d="M184 110 C184 124 184 130 178 140 M216 110 C216 124 216 130 222 140" />
+        {/* Shoulders + torso (bust, waist, hip) */}
         <path d="
-          M118 58
-          L150 70
-          L168 110
-          L160 115
-          L148 88
-          L142 130
-          L150 180
-          L138 182
-          L128 130
-          L128 200
-          L132 312
-          L118 312
-          L112 210
-          L108 210
-          L102 312
-          L88 312
-          L92 200
-          L92 130
-          L82 182
-          L70 180
-          L78 130
-          L72 88
-          L60 115
-          L52 110
-          L70 70
-          L102 58
+          M178 140
+          C150 150 132 160 120 178
+          C128 184 138 188 150 188
+          C158 200 168 214 180 224
+          C188 232 192 240 192 250
+          C188 270 180 290 178 318
+          C176 346 184 372 196 392
+          C204 412 208 432 208 452
+          C208 432 212 412 220 392
+          C232 372 240 346 238 318
+          C236 290 228 270 224 250
+          C224 240 228 232 236 224
+          C248 214 258 200 266 188
+          C278 188 288 184 296 178
+          C284 160 266 150 238 140
         " />
+        {/* Bust subtle curves */}
+        <path d="M178 200 C188 212 196 218 200 218 C204 218 212 212 222 200" opacity="0.6" />
+        {/* Navel */}
+        <circle cx="200" cy="310" r="1.6" fill={STROKE} opacity="0.5" />
+        {/* Arms - left */}
+        <path d="M120 178 C108 220 100 270 96 322 C94 348 96 372 102 396 C108 412 114 422 118 430" />
+        <path d="M150 188 C144 224 140 270 138 322 C138 350 142 376 150 400 C156 416 162 426 168 432" />
+        {/* Hand - left */}
+        <path d="M102 396 C100 416 104 432 118 430 C116 422 116 412 118 402" />
+        {/* Arms - right */}
+        <path d="M280 178 C292 220 300 270 304 322 C306 348 304 372 298 396 C292 412 286 422 282 430" />
+        <path d="M250 188 C256 224 260 270 262 322 C262 350 258 376 250 400 C244 416 238 426 232 432" />
+        {/* Hand - right */}
+        <path d="M298 396 C300 416 296 432 282 430 C284 422 284 412 282 402" />
+        {/* Legs */}
+        <path d="
+          M196 452
+          C188 488 178 528 174 568
+          C170 608 172 648 176 686
+          C178 710 182 724 188 732
+          L196 732
+          C198 720 198 700 198 680
+          C198 632 198 588 200 560
+        " />
+        <path d="
+          M204 452
+          C212 488 222 528 226 568
+          C230 608 228 648 224 686
+          C222 710 218 724 212 732
+          L204 732
+          C202 720 202 700 202 680
+          C202 632 202 588 200 560
+        " />
+        {/* Feet */}
+        <path d="M188 732 C182 740 178 744 176 748 C184 750 196 748 198 740" />
+        <path d="M212 732 C218 740 222 744 224 748 C216 750 204 748 202 740" />
+        {/* Collarbone hint */}
+        <path d="M170 152 C188 158 212 158 230 152" opacity="0.5" />
       </g>
 
-      {/* Dotted measurement guides */}
-      <g stroke="#171717" strokeWidth="1.2" strokeDasharray="3 3" fill="none">
-        {/* Busto */}
-        {isActive('Busto') && <ellipse cx="110" cy="92" rx="32" ry="6" opacity={0.9} />}
-        {/* Cintura */}
-        {isActive('Cintura') && <ellipse cx="110" cy="130" rx="24" ry="5" opacity={0.9} />}
-        {/* Quadril */}
-        {isActive('Quadril') && <ellipse cx="110" cy="165" rx="34" ry="6" opacity={0.9} />}
-        {/* Bíceps */}
-        {isActive('Bíceps') && <ellipse cx="156" cy="100" rx="8" ry="3" opacity={0.9} />}
-        {/* Manga (arm length line) */}
-        {isActive('Manga') && <line x1="60" y1="70" x2="52" y2="115" />}
-        {/* Comprimento (full length line) */}
-        {isActive('Comprimento') && <line x1="178" y1="58" x2="178" y2="312" />}
-        {/* Dentro da Perna */}
-        {isActive('Dentro da Perna') && <line x1="42" y1="130" x2="42" y2="312" />}
+      {/* Measurement guides — horizontal red dashed lines spanning beyond body */}
+      <g stroke={GUIDE} strokeWidth="1.4" strokeDasharray="4 4" fill="none">
+        {isActive('Busto')    && <line x1="60"  y1="210" x2="340" y2="210" />}
+        {isActive('Cintura')  && <line x1="60"  y1="282" x2="340" y2="282" />}
+        {isActive('Quadril')  && <line x1="60"  y1="380" x2="340" y2="380" />}
+        {isActive('Bíceps')   && <line x1="80"  y1="248" x2="320" y2="248" />}
+        {isActive('Manga')    && <line x1="84"  y1="178" x2="84"  y2="424" />}
+        {isActive('Comprimento') && <line x1="320" y1="140" x2="320" y2="732" />}
+        {isActive('Dentro da Perna') && <line x1="200" y1="452" x2="200" y2="732" />}
       </g>
 
       {/* Labels */}
-      <g fontFamily="ui-sans-serif, system-ui" fontSize="9" fill="#525252">
-        {isActive('Busto') && (<><line x1="142" y1="92" x2="186" y2="92" stroke="#a3a3a3" strokeDasharray="2 2"/><text x="190" y="95">Busto</text></>)}
-        {isActive('Cintura') && (<><line x1="34" y1="130" x2="86" y2="130" stroke="#a3a3a3" strokeDasharray="2 2"/><text x="0" y="133">Cintura</text></>)}
-        {isActive('Quadril') && (<><line x1="144" y1="165" x2="186" y2="165" stroke="#a3a3a3" strokeDasharray="2 2"/><text x="190" y="168">Quadril</text></>)}
-        {isActive('Bíceps') && (<><line x1="164" y1="100" x2="200" y2="80" stroke="#a3a3a3" strokeDasharray="2 2"/><text x="195" y="76">Bíceps</text></>)}
-        {isActive('Manga') && (<><line x1="56" y1="92" x2="18" y2="80" stroke="#a3a3a3" strokeDasharray="2 2"/><text x="0" y="76">Manga</text></>)}
-        {isActive('Comprimento') && (<text x="183" y="190" transform="rotate(90 183 190)">Comprimento</text>)}
-        {isActive('Dentro da Perna') && (<text x="6" y="220">Dentro</text>)}
+      <g fontFamily="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" fontSize="14" fill={LABEL}>
+        {isActive('Busto')    && <text x="64" y="204">Busto</text>}
+        {isActive('Cintura')  && <text x="64" y="276">Cintura</text>}
+        {isActive('Quadril')  && <text x="64" y="374">Quadril</text>}
+        {isActive('Bíceps')   && <text x="84" y="242">Bíceps</text>}
+        {isActive('Manga')    && <text x="56" y="172">Manga</text>}
+        {isActive('Comprimento') && (
+          <text x="332" y="436" transform="rotate(90 332 436)" textAnchor="middle">Comprimento</text>
+        )}
+        {isActive('Dentro da Perna') && (
+          <text x="212" y="600" transform="rotate(90 212 600)" textAnchor="middle">Dentro da Perna</text>
+        )}
       </g>
     </svg>
   );
