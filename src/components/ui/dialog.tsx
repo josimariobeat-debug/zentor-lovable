@@ -69,7 +69,7 @@ function DialogContent({ children, className }: {children: React.ReactNode;class
 }
 
 function DialogHeader({ children }: {children: React.ReactNode;}) {
-  return <div data-ev-id="ev_b57c2b8d9a" className="px-6 pt-6 pb-4">{children}</div>;
+  return <div data-ev-id="ev_b57c2b8d9a" className="pb-2">{children}</div>;
 }
 
 function DialogTitle({ children }: {children: React.ReactNode;}) {

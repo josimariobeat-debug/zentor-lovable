@@ -872,9 +872,9 @@ function AddProductModal({
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o && !saving) onClose(); }}>
-      <DialogContent className="w-[calc(100%-2rem)] sm:w-full max-w-lg mx-auto p-0 overflow-hidden">
+      <DialogContent className="w-[calc(100%-2rem)] sm:w-full max-w-2xl mx-auto my-auto p-0 overflow-hidden">
         <form onSubmit={handleSubmit} noValidate>
-          <div className="px-6 pt-6">
+          <div className="px-6 pt-5">
             <DialogHeader>
               <DialogTitle>{isEdit ? 'Editar produto' : 'Adicionar produto manualmente'}</DialogTitle>
               <DialogDescription>
@@ -883,7 +883,7 @@ function AddProductModal({
             </DialogHeader>
           </div>
 
-          <div className="px-6 py-6">
+          <div className="px-6 py-4">
             <div className="flex flex-col sm:flex-row items-start gap-5">
               {/* Imagem */}
               <div className="relative shrink-0">
