@@ -6,6 +6,7 @@ import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Skeleton, StoriesRowsSkeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { ConfirmDeleteDialog } from '@/components/ui/ConfirmDeleteDialog';
 import { toast } from '@/components/ui/toaster';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
