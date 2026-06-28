@@ -872,7 +872,7 @@ function AddProductModal({
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o && !saving) onClose(); }}>
-      <DialogContent className="w-[calc(100%-2rem)] sm:w-full max-w-2xl mx-auto p-0 overflow-hidden">
+      <DialogContent className="w-[calc(100%-2rem)] sm:w-full max-w-lg mx-auto p-0 overflow-hidden">
         <form onSubmit={handleSubmit} noValidate>
           <div className="px-6 pt-6">
             <DialogHeader>
