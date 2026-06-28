@@ -6,6 +6,7 @@ import { toast } from '@/components/ui/toaster';
 import { Plus, Copy, Pencil, Trash2, Sparkles, LayoutGrid } from 'lucide-react';
 import { StoriesRowsSkeleton } from '@/components/ui/skeleton';
 import type { Tables } from '@/integrations/supabase/helpers';
+import { ConfirmDeleteDialog } from '@/components/ui/ConfirmDeleteDialog';
 
 type Preset = Tables<'appearance_presets'>;
 type Kind = 'floating' | 'carousel';
