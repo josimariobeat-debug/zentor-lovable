@@ -7,8 +7,10 @@ import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/components/ui/toaster';
 import { Switch } from '@/components/ui/switch';
 import previewVideoAsset from '@/assets/widget-preview.mp4.asset.json';
+import storyIosAsset from '@/assets/story-ios.mp4.asset.json';
 
 const PREVIEW_VIDEO_URL = previewVideoAsset.url;
+const STORY_IOS_URL = storyIosAsset.url;
 
 interface DemoStory {
   type: 'video' | 'image';
@@ -18,6 +20,11 @@ interface DemoStory {
 }
 
 const DEMO_STORIES: DemoStory[] = [
+  {
+    type: 'video',
+    src: STORY_IOS_URL,
+    product: { title: 'Novidade da loja', price: 'R$ 189,90', thumb: 'https://images.unsplash.com/photo-1520975916090-3105956dac38?w=120&h=120&fit=crop' },
+  },
   {
     type: 'video',
     src: PREVIEW_VIDEO_URL,
@@ -182,14 +189,19 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
     if (!isVideo) return;
     const v = videoRef.current;
     if (!v) return;
-    v.muted = muted;
+    // iOS/iPadOS require playsinline attributes BEFORE play() or it goes fullscreen / drops audio.
     (v as HTMLVideoElement & { playsInline?: boolean }).playsInline = true;
+    v.setAttribute('playsinline', '');
+    v.setAttribute('webkit-playsinline', 'true');
+    v.setAttribute('x5-playsinline', 'true');
+    v.muted = muted;
+    if (!muted) v.volume = 1;
     const onEnd = () => goNext();
     v.addEventListener('ended', onEnd);
     const p = v.play();
     if (p && typeof p.then === 'function') {
       p.catch(() => {
-        // Autoplay with sound may be blocked — fall back to muted and retry.
+        // Autoplay with sound is blocked on iOS/Safari until a user gesture — fall back to muted.
         if (!v.muted) {
           v.muted = true;
           setMuted(true);
@@ -223,22 +235,27 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
     });
   }
   function toggleMute() {
-    setMuted((m) => {
-      const next = !m;
-      const v = videoRef.current;
-      if (v) {
-        v.muted = next;
-        if (!next) {
-          // Ensure audio actually plays after user gesture.
-          v.volume = 1;
-          v.play().catch(() => {
+    // Run synchronously inside the click/tap handler so iOS treats it as a user gesture.
+    const v = videoRef.current;
+    const next = !muted;
+    if (v) {
+      // Re-assert playsinline so iOS Safari/iPad doesn't switch to fullscreen on unmute.
+      (v as HTMLVideoElement & { playsInline?: boolean }).playsInline = true;
+      v.setAttribute('playsinline', '');
+      v.setAttribute('webkit-playsinline', 'true');
+      v.muted = next;
+      v.volume = 1;
+      if (!next) {
+        const p = v.play();
+        if (p && typeof p.then === 'function') {
+          p.catch(() => {
             v.muted = true;
             setMuted(true);
           });
         }
       }
-      return next;
-    });
+    }
+    setMuted(next);
   }
 
   function toggleLike() {
