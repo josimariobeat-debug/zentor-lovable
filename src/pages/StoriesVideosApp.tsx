@@ -562,6 +562,8 @@ function ProdutosTab() {
   const [measuresLoading, setMeasuresLoading] = useState(!initialMeasures);
   const [savingMeasure, setSavingMeasure] = useState(false);
   const [previewMeasure, setPreviewMeasure] = useState<MeasureModel | null>(null);
+  const [deleteProduct, setDeleteProduct] = useState<ProductRow | null>(null);
+  const [deleteMeasure, setDeleteMeasure] = useState<MeasureModel | null>(null);
 
 
   useEffect(() => {
