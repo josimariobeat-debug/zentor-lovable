@@ -626,17 +626,79 @@ function ProdutosTab() {
   const [measureOpen, setMeasureOpen] = useState(false);
   const [editingMeasure, setEditingMeasure] = useState<MeasureModel | null>(null);
   const [measures, setMeasures] = useState<MeasureModel[]>([]);
-  const measuresKey = user ? `storiesvideos:measures:${user.id}` : '';
+  const [measuresLoading, setMeasuresLoading] = useState(true);
+  const [savingMeasure, setSavingMeasure] = useState(false);
+
   useEffect(() => {
-    if (!measuresKey) return;
+    if (!user) return;
+    let cancelled = false;
+    (async () => {
+      setMeasuresLoading(true);
+      const { data: models, error } = await (supabase as any)
+        .from('measure_models')
+        .select('id,name,measure_rows(id,size_name,measure_type,value_cm,position)')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      if (cancelled) return;
+      if (error) {
+        toast.error('Erro ao carregar medidas', { description: error.message });
+      } else if (models) {
+        setMeasures((models as any[]).map((m) => ({
+          id: m.id,
+          name: m.name,
+          rows: ((m.measure_rows ?? []) as any[])
+            .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+            .map((r) => ({ id: r.id, tamanho: r.size_name, medida: r.measure_type as MeasureType, valor: String(r.value_cm) }))
+        })));
+      }
+      setMeasuresLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [user]);
+
+  const saveMeasureModel = async (model: Omit<MeasureModel, 'id'>) => {
+    if (!user) return;
+    setSavingMeasure(true);
     try {
-      const raw = window.localStorage.getItem(measuresKey);
-      setMeasures(raw ? JSON.parse(raw) : []);
-    } catch { setMeasures([]); }
-  }, [measuresKey]);
-  const persistMeasures = (next: MeasureModel[]) => {
-    setMeasures(next);
-    try { window.localStorage.setItem(measuresKey, JSON.stringify(next)); } catch {}
+      const modelId = editingMeasure?.id;
+      let savedId = modelId;
+      if (modelId) {
+        const { error } = await (supabase as any).from('measure_models').update({ name: model.name }).eq('id', modelId);
+        if (error) throw error;
+        const { error: delErr } = await (supabase as any).from('measure_rows').delete().eq('model_id', modelId);
+        if (delErr) throw delErr;
+      } else {
+        const { data, error } = await (supabase as any).from('measure_models').insert({ user_id: user.id, name: model.name }).select('id').single();
+        if (error) throw error;
+        savedId = data.id;
+      }
+      if (model.rows.length > 0) {
+        const rows = model.rows.map((r, i) => ({
+          model_id: savedId, user_id: user.id, size_name: r.tamanho, measure_type: r.medida, value_cm: Number(r.valor) || 0, position: i
+        }));
+        const { error: insErr } = await (supabase as any).from('measure_rows').insert(rows);
+        if (insErr) throw insErr;
+      }
+      const fresh: MeasureModel = { id: savedId!, name: model.name, rows: model.rows.map((r) => ({ ...r, id: crypto.randomUUID() })) };
+      setMeasures((arr) => modelId ? arr.map((m) => m.id === modelId ? fresh : m) : [fresh, ...arr]);
+      toast.success(modelId ? 'Modelo atualizado' : 'Modelo adicionado');
+      setMeasureOpen(false);
+      setEditingMeasure(null);
+    } catch (e: any) {
+      toast.error('Erro ao salvar medidas', { description: e?.message });
+    } finally {
+      setSavingMeasure(false);
+    }
+  };
+
+  const deleteMeasureModel = async (id: string) => {
+    const prev = measures;
+    setMeasures((arr) => arr.filter((x) => x.id !== id));
+    const { error } = await (supabase as any).from('measure_models').delete().eq('id', id);
+    if (error) {
+      setMeasures(prev);
+      toast.error('Erro ao remover modelo', { description: error.message });
+    }
   };
 
   useEffect(() => {
@@ -792,6 +854,18 @@ function ProdutosTab() {
           </div> :
 
 
+      measuresLoading ?
+      <div className="bg-white border border-neutral-200 rounded-2xl overflow-hidden">
+            {[0, 1, 2].map((i) =>
+        <div key={i} className={`flex items-center gap-4 px-5 py-4 ${i !== 2 ? 'border-b border-neutral-100' : ''}`}>
+                <Skeleton className="w-12 h-12 rounded-xl" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-1/3" />
+                  <Skeleton className="h-3 w-1/4" />
+                </div>
+              </div>
+        )}
+          </div> :
       measures.length === 0 ?
       <div className="border border-dashed border-neutral-300 rounded-2xl p-16 text-center text-neutral-500">
             Nenhum modelo de medidas. Clique em <b className="text-neutral-700">Adicionar medidas</b> para começar.
@@ -815,7 +889,7 @@ function ProdutosTab() {
                   <Edit2 className="w-4 h-4" />
                 </button>
                 <button
-            onClick={() => persistMeasures(measures.filter((x) => x.id !== m.id))}
+            onClick={() => deleteMeasureModel(m.id)}
             aria-label="Remover modelo"
             className="w-9 h-9 rounded-lg hover:bg-red-50 hover:text-red-600 flex items-center justify-center text-neutral-700 transition-colors">
                   <Trash2 className="w-4 h-4" />
@@ -835,18 +909,10 @@ function ProdutosTab() {
       <AddMeasureModelModal
         open={measureOpen}
         editing={editingMeasure}
+        saving={savingMeasure}
         onClose={() => { setMeasureOpen(false); setEditingMeasure(null); }}
-        onSave={(model) => {
-          if (editingMeasure) {
-            persistMeasures(measures.map((m) => m.id === editingMeasure.id ? { ...model, id: editingMeasure.id } : m));
-            toast.success('Modelo atualizado');
-          } else {
-            persistMeasures([{ ...model, id: crypto.randomUUID() }, ...measures]);
-            toast.success('Modelo adicionado');
-          }
-          setMeasureOpen(false);
-          setEditingMeasure(null);
-        }} />
+        onSave={saveMeasureModel} />
+
 
     </div>);
 
@@ -1079,8 +1145,9 @@ function AddMeasureModelModal({
   open,
   editing,
   onClose,
-  onSave
-}: {open: boolean;editing?: MeasureModel | null;onClose: () => void;onSave: (m: Omit<MeasureModel, 'id'>) => void;}) {
+  onSave,
+  saving = false
+}: {open: boolean;editing?: MeasureModel | null;onClose: () => void;onSave: (m: Omit<MeasureModel, 'id'>) => void;saving?: boolean;}) {
   const [name, setName] = useState('');
   const [rows, setRows] = useState<MeasureRow[]>([]);
   const [touched, setTouched] = useState(false);
@@ -1211,9 +1278,10 @@ function AddMeasureModelModal({
             </button>
             <button
               type="submit"
-              className="inline-flex items-center gap-2 h-10 px-4 text-[13.5px] font-medium text-white bg-neutral-900 hover:bg-neutral-800 rounded-xl transition-colors">
+              disabled={saving}
+              className="inline-flex items-center gap-2 h-10 px-4 text-[13.5px] font-medium text-white bg-neutral-900 hover:bg-neutral-800 disabled:opacity-60 disabled:cursor-not-allowed rounded-xl transition-colors">
               {isEdit ? <Edit2 className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-              {isEdit ? 'Salvar alterações' : 'Adicionar modelo'}
+              {saving ? 'Salvando…' : isEdit ? 'Salvar alterações' : 'Adicionar modelo'}
             </button>
           </div>
         </form>
