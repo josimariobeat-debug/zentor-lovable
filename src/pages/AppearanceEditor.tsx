@@ -47,6 +47,11 @@ const DEMO_STORIES: DemoStory[] = [
     product: { title: 'Camiseta básica algodão', price: 'R$ 59,90', thumb: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=120&h=120&fit=crop' },
     duration: 5,
   },
+  {
+    type: 'video',
+    src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+    product: { title: 'Coleção Big Bunny', price: 'R$ 199,90', thumb: 'https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=120&h=120&fit=crop' },
+  },
 ];
 
 function StoryViewer({ onClose }: { onClose: () => void }) {
