@@ -3,10 +3,11 @@ import { useNavigate, useParams } from 'react-router';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/components/ui/toaster';
-import { Plus, Copy, Pencil, Trash2, Sparkles, LayoutGrid } from 'lucide-react';
+import { Plus, Copy, Pencil, Trash2 } from 'lucide-react';
 import { StoriesRowsSkeleton } from '@/components/ui/skeleton';
 import type { Tables } from '@/integrations/supabase/helpers';
 import { ConfirmDeleteDialog } from '@/components/ui/ConfirmDeleteDialog';
+import AppearanceMiniPreview, { type MiniConfig } from './AppearanceMiniPreview';
 
 type Preset = Tables<'appearance_presets'>;
 type Kind = 'floating' | 'carousel';
