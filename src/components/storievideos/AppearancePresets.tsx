@@ -190,6 +190,5 @@ export default function AppearancePresets() {
     </div>
   );
 }
-  );
-}
+
 
