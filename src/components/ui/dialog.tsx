@@ -40,7 +40,7 @@ function Dialog({ open, onOpenChange, children }: DialogProps) {
 
   return (
     <div data-ev-id="ev_71319df409" className="fixed inset-0 z-[100]">
-      <div data-ev-id="ev_1bfe293004" className="fixed inset-0 bg-black/50 animate-in fade-in-0" />
+      <div data-ev-id="ev_1bfe293004" className="fixed inset-0 md:left-[260px] bg-black/50 animate-in fade-in-0" />
       <div data-ev-id="ev_48a5fcedd5"
       ref={overlayRef}
       className="fixed inset-0 md:left-[260px] overflow-y-auto"
