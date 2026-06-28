@@ -1179,7 +1179,7 @@ function AddMeasureModelModal({
       setRows([{ id: crypto.randomUUID(), tamanho: '', medida: 'Busto', valor: '' }]);
     }
     setTouched(false);
-    setTimeout(() => nameRef.current?.focus(), 50);
+    setTimeout(() => nameRef.current?.focus({ preventScroll: true }), 50);
   }, [open, editing]);
 
   const addRow = () => setRows((r) => [...r, { id: crypto.randomUUID(), tamanho: '', medida: 'Busto', valor: '' }]);
