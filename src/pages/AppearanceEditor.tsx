@@ -390,7 +390,7 @@ export default function AppearanceEditor() {
           onClick={backToTab}
           className="inline-flex items-center gap-2 text-sm text-neutral-600 hover:text-neutral-900 mb-4"
         >
-          <ArrowLeft className="w-4 h-4" /> Voltar para Aparência
+          <ArrowLeft className="w-4 h-4" /> {returnTo ? 'Voltar' : 'Voltar para Aparência'}
         </button>
 
         <div className="bg-white border border-neutral-200 rounded-2xl p-6">
