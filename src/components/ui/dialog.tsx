@@ -83,16 +83,16 @@ function DialogContent({ children, className }: {children: React.ReactNode;class
 
 }
 
-function DialogHeader({ children }: {children: React.ReactNode;}) {
-  return <div data-ev-id="ev_b57c2b8d9a" className="pb-2">{children}</div>;
+function DialogHeader({ children, className }: {children: React.ReactNode;className?: string;}) {
+  return <div data-ev-id="ev_b57c2b8d9a" className={cn('px-6 pt-6 pb-2', className)}>{children}</div>;
 }
 
-function DialogTitle({ children }: {children: React.ReactNode;}) {
-  return <h2 data-ev-id="ev_724c0b6437" className="text-lg font-semibold text-neutral-900">{children}</h2>;
+function DialogTitle({ children, className }: {children: React.ReactNode;className?: string;}) {
+  return <h2 data-ev-id="ev_724c0b6437" className={cn('text-lg font-semibold text-neutral-900 leading-tight', className)}>{children}</h2>;
 }
 
-function DialogDescription({ children }: {children: React.ReactNode;}) {
-  return <p data-ev-id="ev_5ad6ce9b1c" className="text-sm text-neutral-500 mt-1">{children}</p>;
+function DialogDescription({ children, className }: {children: React.ReactNode;className?: string;}) {
+  return <p data-ev-id="ev_5ad6ce9b1c" className={cn('text-sm text-neutral-600 mt-1.5 leading-relaxed', className)}>{children}</p>;
 }
 
 function DialogFooter({ children, className }: {children: React.ReactNode;className?: string;}) {
