@@ -29,6 +29,7 @@ export default function AppearancePresets() {
   const [loading, setLoading] = useState(!initialCached);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(16);
+  const [toDelete, setToDelete] = useState<Preset | null>(null);
 
   async function load() {
     if (!user) return;
