@@ -603,6 +603,10 @@ function PlaceholderTab({ label }: {label: string;}) {
 }
 
 type ProductRow = {id: string;name: string;price: string;currency: string;url: string;image: string | null;};
+type MeasureType = 'Busto' | 'Quadril' | 'Cintura' | 'Manga' | 'Comprimento' | 'Dentro da Perna' | 'Bíceps';
+const MEASURE_TYPES: MeasureType[] = ['Busto', 'Quadril', 'Cintura', 'Manga', 'Comprimento', 'Dentro da Perna', 'Bíceps'];
+type MeasureRow = {id: string;tamanho: string;medida: MeasureType;valor: string;};
+type MeasureModel = {id: string;name: string;rows: MeasureRow[]};
 
 function ProdutosTab() {
   const { user } = useAuth();
@@ -619,6 +623,21 @@ function ProdutosTab() {
   const [products, setProducts] = useState<ProductRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [measureOpen, setMeasureOpen] = useState(false);
+  const [editingMeasure, setEditingMeasure] = useState<MeasureModel | null>(null);
+  const [measures, setMeasures] = useState<MeasureModel[]>([]);
+  const measuresKey = user ? `storiesvideos:measures:${user.id}` : '';
+  useEffect(() => {
+    if (!measuresKey) return;
+    try {
+      const raw = window.localStorage.getItem(measuresKey);
+      setMeasures(raw ? JSON.parse(raw) : []);
+    } catch { setMeasures([]); }
+  }, [measuresKey]);
+  const persistMeasures = (next: MeasureModel[]) => {
+    setMeasures(next);
+    try { window.localStorage.setItem(measuresKey, JSON.stringify(next)); } catch {}
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -704,7 +723,8 @@ function ProdutosTab() {
         <button
           onClick={() => {
             if (view === 'medidas') {
-              toast.info('Adicionar medidas em breve');
+              setEditingMeasure(null);
+              setMeasureOpen(true);
             } else {
               setAddOpen(true);
             }
@@ -772,10 +792,37 @@ function ProdutosTab() {
           </div> :
 
 
-      <div className="bg-white border border-neutral-200 rounded-2xl p-16 text-center">
-          <h3 className="text-[16px] font-semibold text-neutral-900">Medidas</h3>
-          <p className="text-[14px] text-neutral-500 mt-1">Configure as medidas dos seus produtos aqui.</p>
-        </div>
+      measures.length === 0 ?
+      <div className="border border-dashed border-neutral-300 rounded-2xl p-16 text-center text-neutral-500">
+            Nenhum modelo de medidas. Clique em <b className="text-neutral-700">Adicionar medidas</b> para começar.
+          </div> :
+      <div className="bg-white border border-neutral-200 rounded-2xl overflow-hidden">
+            {measures.map((m, idx) =>
+        <div key={m.id} className={`flex items-center gap-4 px-5 py-4 ${idx !== measures.length - 1 ? 'border-b border-neutral-100' : ''}`}>
+                <div className="w-12 h-12 shrink-0 rounded-xl bg-neutral-100 border border-neutral-200 flex items-center justify-center">
+                  <Settings2 className="w-5 h-5 text-neutral-500" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-[14.5px] font-semibold text-neutral-900 truncate">{m.name}</h4>
+                  <p className="text-[12.5px] text-neutral-500 truncate mt-0.5">
+                    {m.rows.length} {m.rows.length === 1 ? 'linha' : 'linhas'}
+                  </p>
+                </div>
+                <button
+            onClick={() => { setEditingMeasure(m); setMeasureOpen(true); }}
+            aria-label="Editar modelo"
+            className="w-9 h-9 rounded-lg hover:bg-neutral-100 flex items-center justify-center text-neutral-700 transition-colors">
+                  <Edit2 className="w-4 h-4" />
+                </button>
+                <button
+            onClick={() => persistMeasures(measures.filter((x) => x.id !== m.id))}
+            aria-label="Remover modelo"
+            className="w-9 h-9 rounded-lg hover:bg-red-50 hover:text-red-600 flex items-center justify-center text-neutral-700 transition-colors">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+        )}
+          </div>
       }
 
       <AddProductModal
@@ -784,6 +831,22 @@ function ProdutosTab() {
         onClose={closeModal}
         saving={saving}
         onSave={handleSave} />
+
+      <AddMeasureModelModal
+        open={measureOpen}
+        editing={editingMeasure}
+        onClose={() => { setMeasureOpen(false); setEditingMeasure(null); }}
+        onSave={(model) => {
+          if (editingMeasure) {
+            persistMeasures(measures.map((m) => m.id === editingMeasure.id ? { ...model, id: editingMeasure.id } : m));
+            toast.success('Modelo atualizado');
+          } else {
+            persistMeasures([{ ...model, id: crypto.randomUUID() }, ...measures]);
+            toast.success('Modelo adicionado');
+          }
+          setMeasureOpen(false);
+          setEditingMeasure(null);
+        }} />
 
     </div>);
 
@@ -1010,6 +1073,155 @@ function AddProductModal({
     </Dialog>);
 
 }
+
+
+function AddMeasureModelModal({
+  open,
+  editing,
+  onClose,
+  onSave
+}: {open: boolean;editing?: MeasureModel | null;onClose: () => void;onSave: (m: Omit<MeasureModel, 'id'>) => void;}) {
+  const [name, setName] = useState('');
+  const [rows, setRows] = useState<MeasureRow[]>([]);
+  const [touched, setTouched] = useState(false);
+  const nameRef = useRef<HTMLInputElement>(null);
+  const isEdit = !!editing;
+
+  useEffect(() => {
+    if (!open) return;
+    if (editing) {
+      setName(editing.name);
+      setRows(editing.rows.map((r) => ({ ...r })));
+    } else {
+      setName('');
+      setRows([{ id: crypto.randomUUID(), tamanho: '', medida: 'Busto', valor: '' }]);
+    }
+    setTouched(false);
+    setTimeout(() => nameRef.current?.focus(), 50);
+  }, [open, editing]);
+
+  const addRow = () => setRows((r) => [...r, { id: crypto.randomUUID(), tamanho: '', medida: 'Busto', valor: '' }]);
+  const removeRow = (id: string) => setRows((r) => r.filter((x) => x.id !== id));
+  const updateRow = (id: string, patch: Partial<MeasureRow>) =>
+    setRows((r) => r.map((x) => x.id === id ? { ...x, ...patch } : x));
+
+  const trimmedName = name.trim();
+  const validRows = rows.filter((r) => r.tamanho.trim() && r.valor.trim());
+  const nameError = !trimmedName ? 'Informe o nome do modelo' : trimmedName.length > 80 ? 'Máximo 80 caracteres' : '';
+  const rowsError = validRows.length === 0 ? 'Adicione pelo menos uma linha completa' : '';
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setTouched(true);
+    if (nameError || rowsError) return;
+    onSave({ name: trimmedName, rows: validRows });
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent className="w-[calc(100%-2rem)] sm:w-full max-w-2xl mx-auto my-auto p-0 overflow-hidden">
+        <form onSubmit={handleSubmit} noValidate>
+          <div className="px-6 pt-5">
+            <DialogHeader>
+              <DialogTitle>{isEdit ? 'Editar modelo' : 'Adicionar modelo'}</DialogTitle>
+              <DialogDescription>
+                Defina os tamanhos e as medidas que compõem este modelo.
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+
+          <div className="px-6 py-4 space-y-5">
+            <div>
+              <label className="text-[12.5px] font-medium text-neutral-600 mb-1.5 block">Nome do Modelo</label>
+              <Input
+                ref={nameRef}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Ex.: Medidas Milena"
+                aria-invalid={touched && !!nameError}
+                className={`h-11 rounded-xl ${touched && nameError ? 'border-red-400 focus-visible:ring-red-200' : 'border-neutral-200'}`} />
+              {touched && nameError && <p className="text-[12px] text-red-600 mt-1">{nameError}</p>}
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-[12.5px] font-medium text-neutral-600">Tabela de Medidas</label>
+                <button
+                  type="button"
+                  onClick={addRow}
+                  className="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-neutral-700 hover:bg-neutral-100 px-2.5 py-1.5 rounded-lg transition-colors">
+                  <Plus className="w-3.5 h-3.5" /> Adicionar linha
+                </button>
+              </div>
+
+              <div className="border border-neutral-200 rounded-xl overflow-hidden">
+                <div className="hidden sm:grid grid-cols-[1fr_1fr_110px_36px] gap-2 px-3 py-2 bg-neutral-50 text-[11.5px] font-medium text-neutral-500 uppercase tracking-wide">
+                  <div>Nome do Tamanho</div>
+                  <div>Medida</div>
+                  <div>Valor (cm)</div>
+                  <div />
+                </div>
+                <div className="divide-y divide-neutral-100">
+                  {rows.map((r) =>
+                  <div key={r.id} className="grid grid-cols-2 sm:grid-cols-[1fr_1fr_110px_36px] gap-2 p-2">
+                      <Input
+                      value={r.tamanho}
+                      onChange={(e) => updateRow(r.id, { tamanho: e.target.value })}
+                      placeholder="Ex.: P, M, G"
+                      className="h-10 rounded-lg border-neutral-200" />
+                      <select
+                      value={r.medida}
+                      onChange={(e) => updateRow(r.id, { medida: e.target.value as MeasureType })}
+                      aria-label="Medida"
+                      className="h-10 rounded-lg border border-neutral-200 bg-white px-2.5 text-[13.5px] text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900/10">
+                        {MEASURE_TYPES.map((m) => <option key={m} value={m}>{m}</option>)}
+                      </select>
+                      <Input
+                      value={r.valor}
+                      onChange={(e) => updateRow(r.id, { valor: e.target.value.replace(/[^\d.,]/g, '') })}
+                      placeholder="0"
+                      inputMode="decimal"
+                      className="h-10 rounded-lg border-neutral-200" />
+                      <button
+                      type="button"
+                      onClick={() => removeRow(r.id)}
+                      aria-label="Remover linha"
+                      className="w-9 h-10 rounded-lg hover:bg-red-50 hover:text-red-600 flex items-center justify-center text-neutral-500 transition-colors justify-self-end">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                  {rows.length === 0 &&
+                  <div className="px-3 py-6 text-center text-[13px] text-neutral-500">
+                      Nenhuma linha. Clique em <b className="text-neutral-700">Adicionar linha</b>.
+                    </div>
+                  }
+                </div>
+              </div>
+              {touched && rowsError && <p className="text-[12px] text-red-600 mt-1">{rowsError}</p>}
+            </div>
+          </div>
+
+          <div className="px-6 py-4 border-t border-neutral-100 flex items-center justify-end gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="h-10 px-4 text-[13.5px] font-medium text-neutral-700 rounded-xl hover:bg-neutral-100 transition-colors">
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="inline-flex items-center gap-2 h-10 px-4 text-[13.5px] font-medium text-white bg-neutral-900 hover:bg-neutral-800 rounded-xl transition-colors">
+              {isEdit ? <Edit2 className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+              {isEdit ? 'Salvar alterações' : 'Adicionar modelo'}
+            </button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>);
+
+}
+
 
 
 
