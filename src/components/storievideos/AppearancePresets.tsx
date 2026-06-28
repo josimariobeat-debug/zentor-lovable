@@ -124,17 +124,19 @@ export default function AppearancePresets() {
           {pageItems.map((p, idx) => (
             <div
               key={p.id}
-              className={`flex items-center gap-4 px-5 py-4 ${idx !== pageItems.length - 1 ? 'border-b border-neutral-100' : ''}`}
+              className={`flex items-center gap-3 sm:gap-4 px-3 sm:px-5 py-3 sm:py-4 ${idx !== pageItems.length - 1 ? 'border-b border-neutral-100' : ''}`}
             >
-              <AppearanceMiniPreview
-                config={(p.config as unknown as MiniConfig) ?? null}
-                kind={p.kind as 'floating' | 'carousel'}
-                width={64}
-              />
+              <div className="shrink-0">
+                <AppearanceMiniPreview
+                  config={(p.config as unknown as MiniConfig) ?? null}
+                  kind={p.kind as 'floating' | 'carousel'}
+                  width={48}
+                />
+              </div>
               <div className="flex-1 min-w-0">
                 <h4 className="text-[14.5px] font-semibold text-neutral-900 truncate">{p.name}</h4>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                 <button
                   title="Duplicar"
                   onClick={() => duplicate(p)}
