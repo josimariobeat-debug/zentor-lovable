@@ -599,3 +599,44 @@ function PlaceholderTab({ label }: {label: string;}) {
     </div>);
 
 }
+
+function ProdutosTab() {
+  const [view, setView] = useState<'produtos' | 'medidas'>('produtos');
+  return (
+    <div className="fade-in">
+      <div className="flex items-center justify-end gap-2 mb-6">
+        <button
+          onClick={() => setView('medidas')}
+          className={`inline-flex items-center gap-2 text-[13.5px] font-medium px-4 py-2.5 rounded-xl transition-colors border ${
+          view === 'medidas' ?
+          'bg-neutral-900 text-white border-neutral-900 hover:bg-neutral-800' :
+          'text-neutral-700 border-neutral-200 hover:bg-neutral-50'}`
+          }>
+
+          <Settings2 className="w-4 h-4" /> Medidas
+        </button>
+        <button
+          onClick={() => setView('produtos')}
+          className={`inline-flex items-center gap-2 text-[13.5px] font-medium px-4 py-2.5 rounded-xl transition-colors ${
+          view === 'produtos' ?
+          'bg-neutral-900 text-white hover:bg-neutral-800' :
+          'bg-neutral-900 text-white hover:bg-neutral-800'}`
+          }>
+
+          <Plus className="w-4 h-4" /> Adicionar produtos
+        </button>
+      </div>
+
+      {view === 'produtos' ?
+      <div className="border border-dashed border-neutral-300 rounded-2xl p-16 text-center text-neutral-500">
+          Nenhum produto cadastrado. Clique em <b className="text-neutral-700">Adicionar produtos</b> para começar.
+        </div> :
+
+      <div className="bg-white border border-neutral-200 rounded-2xl p-16 text-center">
+          <h3 className="text-[16px] font-semibold text-neutral-900">Medidas</h3>
+          <p className="text-[14px] text-neutral-500 mt-1">Configure as medidas dos seus produtos aqui.</p>
+        </div>
+      }
+    </div>);
+
+}
