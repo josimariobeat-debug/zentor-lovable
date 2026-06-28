@@ -3,10 +3,11 @@ import { useNavigate, useParams } from 'react-router';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/components/ui/toaster';
-import { Plus, Copy, Pencil, Trash2, Sparkles, LayoutGrid } from 'lucide-react';
+import { Plus, Copy, Pencil, Trash2 } from 'lucide-react';
 import { StoriesRowsSkeleton } from '@/components/ui/skeleton';
 import type { Tables } from '@/integrations/supabase/helpers';
 import { ConfirmDeleteDialog } from '@/components/ui/ConfirmDeleteDialog';
+import AppearanceMiniPreview, { type MiniConfig } from './AppearanceMiniPreview';
 
 type Preset = Tables<'appearance_presets'>;
 type Kind = 'floating' | 'carousel';
@@ -125,11 +126,11 @@ export default function AppearancePresets() {
               key={p.id}
               className={`flex items-center gap-4 px-5 py-4 ${idx !== pageItems.length - 1 ? 'border-b border-neutral-100' : ''}`}
             >
-              <div className="w-14 shrink-0 aspect-[3/4] bg-neutral-100 rounded-lg flex items-center justify-center text-neutral-400">
-                {p.kind === 'carousel'
-                  ? <LayoutGrid className="w-5 h-5" />
-                  : <Sparkles className="w-5 h-5" />}
-              </div>
+              <AppearanceMiniPreview
+                config={(p.config as unknown as MiniConfig) ?? null}
+                kind={p.kind as 'floating' | 'carousel'}
+                width={64}
+              />
               <div className="flex-1 min-w-0">
                 <h4 className="text-[14.5px] font-semibold text-neutral-900 truncate">{p.name}</h4>
               </div>
