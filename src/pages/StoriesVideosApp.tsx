@@ -1325,62 +1325,19 @@ function AddMeasureModelModal({
 
 import mannequinUrl from '@/assets/mannequin.svg';
 
-// Guide anchors expressed in the user-supplied mannequin viewBox (242 x 727).
-// Tuned to match the anatomical landmarks of src/assets/mannequin.svg.
-const MANNEQUIN_VB = { w: 242, h: 727 };
-const ANCHORS = {
-  shoulder: 118,
-  bust: 215,
-  biceps: 245,
-  waist: 285,
-  hip: 360,
-  crotch: 420,
-  ankle: 705,
-};
-
 function MannequinSVG({ activeTypes }: { activeTypes: MeasureType[] }) {
-  const isActive = (t: MeasureType) => activeTypes.includes(t);
-  const GUIDE = '#ef4444';
-  const LABEL = '#4b5563';
-  const { w, h } = MANNEQUIN_VB;
+  void activeTypes;
+
   return (
-    <div className="relative mx-auto w-full max-w-[320px]" style={{ aspectRatio: `${w} / ${h}` }}>
+    <div className="mx-auto flex w-full justify-center">
       <img
         src={mannequinUrl}
-        alt=""
-        aria-hidden="true"
-        className="absolute inset-0 h-full w-full object-contain select-none pointer-events-none"
+        alt="Manequim"
+        width={242}
+        height={727}
+        className="block h-auto w-full max-w-[242px] select-none object-contain"
         draggable={false}
       />
-      <svg
-        viewBox={`0 0 ${w} ${h}`}
-        preserveAspectRatio="xMidYMid meet"
-        className="absolute inset-0 h-full w-full"
-        aria-hidden="true"
-      >
-        <g stroke={GUIDE} strokeWidth="1.4" strokeDasharray="5 4" fill="none">
-          {isActive('Busto')    && <line x1="0"   y1={ANCHORS.bust}    x2={w} y2={ANCHORS.bust} />}
-          {isActive('Cintura')  && <line x1="0"   y1={ANCHORS.waist}   x2={w} y2={ANCHORS.waist} />}
-          {isActive('Quadril')  && <line x1="0"   y1={ANCHORS.hip}     x2={w} y2={ANCHORS.hip} />}
-          {isActive('Bíceps')   && <line x1="12"  y1={ANCHORS.biceps}  x2={w - 12} y2={ANCHORS.biceps} />}
-          {isActive('Manga')    && <line x1="18"  y1={ANCHORS.shoulder} x2="18" y2={ANCHORS.crotch - 20} />}
-          {isActive('Comprimento') && <line x1={w - 18} y1={ANCHORS.shoulder} x2={w - 18} y2={ANCHORS.ankle} />}
-          {isActive('Dentro da Perna') && <line x1={w / 2} y1={ANCHORS.crotch} x2={w / 2} y2={ANCHORS.ankle} />}
-        </g>
-        <g fontFamily="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" fontSize="13" fill={LABEL}>
-          {isActive('Busto')    && <text x="4" y={ANCHORS.bust - 4}>Busto</text>}
-          {isActive('Cintura')  && <text x="4" y={ANCHORS.waist - 4}>Cintura</text>}
-          {isActive('Quadril')  && <text x="4" y={ANCHORS.hip - 4}>Quadril</text>}
-          {isActive('Bíceps')   && <text x="14" y={ANCHORS.biceps - 4}>Bíceps</text>}
-          {isActive('Manga')    && <text x="22" y={ANCHORS.shoulder - 4}>Manga</text>}
-          {isActive('Comprimento') && (
-            <text x={w - 6} y={(ANCHORS.shoulder + ANCHORS.ankle) / 2} transform={`rotate(90 ${w - 6} ${(ANCHORS.shoulder + ANCHORS.ankle) / 2})`} textAnchor="middle">Comprimento</text>
-          )}
-          {isActive('Dentro da Perna') && (
-            <text x={w / 2 + 10} y={(ANCHORS.crotch + ANCHORS.ankle) / 2} transform={`rotate(90 ${w / 2 + 10} ${(ANCHORS.crotch + ANCHORS.ankle) / 2})`} textAnchor="middle">Dentro da Perna</text>
-          )}
-        </g>
-      </svg>
     </div>
   );
 }
