@@ -1325,24 +1325,27 @@ function AddMeasureModelModal({
 
 import mannequinUrl from '@/assets/mannequin.svg';
 
-// Y positions (in the SVG's own 242x727 viewBox) for the cut marks
-// of bust / waist / hip — raised slightly to sit above the silhouette anchors.
-const MEASURE_Y: Record<string, number> = {
-  Busto: 198,
-  Cintura: 266,
-  Quadril: 332,
+// Coordinates inside the SVG's own 242x727 viewBox.
+// Horizontal cut lines (full silhouette width) keyed by measure type.
+const HORIZONTAL_MEASURES: Partial<Record<MeasureType, { y: number; x1?: number; x2?: number }>> = {
+  Busto:   { y: 198 },
+  Cintura: { y: 266 },
+  Quadril: { y: 332 },
+  Bíceps:  { y: 232, x1: 18, x2: 70 }, // short line across the upper left arm
 };
 
-// Vertical guide for full length (Comprimento) — runs along the side of the silhouette.
-const COMPRIMENTO_X = 224;
-const COMPRIMENTO_Y1 = 70;
-const COMPRIMENTO_Y2 = 700;
+// Vertical guide segments keyed by measure type: { x, y1, y2 }.
+const VERTICAL_MEASURES: Partial<Record<MeasureType, { x: number; y1: number; y2: number }>> = {
+  Comprimento:        { x: 224, y1: 70,  y2: 700 }, // shoulder → ankle (side)
+  Manga:              { x: 36,  y1: 175, y2: 360 }, // shoulder → wrist (arm)
+  'Dentro da Perna':  { x: 121, y1: 372, y2: 695 }, // crotch → ankle (inner leg)
+};
 
 function MannequinSVG({ activeTypes }: { activeTypes: MeasureType[] }) {
-  const ALWAYS_H = ['Busto', 'Cintura', 'Quadril'] as const;
   const showAll = activeTypes.length === 0;
-  const hLines = ALWAYS_H.filter((m) => showAll || activeTypes.includes(m as MeasureType));
-  const showComprimento = showAll || activeTypes.includes('Comprimento');
+  const isActive = (m: MeasureType) => showAll && (m === 'Busto' || m === 'Cintura' || m === 'Quadril')
+    ? true
+    : activeTypes.includes(m);
 
   return (
     <div className="mx-auto flex w-full justify-center">
@@ -1361,23 +1364,42 @@ function MannequinSVG({ activeTypes }: { activeTypes: MeasureType[] }) {
           className="pointer-events-none absolute inset-0 h-full w-full"
           aria-hidden
         >
-          {hLines.map((label) => {
-            const y = MEASURE_Y[label];
-            return (
+          {(Object.entries(HORIZONTAL_MEASURES) as [MeasureType, { y: number; x1?: number; x2?: number }][])
+            .filter(([m]) => isActive(m))
+            .map(([label, cfg]) => {
+              const x1 = cfg.x1 ?? 8;
+              const x2 = cfg.x2 ?? 210;
+              return (
+                <g key={label}>
+                  <line x1={x1} x2={x2} y1={cfg.y} y2={cfg.y} stroke="#ef4444" strokeWidth={1.2} strokeDasharray="4 3" />
+                  <text
+                    x={x2 + 4}
+                    y={cfg.y - 3}
+                    textAnchor="start"
+                    fontSize={11}
+                    fontWeight={600}
+                    fill="#ef4444"
+                    style={{ paintOrder: 'stroke' }}
+                    stroke="#fff"
+                    strokeWidth={3}
+                  >
+                    {label}
+                  </text>
+                </g>
+              );
+            })}
+
+          {(Object.entries(VERTICAL_MEASURES) as [MeasureType, { x: number; y1: number; y2: number }][])
+            .filter(([m]) => isActive(m))
+            .map(([label, cfg]) => (
               <g key={label}>
-                <line
-                  x1={8}
-                  x2={210}
-                  y1={y}
-                  y2={y}
-                  stroke="#ef4444"
-                  strokeWidth={1.2}
-                  strokeDasharray="4 3"
-                />
+                <line x1={cfg.x} x2={cfg.x} y1={cfg.y1} y2={cfg.y2} stroke="#ef4444" strokeWidth={1.2} strokeDasharray="4 3" />
+                <line x1={cfg.x - 5} x2={cfg.x + 5} y1={cfg.y1} y2={cfg.y1} stroke="#ef4444" strokeWidth={1.2} />
+                <line x1={cfg.x - 5} x2={cfg.x + 5} y1={cfg.y2} y2={cfg.y2} stroke="#ef4444" strokeWidth={1.2} />
                 <text
-                  x={206}
-                  y={y - 3}
-                  textAnchor="end"
+                  x={cfg.x + 8}
+                  y={(cfg.y1 + cfg.y2) / 2 + 4}
+                  textAnchor="start"
                   fontSize={11}
                   fontWeight={600}
                   fill="#ef4444"
@@ -1388,43 +1410,13 @@ function MannequinSVG({ activeTypes }: { activeTypes: MeasureType[] }) {
                   {label}
                 </text>
               </g>
-            );
-          })}
-          {showComprimento && (
-            <g>
-              <line
-                x1={COMPRIMENTO_X}
-                x2={COMPRIMENTO_X}
-                y1={COMPRIMENTO_Y1}
-                y2={COMPRIMENTO_Y2}
-                stroke="#ef4444"
-                strokeWidth={1.2}
-                strokeDasharray="4 3"
-              />
-              {/* end caps */}
-              <line x1={COMPRIMENTO_X - 5} x2={COMPRIMENTO_X + 5} y1={COMPRIMENTO_Y1} y2={COMPRIMENTO_Y1} stroke="#ef4444" strokeWidth={1.2} />
-              <line x1={COMPRIMENTO_X - 5} x2={COMPRIMENTO_X + 5} y1={COMPRIMENTO_Y2} y2={COMPRIMENTO_Y2} stroke="#ef4444" strokeWidth={1.2} />
-              <text
-                x={COMPRIMENTO_X - 4}
-                y={(COMPRIMENTO_Y1 + COMPRIMENTO_Y2) / 2}
-                textAnchor="end"
-                fontSize={11}
-                fontWeight={600}
-                fill="#ef4444"
-                style={{ paintOrder: 'stroke' }}
-                stroke="#fff"
-                strokeWidth={3}
-                transform={`rotate(-90 ${COMPRIMENTO_X - 4} ${(COMPRIMENTO_Y1 + COMPRIMENTO_Y2) / 2})`}
-              >
-                Comprimento
-              </text>
-            </g>
-          )}
+            ))}
         </svg>
       </div>
     </div>
   );
 }
+
 
 
 
