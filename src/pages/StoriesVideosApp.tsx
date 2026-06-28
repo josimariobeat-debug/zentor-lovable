@@ -423,9 +423,7 @@ export default function StoriesVideosApp() {
             </div>
 
             {gallery === null ?
-            <div data-ev-id="ev_af4f6489b7" className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                {[1, 2, 3, 4, 5, 6].map((i) => <Skeleton key={i} className="aspect-square rounded-xl" />)}
-              </div> :
+            <StoriesRowsSkeleton count={3} /> :
             filteredGallery.length === 0 ?
             <div data-ev-id="ev_ec5530f8a9" className="bg-white border border-neutral-200 rounded-2xl p-16 text-center">
                 <ImageIcon className="w-12 h-12 mx-auto mb-3 text-neutral-300" />
@@ -569,6 +567,11 @@ const MEASURE_TYPES: MeasureType[] = ['Busto', 'Quadril', 'Cintura', 'Manga', 'A
 type MeasureRow = {id: string;tamanho: string;medida: MeasureType;valor: string;};
 type MeasureModel = {id: string;name: string;rows: MeasureRow[]};
 
+// Module-level caches — keep data warm across remounts so the skeleton only
+// shows on the very first load, matching the Stories tab behavior.
+const productsCache = new Map<string, ProductRow[]>();
+const measuresCache = new Map<string, MeasureModel[]>();
+
 function ProdutosTab() {
   const { user } = useAuth();
   const [view, setView] = useState<'produtos' | 'medidas'>(() => {
@@ -581,13 +584,15 @@ function ProdutosTab() {
   }, [view]);
   const [addOpen, setAddOpen] = useState(false);
   const [editing, setEditing] = useState<ProductRow | null>(null);
-  const [products, setProducts] = useState<ProductRow[]>([]);
-  const [loading, setLoading] = useState(true);
+  const initialProducts = user ? productsCache.get(user.id) : undefined;
+  const initialMeasures = user ? measuresCache.get(user.id) : undefined;
+  const [products, setProducts] = useState<ProductRow[]>(initialProducts ?? []);
+  const [loading, setLoading] = useState(!initialProducts);
   const [saving, setSaving] = useState(false);
   const [measureOpen, setMeasureOpen] = useState(false);
   const [editingMeasure, setEditingMeasure] = useState<MeasureModel | null>(null);
-  const [measures, setMeasures] = useState<MeasureModel[]>([]);
-  const [measuresLoading, setMeasuresLoading] = useState(true);
+  const [measures, setMeasures] = useState<MeasureModel[]>(initialMeasures ?? []);
+  const [measuresLoading, setMeasuresLoading] = useState(!initialMeasures);
   const [savingMeasure, setSavingMeasure] = useState(false);
   const [previewMeasure, setPreviewMeasure] = useState<MeasureModel | null>(null);
 
@@ -596,7 +601,7 @@ function ProdutosTab() {
     if (!user) return;
     let cancelled = false;
     (async () => {
-      setMeasuresLoading(true);
+      if (!measuresCache.has(user.id)) setMeasuresLoading(true);
       const { data: models, error } = await (supabase as any)
         .from('measure_models')
         .select('id,name,measure_rows(id,size_name,measure_type,value_cm,position)')
@@ -606,13 +611,15 @@ function ProdutosTab() {
       if (error) {
         toast.error('Erro ao carregar medidas', { description: error.message });
       } else if (models) {
-        setMeasures((models as any[]).map((m) => ({
+        const next: MeasureModel[] = (models as any[]).map((m) => ({
           id: m.id,
           name: m.name,
           rows: ((m.measure_rows ?? []) as any[])
             .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
             .map((r) => ({ id: r.id, tamanho: r.size_name, medida: r.measure_type as MeasureType, valor: String(r.value_cm) }))
-        })));
+        }));
+        measuresCache.set(user.id, next);
+        setMeasures(next);
       }
       setMeasuresLoading(false);
     })();
@@ -668,7 +675,7 @@ function ProdutosTab() {
     if (!user) return;
     let cancelled = false;
     (async () => {
-      setLoading(true);
+      if (!productsCache.has(user.id)) setLoading(true);
       const { data, error } = await supabase
         .from('products')
         .select('id,name,price,currency,url,image')
@@ -678,12 +685,17 @@ function ProdutosTab() {
       if (error) {
         toast.error('Erro ao carregar produtos', { description: error.message });
       } else if (data) {
+        productsCache.set(user.id, data as any);
         setProducts(data as any);
       }
       setLoading(false);
     })();
     return () => { cancelled = true; };
   }, [user]);
+
+  // Mirror state into module-level caches so re-mounts skip the skeleton.
+  useEffect(() => { if (user && !loading) productsCache.set(user.id, products); }, [user, products, loading]);
+  useEffect(() => { if (user && !measuresLoading) measuresCache.set(user.id, measures); }, [user, measures, measuresLoading]);
 
   const handleSave = async (p: {name: string;price: string;currency: string;url: string;image: string | null;}) => {
     if (!user) return;
@@ -762,18 +774,7 @@ function ProdutosTab() {
 
       {view === 'produtos' ?
       loading ?
-      <div className="bg-white border border-neutral-200 rounded-2xl overflow-hidden">
-            {[0, 1, 2].map((i) =>
-        <div key={i} className={`flex items-center gap-4 px-5 py-4 ${i !== 2 ? 'border-b border-neutral-100' : ''}`}>
-                <Skeleton className="w-12 h-12 rounded-xl" />
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-4 w-1/3" />
-                  <Skeleton className="h-3 w-1/2" />
-                </div>
-                <Skeleton className="h-4 w-16" />
-              </div>
-        )}
-          </div> :
+      <StoriesRowsSkeleton count={3} /> :
       products.length === 0 ?
       <div className="border border-dashed border-neutral-300 rounded-2xl p-16 text-center text-neutral-500">
             Nenhum produto cadastrado. Clique em <b className="text-neutral-700">Adicionar produtos</b> para começar.
@@ -818,17 +819,7 @@ function ProdutosTab() {
 
 
       measuresLoading ?
-      <div className="bg-white border border-neutral-200 rounded-2xl overflow-hidden">
-            {[0, 1, 2].map((i) =>
-        <div key={i} className={`flex items-center gap-4 px-5 py-4 ${i !== 2 ? 'border-b border-neutral-100' : ''}`}>
-                <Skeleton className="w-12 h-12 rounded-xl" />
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-4 w-1/3" />
-                  <Skeleton className="h-3 w-1/4" />
-                </div>
-              </div>
-        )}
-          </div> :
+      <StoriesRowsSkeleton count={3} /> :
       measures.length === 0 ?
       <div className="border border-dashed border-neutral-300 rounded-2xl p-16 text-center text-neutral-500">
             Nenhum modelo de medidas. Clique em <b className="text-neutral-700">Adicionar medidas</b> para começar.
