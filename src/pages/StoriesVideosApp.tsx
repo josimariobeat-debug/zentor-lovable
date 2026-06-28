@@ -875,9 +875,14 @@ function ProdutosTab() {
       <div className="bg-white border border-neutral-200 rounded-2xl overflow-hidden">
             {measures.map((m, idx) =>
         <div key={m.id} className={`flex items-center gap-4 px-5 py-4 ${idx !== measures.length - 1 ? 'border-b border-neutral-100' : ''}`}>
-                <div className="w-12 h-12 shrink-0 rounded-xl bg-neutral-100 border border-neutral-200 flex items-center justify-center">
+                <button
+                  type="button"
+                  onClick={() => setPreviewMeasure(m)}
+                  aria-label={`Visualizar ${m.name}`}
+                  className="w-12 h-12 shrink-0 rounded-xl bg-neutral-100 border border-neutral-200 flex items-center justify-center hover:bg-neutral-200 hover:border-neutral-300 transition-colors">
                   <Settings2 className="w-5 h-5 text-neutral-500" />
-                </div>
+                </button>
+
                 <div className="flex-1 min-w-0">
                   <h4 className="text-[14.5px] font-semibold text-neutral-900 truncate">{m.name}</h4>
                   <p className="text-[12.5px] text-neutral-500 truncate mt-0.5">
