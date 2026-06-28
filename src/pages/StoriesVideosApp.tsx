@@ -466,11 +466,15 @@ export default function StoriesVideosApp() {
             }
           </TabsContent>
 
-          {TABS.filter((t) => t.value !== 'stories' && t.value !== 'midias' && t.value !== 'integracao' && t.value !== 'aparencia').map((t) =>
+          {TABS.filter((t) => !['stories','midias','integracao','aparencia','produtos'].includes(t.value)).map((t) =>
           <TabsContent key={t.value} value={t.value} className="mt-0">
               <PlaceholderTab label={t.label} />
             </TabsContent>
           )}
+
+          <TabsContent value="produtos" className="mt-0">
+            <ProdutosTab />
+          </TabsContent>
 
           <TabsContent value="aparencia" className="mt-0">
             <AppearancePresets />
