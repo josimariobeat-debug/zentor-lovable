@@ -924,8 +924,12 @@ function ProdutosTab() {
         onClose={() => { setMeasureOpen(false); setEditingMeasure(null); }}
         onSave={saveMeasureModel} />
 
+      <MeasurePreviewModal
+        model={previewMeasure}
+        onClose={() => setPreviewMeasure(null)} />
 
     </div>);
+
 
 }
 
