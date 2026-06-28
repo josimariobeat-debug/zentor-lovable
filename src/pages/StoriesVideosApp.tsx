@@ -849,6 +849,32 @@ function ProdutosTab() {
         model={previewMeasure}
         onClose={() => setPreviewMeasure(null)} />
 
+      <ConfirmDeleteDialog
+        open={!!deleteProduct}
+        onOpenChange={() => setDeleteProduct(null)}
+        title="Excluir produto"
+        itemName={deleteProduct?.name}
+        onConfirm={async () => {
+          if (deleteProduct) {
+            await handleDelete(deleteProduct.id);
+            setDeleteProduct(null);
+          }
+        }}
+      />
+
+      <ConfirmDeleteDialog
+        open={!!deleteMeasure}
+        onOpenChange={() => setDeleteMeasure(null)}
+        title="Excluir modelo de medidas"
+        itemName={deleteMeasure?.name}
+        onConfirm={async () => {
+          if (deleteMeasure) {
+            await deleteMeasureModel(deleteMeasure.id);
+            setDeleteMeasure(null);
+          }
+        }}
+      />
+
     </div>);
 
 
