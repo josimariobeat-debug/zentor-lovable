@@ -274,8 +274,11 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
             return (
               <div key={i} className="flex-1 h-[3px] bg-white/30 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-white rounded-full"
-                  style={{ width: `${fill * 100}%`, transition: isVideo || i !== idx ? 'none' : 'width 80ms linear' }}
+                  className="h-full w-full bg-white rounded-full origin-left"
+                  style={{
+                    transform: `scaleX(${fill})`,
+                    willChange: 'transform',
+                  }}
                 />
               </div>
             );
