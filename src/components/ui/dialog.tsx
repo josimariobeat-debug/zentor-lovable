@@ -34,10 +34,8 @@ function Dialog({ open, onOpenChange, children }: DialogProps) {
 
   if (!open) return null;
 
-  const handleOverlayClick = (e: React.MouseEvent) => {
-    if (e.target === overlayRef.current) {
-      onOpenChange(false);
-    }
+  const handleOverlayClick = () => {
+    onOpenChange(false);
   };
 
   return (
