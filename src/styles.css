@@ -6,6 +6,7 @@
  */
 
 @theme {
+  --breakpoint-xs: 24rem;
   --color-background: #ffffff;
   --color-foreground: #111111;
   --color-card: #ffffff;
