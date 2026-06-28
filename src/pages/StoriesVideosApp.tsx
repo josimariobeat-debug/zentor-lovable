@@ -601,7 +601,7 @@ function ProdutosTab() {
     if (!user) return;
     let cancelled = false;
     (async () => {
-      setMeasuresLoading(true);
+      if (!measuresCache.has(user.id)) setMeasuresLoading(true);
       const { data: models, error } = await (supabase as any)
         .from('measure_models')
         .select('id,name,measure_rows(id,size_name,measure_type,value_cm,position)')
@@ -611,13 +611,15 @@ function ProdutosTab() {
       if (error) {
         toast.error('Erro ao carregar medidas', { description: error.message });
       } else if (models) {
-        setMeasures((models as any[]).map((m) => ({
+        const next: MeasureModel[] = (models as any[]).map((m) => ({
           id: m.id,
           name: m.name,
           rows: ((m.measure_rows ?? []) as any[])
             .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
             .map((r) => ({ id: r.id, tamanho: r.size_name, medida: r.measure_type as MeasureType, valor: String(r.value_cm) }))
-        })));
+        }));
+        measuresCache.set(user.id, next);
+        setMeasures(next);
       }
       setMeasuresLoading(false);
     })();
