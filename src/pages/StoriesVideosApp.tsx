@@ -567,6 +567,11 @@ const MEASURE_TYPES: MeasureType[] = ['Busto', 'Quadril', 'Cintura', 'Manga', 'A
 type MeasureRow = {id: string;tamanho: string;medida: MeasureType;valor: string;};
 type MeasureModel = {id: string;name: string;rows: MeasureRow[]};
 
+// Module-level caches — keep data warm across remounts so the skeleton only
+// shows on the very first load, matching the Stories tab behavior.
+const productsCache = new Map<string, ProductRow[]>();
+const measuresCache = new Map<string, MeasureModel[]>();
+
 function ProdutosTab() {
   const { user } = useAuth();
   const [view, setView] = useState<'produtos' | 'medidas'>(() => {
@@ -579,13 +584,15 @@ function ProdutosTab() {
   }, [view]);
   const [addOpen, setAddOpen] = useState(false);
   const [editing, setEditing] = useState<ProductRow | null>(null);
-  const [products, setProducts] = useState<ProductRow[]>([]);
-  const [loading, setLoading] = useState(true);
+  const initialProducts = user ? productsCache.get(user.id) : undefined;
+  const initialMeasures = user ? measuresCache.get(user.id) : undefined;
+  const [products, setProducts] = useState<ProductRow[]>(initialProducts ?? []);
+  const [loading, setLoading] = useState(!initialProducts);
   const [saving, setSaving] = useState(false);
   const [measureOpen, setMeasureOpen] = useState(false);
   const [editingMeasure, setEditingMeasure] = useState<MeasureModel | null>(null);
-  const [measures, setMeasures] = useState<MeasureModel[]>([]);
-  const [measuresLoading, setMeasuresLoading] = useState(true);
+  const [measures, setMeasures] = useState<MeasureModel[]>(initialMeasures ?? []);
+  const [measuresLoading, setMeasuresLoading] = useState(!initialMeasures);
   const [savingMeasure, setSavingMeasure] = useState(false);
   const [previewMeasure, setPreviewMeasure] = useState<MeasureModel | null>(null);
 
