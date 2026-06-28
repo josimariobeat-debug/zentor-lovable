@@ -140,41 +140,50 @@ export default function AdicionarStory() {
     if (!user) return;
     let cancel = false;
     (async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('appearance_presets')
         .select('*')
         .eq('user_id', user.id)
         .eq('kind', 'floating')
         .order('created_at', { ascending: true });
       if (cancel) return;
-      const list = data ?? [];
-      setPresets(list);
+      if (error) console.error('[AdicionarStory] erro ao carregar presets:', error);
+      setPresets(data ?? []);
       setPresetsLoaded(true);
-      setAparencia((current) => {
-        if (current && current !== 'default' && list.some((p) => p.id === current)) return current;
-        // tenta resolver legado (nome salvo no DB) → preset.id
-        if (current && current !== 'default') {
-          const byName = list.find((p) => p.name === current);
-          if (byName) return byName.id;
-        }
-        // Em modo edição, não force list[0] enquanto o story ainda carrega — evita "piscar" outro nome
-        if (isEdit && loading) return current;
-        return list[0]?.id ?? 'default';
-      });
-  // Resolve aparência sempre que presets ou valor mudarem (cobre legado nome→id após loadStory)
-  useEffect(() => {
-    if (!presetsLoaded) return;
-    if (!aparencia || aparencia === 'default') return;
-    if (presets.some((p) => p.id === aparencia)) return;
-    const byName = presets.find((p) => p.name === aparencia);
-    if (byName) setAparencia(byName.id);
-    else setAparencia(presets[0]?.id ?? 'default');
-  }, [presetsLoaded, presets, aparencia]);
-
-
     })();
     return () => { cancel = true; };
   }, [user]);
+
+  // Resolve aparência (id válido / nome legado → id) assim que presets e story estiverem prontos.
+  // Loga inconsistências para diagnóstico.
+  useEffect(() => {
+    if (!presetsLoaded) return;
+    if (isEdit && loading) return; // aguarda loadStory para não "piscar" outro nome
+    setAparencia((current) => {
+      if (!current || current === 'default') {
+        return presets[0]?.id ?? 'default';
+      }
+      if (presets.some((p) => p.id === current)) return current;
+      const byName = presets.find((p) => p.name === current);
+      if (byName) {
+        console.info(`[AdicionarStory] aparência legado mapeada por nome → id: "${current}" → ${byName.id}`);
+        return byName.id;
+      }
+      console.warn(
+        `[AdicionarStory] aparência "${current}" não encontrada entre ${presets.length} presets carregados. Usando fallback.`,
+        { current, presetIds: presets.map((p) => p.id), presetNames: presets.map((p) => p.name) }
+      );
+      return presets[0]?.id ?? 'default';
+    });
+  }, [presetsLoaded, presets, isEdit, loading]);
+
+  // Fase de hidratação do <Select>: só renderizamos o valor depois de presets e story prontos.
+  const aparenciaHydrated = presetsLoaded && (!isEdit || !loading);
+  const aparenciaValue = aparenciaHydrated
+    ? (presets.some((p) => p.id === aparencia) ? aparencia : (presets[0]?.id ?? 'default'))
+    : undefined;
+
+
 
   const loadStory = async () => {
     if (!supabase || !storyId) return;
