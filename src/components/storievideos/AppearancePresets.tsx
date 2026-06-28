@@ -132,11 +132,6 @@ export default function AppearancePresets() {
               </div>
               <div className="flex-1 min-w-0">
                 <h4 className="text-[14.5px] font-semibold text-neutral-900 truncate">{p.name}</h4>
-                <div className="flex items-center gap-3 mt-1 text-[12.5px] text-neutral-500">
-                  <span className="uppercase tracking-wider font-semibold text-[10px] bg-neutral-100 text-neutral-700 px-2 py-0.5 rounded">
-                    {p.kind === 'carousel' ? 'Carrossel' : 'Widget Flutuante'}
-                  </span>
-                </div>
               </div>
               <div className="flex items-center gap-2">
                 <button
