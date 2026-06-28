@@ -1145,8 +1145,9 @@ function AddMeasureModelModal({
   open,
   editing,
   onClose,
-  onSave
-}: {open: boolean;editing?: MeasureModel | null;onClose: () => void;onSave: (m: Omit<MeasureModel, 'id'>) => void;}) {
+  onSave,
+  saving = false
+}: {open: boolean;editing?: MeasureModel | null;onClose: () => void;onSave: (m: Omit<MeasureModel, 'id'>) => void;saving?: boolean;}) {
   const [name, setName] = useState('');
   const [rows, setRows] = useState<MeasureRow[]>([]);
   const [touched, setTouched] = useState(false);
