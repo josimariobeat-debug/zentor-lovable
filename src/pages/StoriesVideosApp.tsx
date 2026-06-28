@@ -1330,7 +1330,7 @@ import mannequinUrl from '@/assets/mannequin.svg';
 const MEASURE_Y: Record<string, number> = {
   Busto: 198,
   Cintura: 266,
-  Quadril: 343,
+  Quadril: 335,
 };
 
 function MannequinSVG({ activeTypes }: { activeTypes: MeasureType[] }) {
