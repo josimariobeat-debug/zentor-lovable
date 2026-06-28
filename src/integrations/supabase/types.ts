@@ -157,6 +157,42 @@ export type Database = {
           },
         ]
       }
+      products: {
+        Row: {
+          created_at: string
+          currency: string
+          id: string
+          image: string | null
+          name: string
+          price: string
+          updated_at: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          id?: string
+          image?: string | null
+          name: string
+          price?: string
+          updated_at?: string
+          url?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          id?: string
+          image?: string | null
+          name?: string
+          price?: string
+          updated_at?: string
+          url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
