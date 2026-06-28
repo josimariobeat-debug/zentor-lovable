@@ -296,9 +296,9 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
               aria-pressed={isLiked}
               className="group flex flex-col items-center gap-1 min-w-[44px] min-h-[44px] justify-center text-white transition-transform active:scale-90 hover:scale-110"
             >
-              <span className="w-11 h-11 rounded-full bg-black/30 backdrop-blur-sm grid place-items-center group-hover:bg-black/50 transition-colors">
+              <span className="w-9 h-9 rounded-full bg-black/30 backdrop-blur-sm grid place-items-center group-hover:bg-black/50 transition-colors">
                 <Heart
-                  className={`w-7 h-7 transition-all ${isLiked ? 'text-red-500 scale-110' : 'text-white'} ${likeBurst ? 'animate-[heartPulse_.6s_ease-out]' : ''}`}
+                  className={`w-5 h-5 transition-all ${isLiked ? 'text-red-500 scale-110' : 'text-white'} ${likeBurst ? 'animate-[heartPulse_.6s_ease-out]' : ''}`}
                   fill={isLiked ? 'currentColor' : 'none'}
                   strokeWidth={2}
                 />
@@ -309,8 +309,8 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
               aria-label="Comentar"
               className="group flex flex-col items-center gap-1 min-w-[44px] min-h-[44px] justify-center text-white transition-transform active:scale-90 hover:scale-110"
             >
-              <span className="w-11 h-11 rounded-full bg-black/30 backdrop-blur-sm grid place-items-center group-hover:bg-black/50 transition-colors">
-                <MessageCircle className="w-7 h-7" strokeWidth={2} />
+              <span className="w-9 h-9 rounded-full bg-black/30 backdrop-blur-sm grid place-items-center group-hover:bg-black/50 transition-colors">
+                <MessageCircle className="w-5 h-5" strokeWidth={2} />
               </span>
             </button>
             <button
@@ -318,19 +318,12 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
               aria-label="Compartilhar"
               className="group flex flex-col items-center gap-1 min-w-[44px] min-h-[44px] justify-center text-white transition-transform active:scale-90 hover:scale-110"
             >
-              <span className="w-11 h-11 rounded-full bg-black/30 backdrop-blur-sm grid place-items-center group-hover:bg-black/50 transition-colors">
-                <Send className="w-6 h-6 -rotate-12" strokeWidth={2} />
-              </span>
-            </button>
-            <button
-              aria-label="Mais opções"
-              className="group flex flex-col items-center gap-1 min-w-[44px] min-h-[44px] justify-center text-white transition-transform active:scale-90 hover:scale-110"
-            >
-              <span className="w-11 h-11 rounded-full bg-black/30 backdrop-blur-sm grid place-items-center group-hover:bg-black/50 transition-colors">
-                <MoreHorizontal className="w-7 h-7" strokeWidth={2} />
+              <span className="w-9 h-9 rounded-full bg-black/30 backdrop-blur-sm grid place-items-center group-hover:bg-black/50 transition-colors">
+                <Send className="w-[18px] h-[18px] -rotate-12" strokeWidth={2} />
               </span>
             </button>
           </div>
+
 
           {/* Heart burst on double-like (centered) */}
           {likeBurst && (
