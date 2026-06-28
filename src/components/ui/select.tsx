@@ -64,10 +64,12 @@ function SelectTrigger({ children, className }: {children: React.ReactNode;class
 
 }
 
-function SelectValue({ placeholder }: {placeholder?: string;}) {
+function SelectValue({ placeholder, children }: { placeholder?: string; children?: React.ReactNode }) {
   const ctx = React.useContext(SelectContext)!;
-  const display = ctx.displayValue || ctx.value || placeholder;
-  return <span data-ev-id="ev_1a4fae0075" className={display === placeholder ? 'text-neutral-400' : ''}>{display}</span>;
+  const hasChildren = children !== undefined && children !== null && children !== '';
+  const display = hasChildren ? children : (ctx.displayValue || ctx.value || placeholder);
+  const isPlaceholder = !hasChildren && !ctx.displayValue && !ctx.value;
+  return <span data-ev-id="ev_1a4fae0075" className={isPlaceholder ? 'text-neutral-400' : ''}>{display}</span>;
 }
 
 function SelectContent({ children }: {children: React.ReactNode;}) {
