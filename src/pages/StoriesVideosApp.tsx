@@ -423,9 +423,7 @@ export default function StoriesVideosApp() {
             </div>
 
             {gallery === null ?
-            <div data-ev-id="ev_af4f6489b7" className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                {[1, 2, 3, 4, 5, 6].map((i) => <Skeleton key={i} className="aspect-square rounded-xl" />)}
-              </div> :
+            <StoriesRowsSkeleton count={3} /> :
             filteredGallery.length === 0 ?
             <div data-ev-id="ev_ec5530f8a9" className="bg-white border border-neutral-200 rounded-2xl p-16 text-center">
                 <ImageIcon className="w-12 h-12 mx-auto mb-3 text-neutral-300" />
