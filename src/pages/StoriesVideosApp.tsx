@@ -1336,7 +1336,7 @@ const HORIZONTAL_MEASURES: Partial<Record<MeasureType, { y: number; x1?: number;
 
 // Vertical guide segments keyed by measure type: { x, y1, y2 }.
 const VERTICAL_MEASURES: Partial<Record<MeasureType, { x: number; y1: number; y2: number }>> = {
-  Comprimento:        { x: 212, y1: 70,  y2: 700 }, // shoulder → ankle (side)
+  Comprimento:        { x: 216, y1: 70,  y2: 700 }, // shoulder → ankle (side)
   Manga:              { x: 36,  y1: 175, y2: 360 }, // shoulder → wrist (arm)
   'Dentro da Perna':  { x: 121, y1: 372, y2: 695 }, // crotch → ankle (inner leg)
 };
@@ -1369,7 +1369,7 @@ function MannequinSVG({ activeTypes }: { activeTypes: MeasureType[] }) {
             .filter(([m]) => isActive(m))
             .map(([label, cfg]) => {
               const x1 = cfg.x1 ?? 8;
-              const x2 = cfg.x2 ?? 150;
+              const x2 = cfg.x2 ?? 210;
               return (
                 <g key={label}>
                   <line x1={x1} x2={x2} y1={cfg.y} y2={cfg.y} stroke="#ef4444" strokeWidth={1.2} strokeDasharray="4 3" />
