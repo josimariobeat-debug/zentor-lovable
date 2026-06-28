@@ -507,11 +507,14 @@ export default function AdicionarStory() {
               <Select
                 value={aparenciaValue}
                 onValueChange={setAparencia}
-                disabled={!aparenciaHydrated}
               >
-                <SelectTrigger className="w-full h-11 rounded-xl border-neutral-200">
+                <SelectTrigger
+                  className="w-full h-11 rounded-xl border-neutral-200"
+                  disabled={!aparenciaHydrated}
+                >
                   <SelectValue placeholder={aparenciaHydrated ? 'Selecionar aparência' : 'Carregando...'} />
                 </SelectTrigger>
+
                 <SelectContent>
                   {presets.length === 0 && (
                     <SelectItem value="default">Padrão</SelectItem>
