@@ -43,7 +43,7 @@ function Dialog({ open, onOpenChange, children }: DialogProps) {
       {/* Backdrop: cobre o conteúdo mas deixa a sidebar visível no desktop */}
       <div
         data-ev-id="ev_1bfe293004"
-        className="fixed inset-0 md:left-[260px] bg-black/50 animate-in fade-in-0 z-[60]"
+        className="fixed inset-0 bg-black/50 animate-in fade-in-0 z-[60]"
         onClick={handleOverlayClick}
       />
       {/* Modal: acima de tudo, inclusive da sidebar */}
