@@ -854,6 +854,18 @@ function ProdutosTab() {
           </div> :
 
 
+      measuresLoading ?
+      <div className="bg-white border border-neutral-200 rounded-2xl overflow-hidden">
+            {[0, 1, 2].map((i) =>
+        <div key={i} className={`flex items-center gap-4 px-5 py-4 ${i !== 2 ? 'border-b border-neutral-100' : ''}`}>
+                <Skeleton className="w-12 h-12 rounded-xl" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-1/3" />
+                  <Skeleton className="h-3 w-1/4" />
+                </div>
+              </div>
+        )}
+          </div> :
       measures.length === 0 ?
       <div className="border border-dashed border-neutral-300 rounded-2xl p-16 text-center text-neutral-500">
             Nenhum modelo de medidas. Clique em <b className="text-neutral-700">Adicionar medidas</b> para começar.
@@ -877,7 +889,7 @@ function ProdutosTab() {
                   <Edit2 className="w-4 h-4" />
                 </button>
                 <button
-            onClick={() => persistMeasures(measures.filter((x) => x.id !== m.id))}
+            onClick={() => deleteMeasureModel(m.id)}
             aria-label="Remover modelo"
             className="w-9 h-9 rounded-lg hover:bg-red-50 hover:text-red-600 flex items-center justify-center text-neutral-700 transition-colors">
                   <Trash2 className="w-4 h-4" />
@@ -897,18 +909,10 @@ function ProdutosTab() {
       <AddMeasureModelModal
         open={measureOpen}
         editing={editingMeasure}
+        saving={savingMeasure}
         onClose={() => { setMeasureOpen(false); setEditingMeasure(null); }}
-        onSave={(model) => {
-          if (editingMeasure) {
-            persistMeasures(measures.map((m) => m.id === editingMeasure.id ? { ...model, id: editingMeasure.id } : m));
-            toast.success('Modelo atualizado');
-          } else {
-            persistMeasures([{ ...model, id: crypto.randomUUID() }, ...measures]);
-            toast.success('Modelo adicionado');
-          }
-          setMeasureOpen(false);
-          setEditingMeasure(null);
-        }} />
+        onSave={saveMeasureModel} />
+
 
     </div>);
 
