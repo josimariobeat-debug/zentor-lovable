@@ -602,9 +602,61 @@ function PlaceholderTab({ label }: {label: string;}) {
 }
 
 function ProdutosTab() {
+  const { user } = useAuth();
   const [view, setView] = useState<'produtos' | 'medidas'>('produtos');
   const [addOpen, setAddOpen] = useState(false);
   const [products, setProducts] = useState<{id: string;name: string;price: string;currency: string;url: string;image: string | null;}[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('products')
+        .select('id,name,price,currency,url,image')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      if (cancelled) return;
+      if (error) {
+        toast.error('Erro ao carregar produtos', { description: error.message });
+      } else if (data) {
+        setProducts(data as any);
+      }
+      setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [user]);
+
+  const handleAdd = async (p: {name: string;price: string;currency: string;url: string;image: string | null;}) => {
+    if (!user) return;
+    setSaving(true);
+    const { data, error } = await supabase
+      .from('products')
+      .insert({ user_id: user.id, ...p })
+      .select('id,name,price,currency,url,image')
+      .single();
+    setSaving(false);
+    if (error) {
+      toast.error('Erro ao adicionar produto', { description: error.message });
+      return;
+    }
+    setProducts((arr) => [data as any, ...arr]);
+    setAddOpen(false);
+    toast.success('Produto adicionado');
+  };
+
+  const handleDelete = async (id: string) => {
+    const prev = products;
+    setProducts((arr) => arr.filter((x) => x.id !== id));
+    const { error } = await supabase.from('products').delete().eq('id', id);
+    if (error) {
+      setProducts(prev);
+      toast.error('Erro ao remover produto', { description: error.message });
+    }
+  };
 
   return (
     <div className="fade-in">
@@ -628,6 +680,19 @@ function ProdutosTab() {
       </div>
 
       {view === 'produtos' ?
+      loading ?
+      <div className="bg-white border border-neutral-200 rounded-2xl overflow-hidden">
+            {[0, 1, 2].map((i) =>
+        <div key={i} className={`flex items-center gap-4 px-5 py-4 ${i !== 2 ? 'border-b border-neutral-100' : ''}`}>
+                <Skeleton className="w-12 h-12 rounded-xl" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-1/3" />
+                  <Skeleton className="h-3 w-1/2" />
+                </div>
+                <Skeleton className="h-4 w-16" />
+              </div>
+        )}
+          </div> :
       products.length === 0 ?
       <div className="border border-dashed border-neutral-300 rounded-2xl p-16 text-center text-neutral-500">
             Nenhum produto cadastrado. Clique em <b className="text-neutral-700">Adicionar produtos</b> para começar.
@@ -653,7 +718,7 @@ function ProdutosTab() {
                   {p.currency === 'BRL' ? 'R$' : p.currency} {p.price}
                 </div>
                 <button
-            onClick={() => setProducts((arr) => arr.filter((x) => x.id !== p.id))}
+            onClick={() => handleDelete(p.id)}
             className="w-9 h-9 rounded-lg hover:bg-red-50 hover:text-red-600 flex items-center justify-center text-neutral-700 transition-colors">
 
                   <Trash2 className="w-4 h-4" />
@@ -672,10 +737,8 @@ function ProdutosTab() {
       <AddProductModal
         open={addOpen}
         onClose={() => setAddOpen(false)}
-        onAdd={(p) => {
-          setProducts((arr) => [...arr, { id: crypto.randomUUID(), ...p }]);
-          setAddOpen(false);
-        }} />
+        saving={saving}
+        onAdd={handleAdd} />
 
     </div>);
 
@@ -684,12 +747,9 @@ function ProdutosTab() {
 function AddProductModal({
   open,
   onClose,
-  onAdd
-
-
-
-
-}: {open: boolean;onClose: () => void;onAdd: (p: {name: string;price: string;currency: string;url: string;image: string | null;}) => void;}) {
+  onAdd,
+  saving
+}: {open: boolean;onClose: () => void;onAdd: (p: {name: string;price: string;currency: string;url: string;image: string | null;}) => void;saving?: boolean;}) {
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
   const [currency, setCurrency] = useState('BRL');
@@ -810,11 +870,11 @@ function AddProductModal({
             Voltar
           </button>
           <button
-            disabled={!valid}
+            disabled={!valid || saving}
             onClick={() => onAdd({ name: name.trim(), price: price.trim(), currency, url: url.trim(), image })}
             className="inline-flex items-center gap-2 h-10 px-4 text-[13.5px] font-medium text-white bg-neutral-900 hover:bg-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl transition-colors">
 
-            <Plus className="w-4 h-4" /> Adicionar produto
+            <Plus className="w-4 h-4" /> {saving ? 'Salvando…' : 'Adicionar produto'}
           </button>
         </div>
       </DialogContent>
