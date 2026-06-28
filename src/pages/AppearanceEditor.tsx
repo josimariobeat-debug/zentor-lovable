@@ -94,46 +94,92 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose, commentsOpen, shareOpen]);
 
+  // Track when current image finishes loading so the bar starts in sync.
+  const [imgLoaded, setImgLoaded] = useState(false);
+
   // Reset progress and timers whenever the active story changes
   useEffect(() => {
     setProgress(0);
     accumRef.current = 0;
-    startedAtRef.current = performance.now();
+    startedAtRef.current = 0;
+    setImgLoaded(false);
   }, [idx]);
 
-  // Progress driver for image stories (videos drive their own via timeupdate)
+  // Progress driver — single rAF loop for both images and videos.
+  // Images: time-based with pause accumulation.
+  // Videos: read currentTime/duration each frame for perfect sync.
   useEffect(() => {
-    if (isVideo) return;
-    const duration = (current.duration ?? 5) * 1000;
+    let raf = 0;
+    let cancelled = false;
+
     const tick = (now: number) => {
-      if (interactionPaused) {
-        startedAtRef.current = now;
-        rafRef.current = requestAnimationFrame(tick);
+      if (cancelled) return;
+
+      if (isVideo) {
+        const v = videoRef.current;
+        if (v && v.duration > 0 && !Number.isNaN(v.duration)) {
+          setProgress(Math.min(1, v.currentTime / v.duration));
+        }
+        raf = requestAnimationFrame(tick);
+        rafRef.current = raf;
         return;
       }
+
+      // Image: don't start until the image has actually loaded.
+      if (!imgLoaded) {
+        raf = requestAnimationFrame(tick);
+        rafRef.current = raf;
+        return;
+      }
+
+      if (interactionPaused) {
+        // Freeze: keep last accum, reset start anchor so resume continues from here.
+        startedAtRef.current = 0;
+        raf = requestAnimationFrame(tick);
+        rafRef.current = raf;
+        return;
+      }
+
+      if (startedAtRef.current === 0) startedAtRef.current = now;
+      const duration = (current.duration ?? 5) * 1000;
       const elapsed = accumRef.current + (now - startedAtRef.current);
       const p = Math.min(1, elapsed / duration);
       setProgress(p);
-      if (p >= 1) { goNext(); return; }
-      rafRef.current = requestAnimationFrame(tick);
+      if (p >= 1) {
+        // Lock to full and advance once.
+        accumRef.current = duration;
+        goNext();
+        return;
+      }
+      raf = requestAnimationFrame(tick);
+      rafRef.current = raf;
     };
-    startedAtRef.current = performance.now();
-    rafRef.current = requestAnimationFrame(tick);
-    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
-  }, [idx, isVideo, interactionPaused, current.duration]);
 
-  // Video autoplay + progress
+    raf = requestAnimationFrame(tick);
+    rafRef.current = raf;
+    return () => {
+      cancelled = true;
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [idx, isVideo, interactionPaused, imgLoaded, current.duration]);
+
+  // When pausing an image story, fold elapsed time into accum so resume continues.
+  useEffect(() => {
+    if (isVideo) return;
+    if (interactionPaused && startedAtRef.current !== 0) {
+      accumRef.current = accumRef.current + (performance.now() - startedAtRef.current);
+      startedAtRef.current = 0;
+    }
+  }, [interactionPaused, isVideo]);
+
+  // Video lifecycle: autoplay + ended handling. Progress is driven by rAF above.
   useEffect(() => {
     if (!isVideo) return;
     const v = videoRef.current;
     if (!v) return;
     v.muted = muted;
     (v as HTMLVideoElement & { playsInline?: boolean }).playsInline = true;
-    const onTime = () => {
-      if (v.duration > 0) setProgress(Math.min(1, v.currentTime / v.duration));
-    };
     const onEnd = () => goNext();
-    v.addEventListener('timeupdate', onTime);
     v.addEventListener('ended', onEnd);
     const p = v.play();
     if (p && typeof p.then === 'function') {
@@ -147,10 +193,10 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
       });
     }
     return () => {
-      v.removeEventListener('timeupdate', onTime);
       v.removeEventListener('ended', onEnd);
     };
   }, [idx, isVideo, muted]);
+
 
   // Pause/resume on toggle (including comments/share overlays)
   useEffect(() => {
@@ -228,8 +274,11 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
             return (
               <div key={i} className="flex-1 h-[3px] bg-white/30 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-white rounded-full"
-                  style={{ width: `${fill * 100}%`, transition: isVideo || i !== idx ? 'none' : 'width 80ms linear' }}
+                  className="h-full w-full bg-white rounded-full origin-left"
+                  style={{
+                    transform: `scaleX(${fill})`,
+                    willChange: 'transform',
+                  }}
                 />
               </div>
             );
@@ -268,6 +317,8 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
               alt=""
               className="absolute inset-0 w-full h-full object-cover"
               draggable={false}
+              onLoad={() => setImgLoaded(true)}
+              onError={() => setImgLoaded(true)}
             />
           )}
 
