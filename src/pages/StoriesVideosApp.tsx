@@ -792,10 +792,37 @@ function ProdutosTab() {
           </div> :
 
 
-      <div className="bg-white border border-neutral-200 rounded-2xl p-16 text-center">
-          <h3 className="text-[16px] font-semibold text-neutral-900">Medidas</h3>
-          <p className="text-[14px] text-neutral-500 mt-1">Configure as medidas dos seus produtos aqui.</p>
-        </div>
+      measures.length === 0 ?
+      <div className="border border-dashed border-neutral-300 rounded-2xl p-16 text-center text-neutral-500">
+            Nenhum modelo de medidas. Clique em <b className="text-neutral-700">Adicionar medidas</b> para começar.
+          </div> :
+      <div className="bg-white border border-neutral-200 rounded-2xl overflow-hidden">
+            {measures.map((m, idx) =>
+        <div key={m.id} className={`flex items-center gap-4 px-5 py-4 ${idx !== measures.length - 1 ? 'border-b border-neutral-100' : ''}`}>
+                <div className="w-12 h-12 shrink-0 rounded-xl bg-neutral-100 border border-neutral-200 flex items-center justify-center">
+                  <Settings2 className="w-5 h-5 text-neutral-500" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-[14.5px] font-semibold text-neutral-900 truncate">{m.name}</h4>
+                  <p className="text-[12.5px] text-neutral-500 truncate mt-0.5">
+                    {m.rows.length} {m.rows.length === 1 ? 'linha' : 'linhas'}
+                  </p>
+                </div>
+                <button
+            onClick={() => { setEditingMeasure(m); setMeasureOpen(true); }}
+            aria-label="Editar modelo"
+            className="w-9 h-9 rounded-lg hover:bg-neutral-100 flex items-center justify-center text-neutral-700 transition-colors">
+                  <Edit2 className="w-4 h-4" />
+                </button>
+                <button
+            onClick={() => persistMeasures(measures.filter((x) => x.id !== m.id))}
+            aria-label="Remover modelo"
+            className="w-9 h-9 rounded-lg hover:bg-red-50 hover:text-red-600 flex items-center justify-center text-neutral-700 transition-colors">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+        )}
+          </div>
       }
 
       <AddProductModal
@@ -804,6 +831,22 @@ function ProdutosTab() {
         onClose={closeModal}
         saving={saving}
         onSave={handleSave} />
+
+      <AddMeasureModelModal
+        open={measureOpen}
+        editing={editingMeasure}
+        onClose={() => { setMeasureOpen(false); setEditingMeasure(null); }}
+        onSave={(model) => {
+          if (editingMeasure) {
+            persistMeasures(measures.map((m) => m.id === editingMeasure.id ? { ...model, id: editingMeasure.id } : m));
+            toast.success('Modelo atualizado');
+          } else {
+            persistMeasures([{ ...model, id: crypto.randomUUID() }, ...measures]);
+            toast.success('Modelo adicionado');
+          }
+          setMeasureOpen(false);
+          setEditingMeasure(null);
+        }} />
 
     </div>);
 
