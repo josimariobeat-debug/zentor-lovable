@@ -124,37 +124,47 @@ export default function AppearancePresets() {
           {pageItems.map((p, idx) => (
             <div
               key={p.id}
-              className={`flex items-center gap-3 sm:gap-4 px-3 sm:px-5 py-3 sm:py-4 ${idx !== pageItems.length - 1 ? 'border-b border-neutral-100' : ''}`}
+              className={`flex items-center gap-2.5 sm:gap-4 px-3 sm:px-5 py-3 sm:py-4 ${idx !== pageItems.length - 1 ? 'border-b border-neutral-100' : ''}`}
             >
               <div className="shrink-0">
-                <AppearanceMiniPreview
-                  config={(p.config as unknown as MiniConfig) ?? null}
-                  kind={p.kind as 'floating' | 'carousel'}
-                  width={48}
-                />
+                {/* Smaller on very small screens to preserve room for title + actions */}
+                <span className="hidden xs:inline-block">
+                  <AppearanceMiniPreview
+                    config={(p.config as unknown as MiniConfig) ?? null}
+                    kind={p.kind as 'floating' | 'carousel'}
+                    width={48}
+                  />
+                </span>
+                <span className="inline-block xs:hidden">
+                  <AppearanceMiniPreview
+                    config={(p.config as unknown as MiniConfig) ?? null}
+                    kind={p.kind as 'floating' | 'carousel'}
+                    width={40}
+                  />
+                </span>
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="text-[14.5px] font-semibold text-neutral-900 truncate">{p.name}</h4>
+                <h4 className="text-[13.5px] sm:text-[14.5px] font-semibold text-neutral-900 truncate">{p.name}</h4>
               </div>
-              <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+              <div className="flex items-center gap-0.5 sm:gap-2 shrink-0">
                 <button
                   title="Duplicar"
                   onClick={() => duplicate(p)}
-                  className="w-9 h-9 rounded-lg hover:bg-neutral-100 flex items-center justify-center text-neutral-700 transition-colors"
+                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg hover:bg-neutral-100 flex items-center justify-center text-neutral-700 transition-colors"
                 >
                   <Copy className="w-4 h-4" />
                 </button>
                 <button
                   title="Editar"
                   onClick={() => navigate(`/app/${appId}/aparencia/${p.id}?kind=${p.kind}`)}
-                  className="w-9 h-9 rounded-lg hover:bg-neutral-100 flex items-center justify-center text-neutral-700 transition-colors"
+                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg hover:bg-neutral-100 flex items-center justify-center text-neutral-700 transition-colors"
                 >
                   <Pencil className="w-4 h-4" />
                 </button>
                 <button
                   title="Excluir"
                   onClick={() => setToDelete(p)}
-                  className="w-9 h-9 rounded-lg hover:bg-red-50 hover:text-red-600 flex items-center justify-center text-neutral-700 transition-colors"
+                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg hover:bg-red-50 hover:text-red-600 flex items-center justify-center text-neutral-700 transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
