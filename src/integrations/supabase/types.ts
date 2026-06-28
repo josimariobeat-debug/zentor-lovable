@@ -86,6 +86,74 @@ export type Database = {
         }
         Relationships: []
       }
+      measure_models: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      measure_rows: {
+        Row: {
+          created_at: string
+          id: string
+          measure_type: string
+          model_id: string
+          position: number
+          size_name: string
+          updated_at: string
+          user_id: string
+          value_cm: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          measure_type: string
+          model_id: string
+          position?: number
+          size_name: string
+          updated_at?: string
+          user_id: string
+          value_cm: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          measure_type?: string
+          model_id?: string
+          position?: number
+          size_name?: string
+          updated_at?: string
+          user_id?: string
+          value_cm?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "measure_rows_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "measure_models"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       media_gallery: {
         Row: {
           created_at: string
