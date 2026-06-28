@@ -603,6 +603,10 @@ function PlaceholderTab({ label }: {label: string;}) {
 }
 
 type ProductRow = {id: string;name: string;price: string;currency: string;url: string;image: string | null;};
+type MeasureType = 'Busto' | 'Quadril' | 'Cintura' | 'Manga' | 'Comprimento' | 'Dentro da Perna' | 'Bíceps';
+const MEASURE_TYPES: MeasureType[] = ['Busto', 'Quadril', 'Cintura', 'Manga', 'Comprimento', 'Dentro da Perna', 'Bíceps'];
+type MeasureRow = {id: string;tamanho: string;medida: MeasureType;valor: string;};
+type MeasureModel = {id: string;name: string;rows: MeasureRow[]};
 
 function ProdutosTab() {
   const { user } = useAuth();
