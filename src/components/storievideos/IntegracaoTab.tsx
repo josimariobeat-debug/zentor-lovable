@@ -102,11 +102,7 @@ export default function IntegracaoTab() {
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center gap-2 text-sm text-neutral-500">
-        <Loader2 className="w-4 h-4 animate-spin" /> Carregando…
-      </div>
-    );
+    return <StoriesRowsSkeleton count={2} />;
   }
 
   if (!store) {
