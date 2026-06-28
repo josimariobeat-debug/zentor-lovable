@@ -56,10 +56,12 @@ function Sidebar() {
       <aside
         data-ev-id="ev_5375042d05"
         className={cn(
-          'w-[260px] border-r border-neutral-200 bg-white flex flex-col fixed left-0 top-0 bottom-0 z-50 transition-transform duration-200 md:translate-x-0',
+          'w-[260px] border-r border-neutral-200 bg-white flex flex-col fixed left-0 top-0 bottom-0 z-50',
+          'transition-transform duration-200 md:transition-none md:transform-none',
           open ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         )}
       >
+
         {/* Mobile close */}
         <button
           type="button"
