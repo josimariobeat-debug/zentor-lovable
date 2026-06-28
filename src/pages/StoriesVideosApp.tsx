@@ -225,19 +225,21 @@ export default function StoriesVideosApp() {
   return (
     <>
       <TopBar title="Stories Vídeos" breadcrumb="Meus apps" backTo="/" />
-      <main data-ev-id="ev_7d87e18d92" className="px-10 py-8 fade-in">
+      <main data-ev-id="ev_7d87e18d92" className="px-4 sm:px-6 md:px-10 py-6 md:py-8 fade-in">
         <Tabs value={tab} onValueChange={(v) => setSp({ tab: v }, { replace: true })}>
-          <TabsList className="flex w-full justify-start gap-7 bg-transparent p-0 mb-9 border-b border-neutral-200 rounded-none h-auto">
-            {TABS.map((t) =>
-            <TabsTrigger
-              key={t.value}
-              value={t.value}
-              className="px-0 pb-3 pt-1 text-[14px] font-medium text-neutral-400 hover:text-neutral-700 data-[state=active]:text-neutral-900 data-[state=active]:bg-transparent data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-neutral-900 rounded-none transition-colors -mb-px">
+          <div className="mb-9 border-b border-neutral-200 overflow-x-auto scrollbar-clean -mx-4 sm:mx-0 px-4 sm:px-0">
+            <TabsList className="flex w-max md:w-full justify-start gap-7 bg-transparent p-0 rounded-none h-auto">
+              {TABS.map((t) =>
+              <TabsTrigger
+                key={t.value}
+                value={t.value}
+                className="whitespace-nowrap px-0 pb-3 pt-1 text-[14px] font-medium text-neutral-400 hover:text-neutral-700 data-[state=active]:text-neutral-900 data-[state=active]:bg-transparent data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-neutral-900 rounded-none transition-colors -mb-px">
 
-                {t.label}
-              </TabsTrigger>
-            )}
-          </TabsList>
+                  {t.label}
+                </TabsTrigger>
+              )}
+            </TabsList>
+          </div>
 
           <TabsContent value="stories" className="mt-0">
             <div data-ev-id="ev_9dcaf4b253" className="flex items-center gap-8 mb-7">
