@@ -97,9 +97,7 @@ export default function AppearancePresets() {
       </div>
 
       {loading ? (
-        <div className="bg-white border border-neutral-200 rounded-2xl p-16 flex items-center gap-2 text-sm text-neutral-500 justify-center">
-          <Loader2 className="w-4 h-4 animate-spin" /> Carregando…
-        </div>
+        <StoriesRowsSkeleton count={3} />
       ) : pageItems.length === 0 ? (
         <div className="border border-dashed border-neutral-300 rounded-2xl p-16 text-center text-neutral-500">
           Nenhum padrão criado ainda. Clique em <b className="text-neutral-700">Adicionar</b> para começar.
