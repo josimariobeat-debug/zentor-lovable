@@ -686,21 +686,19 @@ function ProdutosTab() {
     <div className="fade-in">
       <div className="flex items-center justify-end gap-2 mb-6">
         <button
-          onClick={() => setView('medidas')}
-          className={`inline-flex items-center gap-2 text-[13.5px] font-medium px-4 py-2.5 rounded-xl transition-colors border ${
-          view === 'medidas' ?
-          'bg-neutral-900 text-white border-neutral-900 hover:bg-neutral-800' :
-          'text-neutral-700 border-neutral-200 hover:bg-neutral-50'}`
-          }>
+          onClick={() => setView((v) => v === 'medidas' ? 'produtos' : 'medidas')}
+          className="inline-flex items-center gap-2 text-[13.5px] font-medium px-4 py-2.5 rounded-xl transition-colors border text-neutral-700 border-neutral-200 hover:bg-neutral-50">
 
-          <Settings2 className="w-4 h-4" /> Medidas
+          {view === 'medidas' ?
+          <><Package className="w-4 h-4" /> Produtos</> :
+          <><Settings2 className="w-4 h-4" /> Medidas</>
+          }
         </button>
         <button
           onClick={() => {
             if (view === 'medidas') {
               toast.info('Adicionar medidas em breve');
             } else {
-              setView('produtos');
               setAddOpen(true);
             }
           }}
