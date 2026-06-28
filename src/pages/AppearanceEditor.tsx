@@ -10,55 +10,148 @@ import previewVideoAsset from '@/assets/widget-preview.mp4.asset.json';
 
 const PREVIEW_VIDEO_URL = previewVideoAsset.url;
 
+interface DemoStory {
+  type: 'video' | 'image';
+  src: string;
+  product: { title: string; price: string; thumb: string };
+  duration?: number; // seconds, used for images
+}
+
+const DEMO_STORIES: DemoStory[] = [
+  {
+    type: 'video',
+    src: PREVIEW_VIDEO_URL,
+    product: { title: 'Vestido floral verão', price: 'R$ 159,90', thumb: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=120&h=120&fit=crop' },
+  },
+  {
+    type: 'image',
+    src: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=720&h=1280&fit=crop',
+    product: { title: 'Promoção relâmpago -30%', price: 'R$ 79,90', thumb: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=120&h=120&fit=crop' },
+    duration: 5,
+  },
+  {
+    type: 'image',
+    src: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=720&h=1280&fit=crop',
+    product: { title: 'Lookbook outono', price: 'R$ 229,00', thumb: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=120&h=120&fit=crop' },
+    duration: 5,
+  },
+  {
+    type: 'image',
+    src: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=720&h=1280&fit=crop',
+    product: { title: 'Tênis casual branco', price: 'R$ 349,90', thumb: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=120&h=120&fit=crop' },
+    duration: 5,
+  },
+  {
+    type: 'image',
+    src: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=720&h=1280&fit=crop',
+    product: { title: 'Camiseta básica algodão', price: 'R$ 59,90', thumb: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=120&h=120&fit=crop' },
+    duration: 5,
+  },
+];
+
 function StoryViewer({ onClose }: { onClose: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [idx, setIdx] = useState(0);
   const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(true);
+  const [progress, setProgress] = useState(0); // 0..1 for current story
+  const rafRef = useRef<number | null>(null);
+  const startedAtRef = useRef<number>(0);
+  const accumRef = useRef<number>(0);
+
+  const current = DEMO_STORIES[idx];
+  const isVideo = current.type === 'video';
+
+  const goNext = () => {
+    setIdx((i) => (i + 1 < DEMO_STORIES.length ? i + 1 : 0));
+  };
+  const goPrev = () => {
+    setIdx((i) => (i - 1 >= 0 ? i - 1 : DEMO_STORIES.length - 1));
+  };
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+      if (e.key === 'ArrowRight') goNext();
+      if (e.key === 'ArrowLeft') goPrev();
+    };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
 
-  // Guarantee autoplay: muted + playsInline + explicit play() with retry on user gesture.
+  // Reset progress and timers whenever the active story changes
   useEffect(() => {
+    setProgress(0);
+    accumRef.current = 0;
+    startedAtRef.current = performance.now();
+  }, [idx]);
+
+  // Progress driver for image stories (videos drive their own via timeupdate)
+  useEffect(() => {
+    if (isVideo) return;
+    const duration = (current.duration ?? 5) * 1000;
+    const tick = (now: number) => {
+      if (paused) {
+        startedAtRef.current = now;
+        rafRef.current = requestAnimationFrame(tick);
+        return;
+      }
+      const elapsed = accumRef.current + (now - startedAtRef.current);
+      const p = Math.min(1, elapsed / duration);
+      setProgress(p);
+      if (p >= 1) { goNext(); return; }
+      rafRef.current = requestAnimationFrame(tick);
+    };
+    startedAtRef.current = performance.now();
+    rafRef.current = requestAnimationFrame(tick);
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+  }, [idx, isVideo, paused, current.duration]);
+
+  // Video autoplay + progress
+  useEffect(() => {
+    if (!isVideo) return;
     const v = videoRef.current;
     if (!v) return;
-    v.muted = true;
-    v.defaultMuted = true;
+    v.muted = muted;
     (v as HTMLVideoElement & { playsInline?: boolean }).playsInline = true;
-    let cancelled = false;
-    const tryPlay = () => {
-      if (cancelled || !v) return;
-      const p = v.play();
-      if (p && typeof p.then === 'function') {
-        p.then(() => setPaused(false)).catch(() => {
-          // Autoplay blocked — resume on first user interaction.
-          const resume = () => { v.play().then(() => setPaused(false)).catch(() => {}); cleanup(); };
-          const cleanup = () => {
-            window.removeEventListener('pointerdown', resume);
-            window.removeEventListener('keydown', resume);
-            window.removeEventListener('touchstart', resume);
-          };
-          window.addEventListener('pointerdown', resume, { once: true });
-          window.addEventListener('keydown', resume, { once: true });
-          window.addEventListener('touchstart', resume, { once: true });
-        });
-      }
+    const onTime = () => {
+      if (v.duration > 0) setProgress(Math.min(1, v.currentTime / v.duration));
     };
-    if (v.readyState >= 2) tryPlay();
-    else v.addEventListener('canplay', tryPlay, { once: true });
-    return () => { cancelled = true; v.removeEventListener('canplay', tryPlay); };
-  }, []);
+    const onEnd = () => goNext();
+    v.addEventListener('timeupdate', onTime);
+    v.addEventListener('ended', onEnd);
+    const p = v.play();
+    if (p && typeof p.then === 'function') p.catch(() => {});
+    return () => {
+      v.removeEventListener('timeupdate', onTime);
+      v.removeEventListener('ended', onEnd);
+    };
+  }, [idx, isVideo, muted]);
+
+  // Pause/resume on toggle
+  useEffect(() => {
+    if (!isVideo) return;
+    const v = videoRef.current; if (!v) return;
+    if (paused) v.pause(); else v.play().catch(() => {});
+  }, [paused, isVideo, idx]);
 
   function togglePlay() {
-    const v = videoRef.current; if (!v) return;
-    if (v.paused) { v.play(); setPaused(false); } else { v.pause(); setPaused(true); }
+    setPaused((p) => {
+      if (!isVideo) {
+        if (p) {
+          // resuming: reset start anchor
+          startedAtRef.current = performance.now();
+        } else {
+          // pausing: persist elapsed
+          accumRef.current = accumRef.current + (performance.now() - startedAtRef.current);
+        }
+      }
+      return !p;
+    });
   }
   function toggleMute() {
-    const v = videoRef.current; if (!v) return;
-    v.muted = !v.muted; setMuted(v.muted);
+    setMuted((m) => !m);
+    const v = videoRef.current; if (v) v.muted = !v.muted;
   }
 
   return (
@@ -77,10 +170,19 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
         }}
         onClick={(e) => e.stopPropagation()}
       >
-
-        {/* progress bar */}
-        <div className="absolute top-3 left-3 right-3 h-[3px] bg-white/30 rounded-full overflow-hidden z-20">
-          <div className="h-full w-1/3 bg-white rounded-full" />
+        {/* progress bars (one segment per story) */}
+        <div className="absolute top-3 left-3 right-3 flex gap-1 z-20">
+          {DEMO_STORIES.map((_, i) => {
+            const fill = i < idx ? 1 : i === idx ? progress : 0;
+            return (
+              <div key={i} className="flex-1 h-[3px] bg-white/30 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-white rounded-full"
+                  style={{ width: `${fill * 100}%`, transition: isVideo || i !== idx ? 'none' : 'width 80ms linear' }}
+                />
+              </div>
+            );
+          })}
         </div>
         {/* top controls */}
         <div className="absolute top-7 right-3 z-20 flex items-center gap-2">
@@ -94,37 +196,61 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
             <X className="w-4 h-4" />
           </button>
         </div>
-        {/* nav arrows */}
-        <button className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 text-white grid place-items-center">
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-        <button className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 text-white grid place-items-center">
-          <ChevronRight className="w-5 h-5" />
-        </button>
 
         <div className="relative rounded-2xl overflow-hidden bg-black shadow-2xl" style={{ aspectRatio: '9 / 16' }}>
-          <video
-            ref={videoRef}
-            src={PREVIEW_VIDEO_URL}
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="auto"
-            disableRemotePlayback
-            className="absolute inset-0 w-full h-full object-cover"
+          {isVideo ? (
+            <video
+              ref={videoRef}
+              key={`v-${idx}`}
+              src={current.src}
+              autoPlay
+              muted={muted}
+              playsInline
+              preload="auto"
+              disableRemotePlayback
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          ) : (
+            <img
+              key={`i-${idx}`}
+              src={current.src}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover"
+              draggable={false}
+            />
+          )}
+
+          {/* Instagram-style tap zones for prev/next (under the product card & controls) */}
+          <button
+            aria-label="Anterior"
+            onClick={goPrev}
+            className="absolute left-0 top-12 bottom-24 w-1/3 z-10 cursor-default"
           />
-          {/* product card */}
-          <div className="absolute left-3 right-3 bottom-3 bg-white rounded-xl shadow-lg p-2 flex items-center gap-3">
+          <button
+            aria-label="Próximo"
+            onClick={goNext}
+            className="absolute right-0 top-12 bottom-24 w-2/3 z-10 cursor-default"
+          />
+
+          {/* nav arrows (visual affordance, above tap zones) */}
+          <button onClick={goPrev} className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 text-white grid place-items-center">
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <button onClick={goNext} className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 text-white grid place-items-center">
+            <ChevronRight className="w-5 h-5" />
+          </button>
+
+          {/* product card — preserved exactly in original position/layout */}
+          <div className="absolute left-3 right-3 bottom-3 z-20 bg-white rounded-xl shadow-lg p-2 flex items-center gap-3">
             <div className="w-12 h-12 rounded-lg overflow-hidden bg-neutral-200 shrink-0">
-              <video src={PREVIEW_VIDEO_URL} autoPlay loop muted playsInline className="w-full h-full object-cover" />
+              <img src={current.product.thumb} alt="" className="w-full h-full object-cover" />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-[13px] font-semibold text-neutral-900 truncate">Produto de teste…</div>
-              <div className="text-[13px] font-bold text-neutral-900">R$ 79,90</div>
+              <div className="text-[13px] font-semibold text-neutral-900 truncate">{current.product.title}</div>
+              <div className="text-[13px] font-bold text-neutral-900">{current.product.price}</div>
             </div>
           </div>
-          <div className="absolute bottom-1 right-2 text-[10px] font-bold text-white/80 tracking-wider">PLANWEB</div>
+          <div className="absolute bottom-1 right-2 text-[10px] font-bold text-white/80 tracking-wider z-20">PLANWEB</div>
         </div>
       </div>
     </div>
