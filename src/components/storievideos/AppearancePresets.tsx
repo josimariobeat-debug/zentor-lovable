@@ -202,6 +202,19 @@ export default function AppearancePresets() {
           </div>
         </div>
       </div>
+
+      <ConfirmDeleteDialog
+        open={!!toDelete}
+        onOpenChange={() => setToDelete(null)}
+        title="Excluir aparência"
+        itemName={toDelete?.name}
+        onConfirm={async () => {
+          if (toDelete) {
+            await confirmRemove(toDelete);
+            setToDelete(null);
+          }
+        }}
+      />
     </div>
   );
 }
