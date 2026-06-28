@@ -1443,10 +1443,11 @@ function MannequinSVG({ activeTypes }: { activeTypes: MeasureType[] }) {
 
 function MeasurePreviewModal({ model, onClose }: { model: MeasureModel | null; onClose: () => void }) {
   const open = !!model;
-  const activeTypes = useMemo(() => {
+  const activeTypes = useMemo<MeasureType[]>(() => {
     if (!model) return [];
     return Array.from(new Set(model.rows.map((r) => r.medida)));
   }, [model]);
+
 
   // Group rows by tamanho -> { [medida]: valor }
   const { sizes, types } = useMemo(() => {
