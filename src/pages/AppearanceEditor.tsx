@@ -218,8 +218,22 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
     });
   }
   function toggleMute() {
-    setMuted((m) => !m);
-    const v = videoRef.current; if (v) v.muted = !v.muted;
+    setMuted((m) => {
+      const next = !m;
+      const v = videoRef.current;
+      if (v) {
+        v.muted = next;
+        if (!next) {
+          // Ensure audio actually plays after user gesture.
+          v.volume = 1;
+          v.play().catch(() => {
+            v.muted = true;
+            setMuted(true);
+          });
+        }
+      }
+      return next;
+    });
   }
 
   function toggleLike() {
