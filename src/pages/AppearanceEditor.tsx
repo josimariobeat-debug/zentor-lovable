@@ -53,14 +53,24 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [idx, setIdx] = useState(0);
   const [paused, setPaused] = useState(false);
-  const [muted, setMuted] = useState(true);
+  const [muted, setMuted] = useState(false);
   const [progress, setProgress] = useState(0); // 0..1 for current story
   const rafRef = useRef<number | null>(null);
   const startedAtRef = useRef<number>(0);
   const accumRef = useRef<number>(0);
 
+  // TikTok-style action column state
+  const [liked, setLiked] = useState<Record<number, boolean>>({});
+  const [likeBurst, setLikeBurst] = useState(false);
+  const [commentsOpen, setCommentsOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
   const current = DEMO_STORIES[idx];
   const isVideo = current.type === 'video';
+  const isLiked = !!liked[idx];
+
+  const interactionPaused = paused || commentsOpen || shareOpen;
 
   const goNext = () => {
     setIdx((i) => (i + 1 < DEMO_STORIES.length ? i + 1 : 0));
@@ -71,13 +81,18 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        if (shareOpen) { setShareOpen(false); return; }
+        if (commentsOpen) { setCommentsOpen(false); return; }
+        onClose();
+      }
+      if (commentsOpen || shareOpen) return;
       if (e.key === 'ArrowRight') goNext();
       if (e.key === 'ArrowLeft') goPrev();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  }, [onClose, commentsOpen, shareOpen]);
 
   // Reset progress and timers whenever the active story changes
   useEffect(() => {
@@ -91,7 +106,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
     if (isVideo) return;
     const duration = (current.duration ?? 5) * 1000;
     const tick = (now: number) => {
-      if (paused) {
+      if (interactionPaused) {
         startedAtRef.current = now;
         rafRef.current = requestAnimationFrame(tick);
         return;
@@ -105,7 +120,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
     startedAtRef.current = performance.now();
     rafRef.current = requestAnimationFrame(tick);
     return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
-  }, [idx, isVideo, paused, current.duration]);
+  }, [idx, isVideo, interactionPaused, current.duration]);
 
   // Video autoplay + progress
   useEffect(() => {
@@ -121,28 +136,35 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
     v.addEventListener('timeupdate', onTime);
     v.addEventListener('ended', onEnd);
     const p = v.play();
-    if (p && typeof p.then === 'function') p.catch(() => {});
+    if (p && typeof p.then === 'function') {
+      p.catch(() => {
+        // Autoplay with sound may be blocked — fall back to muted and retry.
+        if (!v.muted) {
+          v.muted = true;
+          setMuted(true);
+          v.play().catch(() => {});
+        }
+      });
+    }
     return () => {
       v.removeEventListener('timeupdate', onTime);
       v.removeEventListener('ended', onEnd);
     };
   }, [idx, isVideo, muted]);
 
-  // Pause/resume on toggle
+  // Pause/resume on toggle (including comments/share overlays)
   useEffect(() => {
     if (!isVideo) return;
     const v = videoRef.current; if (!v) return;
-    if (paused) v.pause(); else v.play().catch(() => {});
-  }, [paused, isVideo, idx]);
+    if (interactionPaused) v.pause(); else v.play().catch(() => {});
+  }, [interactionPaused, isVideo, idx]);
 
   function togglePlay() {
     setPaused((p) => {
       if (!isVideo) {
         if (p) {
-          // resuming: reset start anchor
           startedAtRef.current = performance.now();
         } else {
-          // pausing: persist elapsed
           accumRef.current = accumRef.current + (performance.now() - startedAtRef.current);
         }
       }
@@ -152,6 +174,35 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
   function toggleMute() {
     setMuted((m) => !m);
     const v = videoRef.current; if (v) v.muted = !v.muted;
+  }
+
+  function toggleLike() {
+    setLiked((prev) => ({ ...prev, [idx]: !prev[idx] }));
+    if (!isLiked) {
+      setLikeBurst(true);
+      window.setTimeout(() => setLikeBurst(false), 600);
+    }
+  }
+
+  async function handleShare() {
+    const shareData = {
+      title: current.product.title,
+      text: `Confira: ${current.product.title}`,
+      url: typeof window !== 'undefined' ? window.location.href : '',
+    };
+    const nav = typeof navigator !== 'undefined' ? (navigator as Navigator & { share?: (d: ShareData) => Promise<void> }) : undefined;
+    if (nav?.share) {
+      try { await nav.share(shareData); return; } catch { /* user cancelled — fall through */ }
+    }
+    setShareOpen(true);
+  }
+
+  async function copyLink() {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1500);
+    } catch { /* ignore */ }
   }
 
   return (
@@ -171,7 +222,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
         onClick={(e) => e.stopPropagation()}
       >
         {/* progress bars (one segment per story) */}
-        <div className="absolute top-3 left-3 right-3 flex gap-1 z-20">
+        <div className="absolute top-3 left-3 right-3 flex gap-1 z-30">
           {DEMO_STORIES.map((_, i) => {
             const fill = i < idx ? 1 : i === idx ? progress : 0;
             return (
@@ -185,14 +236,14 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
           })}
         </div>
         {/* top controls */}
-        <div className="absolute top-7 right-3 z-20 flex items-center gap-2">
-          <button onClick={togglePlay} className="w-9 h-9 rounded-full bg-black/40 hover:bg-black/60 text-white grid place-items-center">
+        <div className="absolute top-7 right-3 z-30 flex items-center gap-2">
+          <button onClick={togglePlay} aria-label={paused ? 'Reproduzir' : 'Pausar'} className="w-9 h-9 rounded-full bg-black/40 hover:bg-black/60 text-white grid place-items-center transition-colors">
             {paused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
           </button>
-          <button onClick={toggleMute} className="w-9 h-9 rounded-full bg-black/40 hover:bg-black/60 text-white grid place-items-center">
+          <button onClick={toggleMute} aria-label={muted ? 'Ativar som' : 'Silenciar'} className="w-9 h-9 rounded-full bg-black/40 hover:bg-black/60 text-white grid place-items-center transition-colors">
             {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
           </button>
-          <button onClick={onClose} className="w-9 h-9 rounded-full bg-black/40 hover:bg-black/60 text-white grid place-items-center">
+          <button onClick={onClose} aria-label="Fechar" className="w-9 h-9 rounded-full bg-black/40 hover:bg-black/60 text-white grid place-items-center transition-colors">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -220,7 +271,8 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
             />
           )}
 
-          {/* Instagram-style tap zones for prev/next (under the product card & controls) */}
+          {/* Instagram-style tap zones for prev/next.
+              Right side stops before the action column (≈64px) so taps on icons aren't hijacked. */}
           <button
             aria-label="Anterior"
             onClick={goPrev}
@@ -229,16 +281,63 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
           <button
             aria-label="Próximo"
             onClick={goNext}
-            className="absolute right-0 top-12 bottom-24 w-2/3 z-10 cursor-default"
+            className="absolute top-12 bottom-24 z-10 cursor-default"
+            style={{ left: '33.333%', right: 64 }}
           />
 
-          {/* nav arrows (visual affordance, above tap zones) */}
-          <button onClick={goPrev} className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 text-white grid place-items-center">
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <button onClick={goNext} className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 text-white grid place-items-center">
-            <ChevronRight className="w-5 h-5" />
-          </button>
+          {/* TikTok-style right action column — vertically centered, white icons */}
+          <div
+            className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 z-20 flex flex-col items-center gap-5"
+            style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+          >
+            <button
+              onClick={toggleLike}
+              aria-label={isLiked ? 'Descurtir' : 'Curtir'}
+              aria-pressed={isLiked}
+              className="group flex flex-col items-center gap-1 min-w-[44px] min-h-[44px] justify-center text-white transition-transform active:scale-90 hover:scale-110"
+            >
+              <span className="w-11 h-11 rounded-full bg-black/30 backdrop-blur-sm grid place-items-center group-hover:bg-black/50 transition-colors">
+                <Heart
+                  className={`w-7 h-7 transition-all ${isLiked ? 'text-red-500 scale-110' : 'text-white'} ${likeBurst ? 'animate-[heartPulse_.6s_ease-out]' : ''}`}
+                  fill={isLiked ? 'currentColor' : 'none'}
+                  strokeWidth={2}
+                />
+              </span>
+            </button>
+            <button
+              onClick={() => setCommentsOpen(true)}
+              aria-label="Comentar"
+              className="group flex flex-col items-center gap-1 min-w-[44px] min-h-[44px] justify-center text-white transition-transform active:scale-90 hover:scale-110"
+            >
+              <span className="w-11 h-11 rounded-full bg-black/30 backdrop-blur-sm grid place-items-center group-hover:bg-black/50 transition-colors">
+                <MessageCircle className="w-7 h-7" strokeWidth={2} />
+              </span>
+            </button>
+            <button
+              onClick={handleShare}
+              aria-label="Compartilhar"
+              className="group flex flex-col items-center gap-1 min-w-[44px] min-h-[44px] justify-center text-white transition-transform active:scale-90 hover:scale-110"
+            >
+              <span className="w-11 h-11 rounded-full bg-black/30 backdrop-blur-sm grid place-items-center group-hover:bg-black/50 transition-colors">
+                <Send className="w-6 h-6 -rotate-12" strokeWidth={2} />
+              </span>
+            </button>
+            <button
+              aria-label="Mais opções"
+              className="group flex flex-col items-center gap-1 min-w-[44px] min-h-[44px] justify-center text-white transition-transform active:scale-90 hover:scale-110"
+            >
+              <span className="w-11 h-11 rounded-full bg-black/30 backdrop-blur-sm grid place-items-center group-hover:bg-black/50 transition-colors">
+                <MoreHorizontal className="w-7 h-7" strokeWidth={2} />
+              </span>
+            </button>
+          </div>
+
+          {/* Heart burst on double-like (centered) */}
+          {likeBurst && (
+            <div className="absolute inset-0 z-20 grid place-items-center pointer-events-none">
+              <Heart className="w-28 h-28 text-white drop-shadow-2xl animate-[heartPulse_.6s_ease-out]" fill="currentColor" />
+            </div>
+          )}
 
           {/* product card — preserved exactly in original position/layout */}
           <div className="absolute left-3 right-3 bottom-3 z-20 bg-white rounded-xl shadow-lg p-2 flex items-center gap-3">
@@ -251,8 +350,76 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
             </div>
           </div>
           <div className="absolute bottom-1 right-2 text-[10px] font-bold text-white/80 tracking-wider z-20">PLANWEB</div>
+
+          {/* Comments panel — bottom sheet inside the player frame */}
+          {commentsOpen && (
+            <div
+              className="absolute inset-0 z-40 flex flex-col justify-end"
+              onClick={() => setCommentsOpen(false)}
+            >
+              <div className="absolute inset-0 bg-black/40" />
+              <div
+                className="relative bg-white rounded-t-2xl max-h-[70%] flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-200"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-neutral-100">
+                  <div className="w-10 h-1 rounded-full bg-neutral-300 mx-auto absolute left-1/2 -translate-x-1/2 top-1.5" />
+                  <h3 className="text-sm font-semibold text-neutral-900 mt-2">Comentários</h3>
+                  <button onClick={() => setCommentsOpen(false)} aria-label="Fechar comentários" className="w-8 h-8 rounded-full hover:bg-neutral-100 grid place-items-center text-neutral-600 mt-1">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="flex-1 overflow-y-auto px-4 py-3 text-sm text-neutral-500 grid place-items-center">
+                  Nenhum comentário ainda. Seja o primeiro!
+                </div>
+                <div className="border-t border-neutral-100 p-3 flex items-center gap-2">
+                  <input
+                    type="text"
+                    placeholder="Adicione um comentário..."
+                    className="flex-1 h-10 px-3 rounded-full bg-neutral-100 text-sm outline-none focus:bg-neutral-50 focus:ring-2 focus:ring-neutral-900/10"
+                  />
+                  <button className="h-10 px-4 rounded-full bg-neutral-900 text-white text-sm font-semibold">Enviar</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Share fallback modal */}
+          {shareOpen && (
+            <div
+              className="absolute inset-0 z-40 grid place-items-end sm:place-items-center"
+              onClick={() => setShareOpen(false)}
+            >
+              <div className="absolute inset-0 bg-black/50" />
+              <div
+                className="relative w-full sm:w-[88%] bg-white rounded-t-2xl sm:rounded-2xl p-4 animate-in fade-in slide-in-from-bottom-4 duration-200"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold text-neutral-900">Compartilhar</h3>
+                  <button onClick={() => setShareOpen(false)} aria-label="Fechar" className="w-8 h-8 rounded-full hover:bg-neutral-100 grid place-items-center text-neutral-600">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                <button
+                  onClick={copyLink}
+                  className="w-full h-11 rounded-xl border border-neutral-200 hover:bg-neutral-50 text-sm font-medium text-neutral-900 transition-colors"
+                >
+                  {copied ? 'Link copiado!' : 'Copiar link'}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
+
+      <style>{`
+        @keyframes heartPulse {
+          0% { transform: scale(0.6); opacity: 0; }
+          40% { transform: scale(1.2); opacity: 1; }
+          100% { transform: scale(1); opacity: 0; }
+        }
+      `}</style>
     </div>
   );
 }
