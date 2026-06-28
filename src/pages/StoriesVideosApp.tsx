@@ -968,7 +968,7 @@ function AddProductModal({
     }
     setErrors({});setTouched({});
     // Foco inicial no nome
-    const t = setTimeout(() => nameRef.current?.focus(), 50);
+    const t = setTimeout(() => nameRef.current?.focus({ preventScroll: true }), 50);
     return () => clearTimeout(t);
   }, [open, editing]);
 
