@@ -8,6 +8,7 @@ import { StoriesRowsSkeleton } from '@/components/ui/skeleton';
 import type { Tables } from '@/integrations/supabase/helpers';
 import { ConfirmDeleteDialog } from '@/components/ui/ConfirmDeleteDialog';
 import AppearanceMiniPreview, { type MiniConfig } from './AppearanceMiniPreview';
+import AppearanceMiniPreviewDesktop from './AppearanceMiniPreviewDesktop';
 
 type Preset = Tables<'appearance_presets'>;
 type Kind = 'floating' | 'carousel';
@@ -126,11 +127,18 @@ export default function AppearancePresets() {
               key={p.id}
               className={`flex items-center gap-4 px-5 py-4 ${idx !== pageItems.length - 1 ? 'border-b border-neutral-100' : ''}`}
             >
-              <AppearanceMiniPreview
-                config={(p.config as unknown as MiniConfig) ?? null}
-                kind={p.kind as 'floating' | 'carousel'}
-                width={64}
-              />
+              <div className="flex items-center gap-2 shrink-0">
+                <AppearanceMiniPreview
+                  config={(p.config as unknown as MiniConfig) ?? null}
+                  kind={p.kind as 'floating' | 'carousel'}
+                  width={64}
+                />
+                <AppearanceMiniPreviewDesktop
+                  config={(p.config as unknown as MiniConfig) ?? null}
+                  kind={p.kind as 'floating' | 'carousel'}
+                  width={104}
+                />
+              </div>
               <div className="flex-1 min-w-0">
                 <h4 className="text-[14.5px] font-semibold text-neutral-900 truncate">{p.name}</h4>
               </div>
