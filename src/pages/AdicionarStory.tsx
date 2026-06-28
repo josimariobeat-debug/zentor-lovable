@@ -511,7 +511,14 @@ export default function AdicionarStory() {
               ) : (
                 <Select value={aparenciaValue} onValueChange={setAparencia}>
                   <SelectTrigger className="w-full h-11 rounded-xl border-neutral-200">
-                    <SelectValue placeholder="Selecionar aparência" />
+                    <SelectValue placeholder="Selecionar aparência">
+                      {(() => {
+                        if (!aparenciaValue) return null;
+                        if (aparenciaValue === 'default') return 'Padrão';
+                        const found = presets.find((p) => p.id === aparenciaValue);
+                        return found ? found.name : 'Selecionar aparência';
+                      })()}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {presets.length === 0 && (
