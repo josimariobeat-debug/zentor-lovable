@@ -458,7 +458,7 @@ export default function AdicionarStory() {
           <Label>Aparência</Label>
           <div data-ev-id="ev_90d3e83fe4" className="flex items-center gap-3">
             <div data-ev-id="ev_c7cecbe96d" className="flex-1">
-              <Select value={aparencia} onValueChange={setAparencia} disabled={!presetsLoaded}>
+              <Select value={aparencia} onValueChange={setAparencia}>
                 <SelectTrigger className="w-full h-11 rounded-xl border-neutral-200"><SelectValue placeholder="Selecionar aparência" /></SelectTrigger>
                 <SelectContent>
                   {presets.length === 0 && (
