@@ -161,6 +161,16 @@ export default function AdicionarStory() {
         if (isEdit && loading) return current;
         return list[0]?.id ?? 'default';
       });
+  // Resolve aparência sempre que presets ou valor mudarem (cobre legado nome→id após loadStory)
+  useEffect(() => {
+    if (!presetsLoaded) return;
+    if (!aparencia || aparencia === 'default') return;
+    if (presets.some((p) => p.id === aparencia)) return;
+    const byName = presets.find((p) => p.name === aparencia);
+    if (byName) setAparencia(byName.id);
+    else setAparencia(presets[0]?.id ?? 'default');
+  }, [presetsLoaded, presets, aparencia]);
+
 
     })();
     return () => { cancel = true; };
