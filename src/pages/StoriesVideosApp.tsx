@@ -485,30 +485,13 @@ export default function StoriesVideosApp() {
       </main>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Excluir story</DialogTitle>
-            <DialogDescription>
-              Tem certeza que deseja excluir o story "{deleteConfirm?.title}"? Esta ação não pode ser desfeita.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <button data-ev-id="ev_8215792ab1"
-            onClick={() => setDeleteConfirm(null)}
-            className="px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100 rounded-lg transition-colors">
-
-              Cancelar
-            </button>
-            <button data-ev-id="ev_f2d9160305"
-            onClick={handleDelete}
-            className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors">
-
-              Excluir
-            </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmDeleteDialog
+        open={!!deleteConfirm}
+        onOpenChange={() => setDeleteConfirm(null)}
+        title="Excluir story"
+        itemName={deleteConfirm?.title}
+        onConfirm={handleDelete}
+      />
 
       {/* Video Preview Dialog */}
       <MediaPreviewModal
@@ -525,30 +508,13 @@ export default function StoriesVideosApp() {
       />
 
       {/* Delete Gallery Item Confirmation */}
-      <Dialog open={!!deleteGalleryConfirm} onOpenChange={() => setDeleteGalleryConfirm(null)}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Excluir mídia</DialogTitle>
-            <DialogDescription>
-              Tem certeza que deseja excluir "{deleteGalleryConfirm?.name || 'esta mídia'}" da galeria? Esta ação não pode ser desfeita.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <button data-ev-id="ev_aa7d6d9c42"
-            onClick={() => setDeleteGalleryConfirm(null)}
-            className="px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100 rounded-lg transition-colors">
-
-              Cancelar
-            </button>
-            <button data-ev-id="ev_994e8cf1c4"
-            onClick={handleDeleteGalleryItem}
-            className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors">
-
-              Excluir
-            </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmDeleteDialog
+        open={!!deleteGalleryConfirm}
+        onOpenChange={() => setDeleteGalleryConfirm(null)}
+        title="Excluir mídia"
+        itemName={deleteGalleryConfirm?.name || 'esta mídia'}
+        onConfirm={handleDeleteGalleryItem}
+      />
     </>);
 
 }
