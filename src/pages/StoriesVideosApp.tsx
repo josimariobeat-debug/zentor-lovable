@@ -42,7 +42,6 @@ const TABS = [
 { value: 'aparencia', label: 'Aparência' },
 { value: 'dashboard', label: 'Dashboard' },
 { value: 'produtos', label: 'Produtos' },
-{ value: 'medidas', label: 'Medidas' },
 { value: 'comentarios', label: 'Comentários' },
 { value: 'config', label: 'Configurações' },
 { value: 'integracao', label: 'Integração' }];
