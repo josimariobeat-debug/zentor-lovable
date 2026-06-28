@@ -717,8 +717,8 @@ function AddProductModal({
       <DialogContent className="max-w-2xl p-0 overflow-hidden">
         <div className="px-6 pt-6">
           <DialogHeader>
-            <DialogTitle className="text-[16px] font-semibold text-neutral-900">Adicionar produto manualmente</DialogTitle>
-            <DialogDescription className="text-[13px] text-neutral-500">
+            <DialogTitle>Adicionar produto manualmente</DialogTitle>
+            <DialogDescription>
               Cadastre as informações principais do produto.
             </DialogDescription>
           </DialogHeader>
