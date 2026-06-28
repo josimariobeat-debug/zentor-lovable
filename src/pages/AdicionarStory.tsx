@@ -216,6 +216,7 @@ export default function AdicionarStory() {
     navigate(url);
   };
 
+  const addUrl = () => setUrls([...urls, { value: '', type: 'contem', ignore_params: false }]);
   const removeUrl = (i: number) => setUrls(urls.filter((_, x) => x !== i));
   const updateUrl = (i: number, k: keyof UrlEntry, v: string | boolean) =>
   setUrls(urls.map((u, x) => x === i ? { ...u, [k]: v } : u));
