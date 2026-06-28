@@ -385,7 +385,7 @@ export default function AppearanceEditor() {
         breadcrumb="Stories Vídeos"
         backTo={returnTo || `/app/${appId}?tab=aparencia`}
       />
-      <main className="px-10 py-8 fade-in">
+      <main className="px-4 sm:px-6 lg:px-10 py-6 sm:py-8 fade-in">
         <button
           onClick={backToTab}
           className="inline-flex items-center gap-2 text-sm text-neutral-600 hover:text-neutral-900 mb-4"
@@ -393,7 +393,7 @@ export default function AppearanceEditor() {
           <ArrowLeft className="w-4 h-4" /> {returnTo ? 'Voltar' : 'Voltar para Aparência'}
         </button>
 
-        <div className="bg-white border border-neutral-200 rounded-2xl p-6">
+        <div className="bg-white border border-neutral-200 rounded-2xl p-4 sm:p-6">
           <label className="flex flex-col gap-1.5 text-sm mb-6">
             <span className="text-neutral-700 font-medium">Aparência</span>
             <input
@@ -404,9 +404,9 @@ export default function AppearanceEditor() {
             />
           </label>
 
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_400px] gap-6">
             {/* Preview */}
-            <div className="rounded-2xl border border-neutral-200 bg-neutral-50/60 p-4 min-h-[520px]">
+            <div className="rounded-2xl border border-neutral-200 bg-neutral-50/60 p-4 min-h-[520px] min-w-0 overflow-hidden">
               <div className="flex justify-center mb-4">
                 <div className="inline-flex bg-white border border-neutral-200 rounded-xl p-1">
                   <button
@@ -552,13 +552,15 @@ export default function AppearanceEditor() {
             </div>
 
             {/* Controls */}
-            <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-5 min-w-0">
               <div className="flex items-start gap-3">
-                <Switch
-                  checked={cfg.useAllDevices}
-                  onCheckedChange={(v) => setCfg({ ...cfg, useAllDevices: !!v })}
-                />
-                <div>
+                <div className="shrink-0 pt-0.5">
+                  <Switch
+                    checked={cfg.useAllDevices}
+                    onCheckedChange={(v) => setCfg({ ...cfg, useAllDevices: !!v })}
+                  />
+                </div>
+                <div className="min-w-0">
                   <div className="text-sm font-medium text-neutral-900">
                     Usar aparência em todos os dispositivos
                   </div>
@@ -738,7 +740,7 @@ export default function AppearanceEditor() {
                 />
               </Field>
 
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-neutral-100">
+              <div className="flex flex-wrap items-center justify-end gap-2 pt-3 border-t border-neutral-100">
                 <button
                   onClick={backToTab}
                   className="h-10 px-4 rounded-xl border border-neutral-200 text-sm font-medium hover:bg-neutral-50"
