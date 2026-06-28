@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import TopBar from '@/components/layout/TopBar';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -628,6 +628,8 @@ function ProdutosTab() {
   const [measures, setMeasures] = useState<MeasureModel[]>([]);
   const [measuresLoading, setMeasuresLoading] = useState(true);
   const [savingMeasure, setSavingMeasure] = useState(false);
+  const [previewMeasure, setPreviewMeasure] = useState<MeasureModel | null>(null);
+
 
   useEffect(() => {
     if (!user) return;
@@ -873,15 +875,24 @@ function ProdutosTab() {
       <div className="bg-white border border-neutral-200 rounded-2xl overflow-hidden">
             {measures.map((m, idx) =>
         <div key={m.id} className={`flex items-center gap-4 px-5 py-4 ${idx !== measures.length - 1 ? 'border-b border-neutral-100' : ''}`}>
-                <div className="w-12 h-12 shrink-0 rounded-xl bg-neutral-100 border border-neutral-200 flex items-center justify-center">
+                <button
+                  type="button"
+                  onClick={() => setPreviewMeasure(m)}
+                  aria-label={`Visualizar ${m.name}`}
+                  className="w-12 h-12 shrink-0 rounded-xl bg-neutral-100 border border-neutral-200 flex items-center justify-center hover:bg-neutral-200 hover:border-neutral-300 transition-colors">
                   <Settings2 className="w-5 h-5 text-neutral-500" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h4 className="text-[14.5px] font-semibold text-neutral-900 truncate">{m.name}</h4>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPreviewMeasure(m)}
+                  className="flex-1 min-w-0 text-left">
+                  <h4 className="text-[14.5px] font-semibold text-neutral-900 truncate hover:underline underline-offset-2 decoration-neutral-300">{m.name}</h4>
                   <p className="text-[12.5px] text-neutral-500 truncate mt-0.5">
                     {m.rows.length} {m.rows.length === 1 ? 'linha' : 'linhas'}
                   </p>
-                </div>
+                </button>
+
                 <button
             onClick={() => { setEditingMeasure(m); setMeasureOpen(true); }}
             aria-label="Editar modelo"
@@ -913,8 +924,12 @@ function ProdutosTab() {
         onClose={() => { setMeasureOpen(false); setEditingMeasure(null); }}
         onSave={saveMeasureModel} />
 
+      <MeasurePreviewModal
+        model={previewMeasure}
+        onClose={() => setPreviewMeasure(null)} />
 
     </div>);
+
 
 }
 
@@ -1338,6 +1353,185 @@ function AddMeasureModelModal({
 
 }
 
+
+// ============================================================
+// Measure Preview Modal — mannequin outline + measurements table
+// ============================================================
+
+const MEASURE_GUIDES: Record<MeasureType, { y: number; label: string; side: 'L' | 'R' }> = {
+  'Busto':           { y: 92,  label: 'Busto',           side: 'R' },
+  'Cintura':         { y: 130, label: 'Cintura',         side: 'L' },
+  'Quadril':         { y: 165, label: 'Quadril',         side: 'R' },
+  'Manga':           { y: 110, label: 'Manga',           side: 'L' },
+  'Bíceps':          { y: 100, label: 'Bíceps',          side: 'R' },
+  'Comprimento':     { y: 250, label: 'Comprimento',     side: 'L' },
+  'Dentro da Perna': { y: 230, label: 'Dentro da Perna', side: 'R' },
+};
+
+function MannequinSVG({ activeTypes }: { activeTypes: MeasureType[] }) {
+  const isActive = (t: MeasureType) => activeTypes.includes(t);
+  return (
+    <svg viewBox="0 0 220 320" className="w-full h-auto max-h-[420px]" aria-hidden="true">
+      {/* Body outline */}
+      <g fill="none" stroke="#171717" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round">
+        {/* Head */}
+        <circle cx="110" cy="32" r="18" />
+        {/* Neck */}
+        <path d="M102 50 L102 58 Q110 62 118 58 L118 50" />
+        {/* Torso + arms + legs silhouette */}
+        <path d="
+          M118 58
+          L150 70
+          L168 110
+          L160 115
+          L148 88
+          L142 130
+          L150 180
+          L138 182
+          L128 130
+          L128 200
+          L132 312
+          L118 312
+          L112 210
+          L108 210
+          L102 312
+          L88 312
+          L92 200
+          L92 130
+          L82 182
+          L70 180
+          L78 130
+          L72 88
+          L60 115
+          L52 110
+          L70 70
+          L102 58
+        " />
+      </g>
+
+      {/* Dotted measurement guides */}
+      <g stroke="#171717" strokeWidth="1.2" strokeDasharray="3 3" fill="none">
+        {/* Busto */}
+        {isActive('Busto') && <ellipse cx="110" cy="92" rx="32" ry="6" opacity={0.9} />}
+        {/* Cintura */}
+        {isActive('Cintura') && <ellipse cx="110" cy="130" rx="24" ry="5" opacity={0.9} />}
+        {/* Quadril */}
+        {isActive('Quadril') && <ellipse cx="110" cy="165" rx="34" ry="6" opacity={0.9} />}
+        {/* Bíceps */}
+        {isActive('Bíceps') && <ellipse cx="156" cy="100" rx="8" ry="3" opacity={0.9} />}
+        {/* Manga (arm length line) */}
+        {isActive('Manga') && <line x1="60" y1="70" x2="52" y2="115" />}
+        {/* Comprimento (full length line) */}
+        {isActive('Comprimento') && <line x1="178" y1="58" x2="178" y2="312" />}
+        {/* Dentro da Perna */}
+        {isActive('Dentro da Perna') && <line x1="42" y1="130" x2="42" y2="312" />}
+      </g>
+
+      {/* Labels */}
+      <g fontFamily="ui-sans-serif, system-ui" fontSize="9" fill="#525252">
+        {isActive('Busto') && (<><line x1="142" y1="92" x2="186" y2="92" stroke="#a3a3a3" strokeDasharray="2 2"/><text x="190" y="95">Busto</text></>)}
+        {isActive('Cintura') && (<><line x1="34" y1="130" x2="86" y2="130" stroke="#a3a3a3" strokeDasharray="2 2"/><text x="0" y="133">Cintura</text></>)}
+        {isActive('Quadril') && (<><line x1="144" y1="165" x2="186" y2="165" stroke="#a3a3a3" strokeDasharray="2 2"/><text x="190" y="168">Quadril</text></>)}
+        {isActive('Bíceps') && (<><line x1="164" y1="100" x2="200" y2="80" stroke="#a3a3a3" strokeDasharray="2 2"/><text x="195" y="76">Bíceps</text></>)}
+        {isActive('Manga') && (<><line x1="56" y1="92" x2="18" y2="80" stroke="#a3a3a3" strokeDasharray="2 2"/><text x="0" y="76">Manga</text></>)}
+        {isActive('Comprimento') && (<text x="183" y="190" transform="rotate(90 183 190)">Comprimento</text>)}
+        {isActive('Dentro da Perna') && (<text x="6" y="220">Dentro</text>)}
+      </g>
+    </svg>
+  );
+}
+
+function MeasurePreviewModal({ model, onClose }: { model: MeasureModel | null; onClose: () => void }) {
+  const open = !!model;
+  const activeTypes = useMemo<MeasureType[]>(() => {
+    if (!model) return [];
+    return Array.from(new Set(model.rows.map((r) => r.medida)));
+  }, [model]);
+
+
+  // Group rows by tamanho -> { [medida]: valor }
+  const { sizes, types } = useMemo(() => {
+    if (!model) return { sizes: [] as string[], types: [] as MeasureType[] };
+    const sizeOrder: string[] = [];
+    const seen = new Set<string>();
+    model.rows.forEach((r) => {
+      const t = (r.tamanho || '—').trim() || '—';
+      if (!seen.has(t)) { seen.add(t); sizeOrder.push(t); }
+    });
+    return { sizes: sizeOrder, types: activeTypes };
+  }, [model, activeTypes]);
+
+  const valueFor = (size: string, medida: MeasureType) => {
+    if (!model) return '';
+    const found = model.rows.find((r) => ((r.tamanho || '—').trim() || '—') === size && r.medida === medida);
+    return found ? found.valor : '—';
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent className="w-full max-w-[min(100%,56rem)] sm:max-w-4xl mx-auto my-auto p-0 overflow-hidden max-h-[calc(100vh-2rem)] flex flex-col">
+        <div className="px-4 sm:px-6 pt-5 shrink-0">
+          <DialogHeader>
+            <DialogTitle>{model?.name ?? 'Modelo de medidas'}</DialogTitle>
+            <DialogDescription>
+              Pré-visualização do manequim com as referências de medida e a tabela completa.
+            </DialogDescription>
+          </DialogHeader>
+        </div>
+
+        <div className="px-4 sm:px-6 py-4 overflow-y-auto flex-1 min-h-0">
+          <div className="grid grid-cols-1 md:grid-cols-[260px_minmax(0,1fr)] gap-5 items-start">
+            {/* Mannequin */}
+            <div className="bg-neutral-50 border border-neutral-200 rounded-2xl p-4 flex items-center justify-center">
+              <MannequinSVG activeTypes={activeTypes} />
+            </div>
+
+            {/* Table */}
+            <div className="border border-neutral-200 rounded-2xl overflow-hidden bg-white">
+              {sizes.length === 0 || types.length === 0 ?
+                <div className="p-6 text-center text-[13px] text-neutral-500">
+                  Nenhuma medida cadastrada neste modelo.
+                </div> :
+                <div className="overflow-x-auto">
+                  <table className="w-full text-[13px] text-neutral-800 border-collapse">
+                    <thead>
+                      <tr className="bg-neutral-50 text-[11.5px] uppercase tracking-wide text-neutral-500">
+                        <th className="text-left font-medium px-3 py-2.5 border-b border-neutral-200">Tamanho</th>
+                        {types.map((t) =>
+                          <th key={t} className="text-left font-medium px-3 py-2.5 border-b border-neutral-200 whitespace-nowrap">{t}</th>
+                        )}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sizes.map((s, i) =>
+                        <tr key={s} className={i !== sizes.length - 1 ? 'border-b border-neutral-100' : ''}>
+                          <td className="px-3 py-2.5 font-semibold text-neutral-900">{s}</td>
+                          {types.map((t) =>
+                            <td key={t} className="px-3 py-2.5 tabular-nums whitespace-nowrap">
+                              {valueFor(s, t)}{valueFor(s, t) !== '—' ? ' cm' : ''}
+                            </td>
+                          )}
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-neutral-100 flex items-center justify-end shrink-0 bg-white">
+          <button
+            type="button"
+            onClick={onClose}
+            className="h-10 px-4 text-[13.5px] font-medium text-neutral-700 rounded-xl hover:bg-neutral-100 transition-colors">
+            Fechar
+          </button>
+        </div>
+      </DialogContent>
+    </Dialog>);
+}
 
 
 
