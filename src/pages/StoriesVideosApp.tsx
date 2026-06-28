@@ -601,11 +601,14 @@ function PlaceholderTab({ label }: {label: string;}) {
 
 }
 
+type ProductRow = {id: string;name: string;price: string;currency: string;url: string;image: string | null;};
+
 function ProdutosTab() {
   const { user } = useAuth();
   const [view, setView] = useState<'produtos' | 'medidas'>('produtos');
   const [addOpen, setAddOpen] = useState(false);
-  const [products, setProducts] = useState<{id: string;name: string;price: string;currency: string;url: string;image: string | null;}[]>([]);
+  const [editing, setEditing] = useState<ProductRow | null>(null);
+  const [products, setProducts] = useState<ProductRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -630,9 +633,26 @@ function ProdutosTab() {
     return () => { cancelled = true; };
   }, [user]);
 
-  const handleAdd = async (p: {name: string;price: string;currency: string;url: string;image: string | null;}) => {
+  const handleSave = async (p: {name: string;price: string;currency: string;url: string;image: string | null;}) => {
     if (!user) return;
     setSaving(true);
+    if (editing) {
+      const { data, error } = await supabase
+        .from('products')
+        .update(p)
+        .eq('id', editing.id)
+        .select('id,name,price,currency,url,image')
+        .single();
+      setSaving(false);
+      if (error) {
+        toast.error('Erro ao salvar produto', { description: error.message });
+        return;
+      }
+      setProducts((arr) => arr.map((x) => x.id === editing.id ? (data as any) : x));
+      setEditing(null);
+      toast.success('Produto atualizado');
+      return;
+    }
     const { data, error } = await supabase
       .from('products')
       .insert({ user_id: user.id, ...p })
@@ -657,6 +677,9 @@ function ProdutosTab() {
       toast.error('Erro ao remover produto', { description: error.message });
     }
   };
+
+  const modalOpen = addOpen || editing !== null;
+  const closeModal = () => { setAddOpen(false); setEditing(null); };
 
   return (
     <div className="fade-in">
@@ -718,7 +741,15 @@ function ProdutosTab() {
                   {p.currency === 'BRL' ? 'R$' : p.currency} {p.price}
                 </div>
                 <button
+            onClick={() => setEditing(p)}
+            aria-label="Editar produto"
+            className="w-9 h-9 rounded-lg hover:bg-neutral-100 flex items-center justify-center text-neutral-700 transition-colors">
+
+                  <Edit2 className="w-4 h-4" />
+                </button>
+                <button
             onClick={() => handleDelete(p.id)}
+            aria-label="Remover produto"
             className="w-9 h-9 rounded-lg hover:bg-red-50 hover:text-red-600 flex items-center justify-center text-neutral-700 transition-colors">
 
                   <Trash2 className="w-4 h-4" />
@@ -735,14 +766,16 @@ function ProdutosTab() {
       }
 
       <AddProductModal
-        open={addOpen}
-        onClose={() => setAddOpen(false)}
+        open={modalOpen}
+        editing={editing}
+        onClose={closeModal}
         saving={saving}
-        onAdd={handleAdd} />
+        onSave={handleSave} />
 
     </div>);
 
 }
+
 
 function AddProductModal({
   open,
