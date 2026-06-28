@@ -383,7 +383,7 @@ export default function AppearanceEditor() {
       <TopBar
         title={isNew ? 'Nova aparência' : 'Editar aparência'}
         breadcrumb="Stories Vídeos"
-        backTo={`/app/${appId}?tab=aparencia`}
+        backTo={returnTo || `/app/${appId}?tab=aparencia`}
       />
       <main className="px-10 py-8 fade-in">
         <button
