@@ -747,12 +747,9 @@ function ProdutosTab() {
 function AddProductModal({
   open,
   onClose,
-  onAdd
-
-
-
-
-}: {open: boolean;onClose: () => void;onAdd: (p: {name: string;price: string;currency: string;url: string;image: string | null;}) => void;}) {
+  onAdd,
+  saving
+}: {open: boolean;onClose: () => void;onAdd: (p: {name: string;price: string;currency: string;url: string;image: string | null;}) => void;saving?: boolean;}) {
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
   const [currency, setCurrency] = useState('BRL');
