@@ -5,11 +5,18 @@ import CLSDebugOverlay from '@/components/debug/CLSDebugOverlay';
 
 function AppLayout() {
   return (
-    <div data-ev-id="ev_3539cb7e88" className="bg-white text-neutral-900 min-h-screen md:pl-[260px]">
+    <div
+      data-ev-id="ev_3539cb7e88"
+      className="bg-white text-neutral-900 flex w-full"
+      style={{ height: '100dvh', overflow: 'hidden' }}
+    >
       <Sidebar />
-      <div data-ev-id="ev_099528319d" className="min-w-0 flex flex-col">
+      <main
+        data-ev-id="ev_099528319d"
+        className="flex-1 min-w-0 min-h-0 overflow-y-auto overflow-x-hidden"
+      >
         <Outlet />
-      </div>
+      </main>
       <CLSDebugOverlay />
     </div>);
 
