@@ -42,7 +42,6 @@ const TABS = [
 { value: 'aparencia', label: 'Aparência' },
 { value: 'dashboard', label: 'Dashboard' },
 { value: 'produtos', label: 'Produtos' },
-{ value: 'medidas', label: 'Medidas' },
 { value: 'comentarios', label: 'Comentários' },
 { value: 'config', label: 'Configurações' },
 { value: 'integracao', label: 'Integração' }];
@@ -467,11 +466,15 @@ export default function StoriesVideosApp() {
             }
           </TabsContent>
 
-          {TABS.filter((t) => t.value !== 'stories' && t.value !== 'midias' && t.value !== 'integracao' && t.value !== 'aparencia').map((t) =>
+          {TABS.filter((t) => !['stories','midias','integracao','aparencia','produtos'].includes(t.value)).map((t) =>
           <TabsContent key={t.value} value={t.value} className="mt-0">
               <PlaceholderTab label={t.label} />
             </TabsContent>
           )}
+
+          <TabsContent value="produtos" className="mt-0">
+            <ProdutosTab />
+          </TabsContent>
 
           <TabsContent value="aparencia" className="mt-0">
             <AppearancePresets />
@@ -593,6 +596,47 @@ function PlaceholderTab({ label }: {label: string;}) {
     <div data-ev-id="ev_8094199980" className="bg-white border border-neutral-200 rounded-2xl p-16 text-center fade-in">
       <h3 data-ev-id="ev_54989e0f8f" className="text-[16px] font-semibold text-neutral-900">{label}</h3>
       <p data-ev-id="ev_c38b3c7902" className="text-[14px] text-neutral-500 mt-1">Esta seção será personalizada para o seu fluxo.</p>
+    </div>);
+
+}
+
+function ProdutosTab() {
+  const [view, setView] = useState<'produtos' | 'medidas'>('produtos');
+  return (
+    <div className="fade-in">
+      <div className="flex items-center justify-end gap-2 mb-6">
+        <button
+          onClick={() => setView('medidas')}
+          className={`inline-flex items-center gap-2 text-[13.5px] font-medium px-4 py-2.5 rounded-xl transition-colors border ${
+          view === 'medidas' ?
+          'bg-neutral-900 text-white border-neutral-900 hover:bg-neutral-800' :
+          'text-neutral-700 border-neutral-200 hover:bg-neutral-50'}`
+          }>
+
+          <Settings2 className="w-4 h-4" /> Medidas
+        </button>
+        <button
+          onClick={() => setView('produtos')}
+          className={`inline-flex items-center gap-2 text-[13.5px] font-medium px-4 py-2.5 rounded-xl transition-colors ${
+          view === 'produtos' ?
+          'bg-neutral-900 text-white hover:bg-neutral-800' :
+          'bg-neutral-900 text-white hover:bg-neutral-800'}`
+          }>
+
+          <Plus className="w-4 h-4" /> Adicionar produtos
+        </button>
+      </div>
+
+      {view === 'produtos' ?
+      <div className="border border-dashed border-neutral-300 rounded-2xl p-16 text-center text-neutral-500">
+          Nenhum produto cadastrado. Clique em <b className="text-neutral-700">Adicionar produtos</b> para começar.
+        </div> :
+
+      <div className="bg-white border border-neutral-200 rounded-2xl p-16 text-center">
+          <h3 className="text-[16px] font-semibold text-neutral-900">Medidas</h3>
+          <p className="text-[14px] text-neutral-500 mt-1">Configure as medidas dos seus produtos aqui.</p>
+        </div>
+      }
     </div>);
 
 }
