@@ -504,26 +504,26 @@ export default function AdicionarStory() {
           <Label>Aparência</Label>
           <div data-ev-id="ev_90d3e83fe4" className="flex items-center gap-3">
             <div data-ev-id="ev_c7cecbe96d" className="flex-1">
-              <Select
-                value={aparenciaValue}
-                onValueChange={setAparencia}
-              >
-                <SelectTrigger
-                  className="w-full h-11 rounded-xl border-neutral-200"
-                  disabled={!aparenciaHydrated}
-                >
-                  <SelectValue placeholder={aparenciaHydrated ? 'Selecionar aparência' : 'Carregando...'} />
-                </SelectTrigger>
+              {!aparenciaHydrated ? (
+                <div className="w-full h-11 rounded-xl border border-neutral-200 bg-neutral-50 flex items-center px-3 text-sm text-neutral-400">
+                  Carregando...
+                </div>
+              ) : (
+                <Select value={aparenciaValue} onValueChange={setAparencia}>
+                  <SelectTrigger className="w-full h-11 rounded-xl border-neutral-200">
+                    <SelectValue placeholder="Selecionar aparência" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {presets.length === 0 && (
+                      <SelectItem value="default">Padrão</SelectItem>
+                    )}
+                    {presets.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
 
-                <SelectContent>
-                  {presets.length === 0 && (
-                    <SelectItem value="default">Padrão</SelectItem>
-                  )}
-                  {presets.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
 
             </div>
             <button data-ev-id="ev_593c0a615b"
