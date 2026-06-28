@@ -1369,7 +1369,7 @@ function MannequinSVG({ activeTypes }: { activeTypes: MeasureType[] }) {
             .filter(([m]) => isActive(m))
             .map(([label, cfg]) => {
               const x1 = cfg.x1 ?? 8;
-              const x2 = cfg.x2 ?? 214;
+              const x2 = cfg.x2 ?? 219;
               return (
                 <g key={label}>
                   <line x1={x1} x2={x2} y1={cfg.y} y2={cfg.y} stroke="#ef4444" strokeWidth={1.2} strokeDasharray="4 3" />
@@ -1394,7 +1394,7 @@ function MannequinSVG({ activeTypes }: { activeTypes: MeasureType[] }) {
             .filter(([m]) => isActive(m))
             .map(([label, cfg]) => {
               const cy = (cfg.y1 + cfg.y2) / 2;
-              const tx = cfg.x + 10;
+              const tx = cfg.x + (label === 'Comprimento' ? 15 : 10);
               return (
                 <g key={label}>
                   <line x1={cfg.x} x2={cfg.x} y1={cfg.y1} y2={cfg.y2} stroke="#ef4444" strokeWidth={1.2} strokeDasharray="4 3" />
