@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import TopBar from '@/components/layout/TopBar';
+import MediaPreviewModal from '@/components/storievideos/MediaPreviewModal';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -609,21 +610,11 @@ export default function AdicionarStory() {
       />
 
       {/* Video Preview */}
-      <Dialog open={!!previewMedia} onOpenChange={() => setPreviewMedia(null)}>
-        <DialogContent className="max-w-[420px] p-0 bg-black border-0 overflow-hidden rounded-2xl">
-          <div data-ev-id="ev_b281b0db66" className="relative w-full aspect-[9/16] bg-black">
-            {previewMedia?.type === 'video' ?
-            <video data-ev-id="ev_e0b6f0286f" src={previewMedia.url} autoPlay controls playsInline className="w-full h-full object-contain" /> :
-            previewMedia?.url ?
-            <img data-ev-id="ev_c02c8cf8c7" src={previewMedia.url} alt="" className="w-full h-full object-contain" /> :
-            null}
-          </div>
-          <div data-ev-id="ev_c1e3466d9a" className="px-4 py-3 bg-black text-white">
-            <div data-ev-id="ev_bd932f8379" className="text-[13.5px] font-medium truncate">{previewMedia?.name || 'Pré-visualização'}</div>
-            <div data-ev-id="ev_ac21c61238" className="text-[11.5px] text-neutral-400 mt-0.5">{previewMedia?.type === 'video' ? 'Vídeo' : 'Imagem'}</div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <MediaPreviewModal
+        open={!!previewMedia}
+        onOpenChange={() => setPreviewMedia(null)}
+        media={previewMedia}
+      />
     </>);
 
 }

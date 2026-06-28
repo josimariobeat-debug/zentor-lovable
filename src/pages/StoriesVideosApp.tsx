@@ -14,6 +14,7 @@ import { MediaThumbnail } from '@/components/ui/MediaThumbnail';
 import { GalleryCard } from '@/components/ui/GalleryCard';
 import IntegracaoTab from '@/components/storievideos/IntegracaoTab';
 import AppearancePresets from '@/components/storievideos/AppearancePresets';
+import MediaPreviewModal from '@/components/storievideos/MediaPreviewModal';
 import {
   Search,
   Plus,
@@ -515,54 +516,18 @@ export default function StoriesVideosApp() {
       </Dialog>
 
       {/* Video Preview Dialog */}
-      <Dialog open={!!previewMedia} onOpenChange={() => setPreviewMedia(null)}>
-        <DialogContent className="max-w-[420px] p-0 bg-black border-0 overflow-hidden rounded-2xl">
-          <div data-ev-id="ev_a7cd132234" className="relative w-full aspect-[9/16] bg-black">
-            {previewMedia?.type === 'video' ?
-            <video data-ev-id="ev_e9abd6ad83"
-            src={previewMedia.url}
-            autoPlay
-            controls
-            playsInline
-            className="w-full h-full object-contain" /> :
-
-            previewMedia?.url ?
-            <img data-ev-id="ev_d7b673daca" src={previewMedia.url} alt="" className="w-full h-full object-contain" /> :
-            null}
-          </div>
-          <div data-ev-id="ev_83659dbbef" className="px-4 py-3 bg-black text-white">
-            <div data-ev-id="ev_5dad3f1db3" className="text-[13.5px] font-medium truncate">{previewMedia?.name || 'Pré-visualização'}</div>
-            <div data-ev-id="ev_4e410c78e8" className="text-[11.5px] text-neutral-400 mt-0.5">
-              {previewMedia?.type === 'video' ? 'Vídeo' : 'Imagem'}
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <MediaPreviewModal
+        open={!!previewMedia}
+        onOpenChange={() => setPreviewMedia(null)}
+        media={previewMedia}
+      />
 
       {/* Gallery Preview Dialog */}
-      <Dialog open={!!previewGallery} onOpenChange={() => setPreviewGallery(null)}>
-        <DialogContent className="max-w-[420px] p-0 bg-black border-0 overflow-hidden rounded-2xl">
-          <div data-ev-id="ev_564496ae68" className="relative w-full aspect-[9/16] bg-black">
-            {previewGallery?.type === 'video' ?
-            <video data-ev-id="ev_f3378e6326"
-            src={previewGallery.url}
-            autoPlay
-            controls
-            playsInline
-            className="w-full h-full object-contain" /> :
-
-            previewGallery?.url ?
-            <img data-ev-id="ev_40dbf89a33" src={previewGallery.url} alt="" className="w-full h-full object-contain" /> :
-            null}
-          </div>
-          <div data-ev-id="ev_8d21464669" className="px-4 py-3 bg-black text-white">
-            <div data-ev-id="ev_9989bd8e36" className="text-[13.5px] font-medium truncate">{previewGallery?.name || 'Pré-visualização'}</div>
-            <div data-ev-id="ev_bb8fc08ac5" className="text-[11.5px] text-neutral-400 mt-0.5">
-              {previewGallery?.type === 'video' ? 'Vídeo' : 'Imagem'}
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <MediaPreviewModal
+        open={!!previewGallery}
+        onOpenChange={() => setPreviewGallery(null)}
+        media={previewGallery}
+      />
 
       {/* Delete Gallery Item Confirmation */}
       <Dialog open={!!deleteGalleryConfirm} onOpenChange={() => setDeleteGalleryConfirm(null)}>
