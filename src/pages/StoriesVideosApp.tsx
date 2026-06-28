@@ -1328,9 +1328,9 @@ import mannequinUrl from '@/assets/mannequin.svg';
 // Y positions (in the SVG's own 242x727 viewBox) for the cut marks
 // of bust / waist / hip — raised slightly to sit above the silhouette anchors.
 const MEASURE_Y: Record<string, number> = {
-  Busto: 168,
-  Cintura: 222,
-  Quadril: 313,
+  Busto: 198,
+  Cintura: 252,
+  Quadril: 343,
 };
 
 function MannequinSVG({ activeTypes }: { activeTypes: MeasureType[] }) {
