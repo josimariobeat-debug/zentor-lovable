@@ -621,7 +621,7 @@ function ProdutosTab() {
         .order('created_at', { ascending: false });
       if (cancelled) return;
       if (error) {
-        toast({ title: 'Erro ao carregar produtos', description: error.message, variant: 'destructive' });
+        toast.error('Erro ao carregar produtos', { description: error.message });
       } else if (data) {
         setProducts(data as any);
       }
@@ -640,12 +640,12 @@ function ProdutosTab() {
       .single();
     setSaving(false);
     if (error) {
-      toast({ title: 'Erro ao adicionar produto', description: error.message, variant: 'destructive' });
+      toast.error('Erro ao adicionar produto', { description: error.message });
       return;
     }
     setProducts((arr) => [data as any, ...arr]);
     setAddOpen(false);
-    toast({ title: 'Produto adicionado' });
+    toast.success('Produto adicionado');
   };
 
   const handleDelete = async (id: string) => {
@@ -654,7 +654,7 @@ function ProdutosTab() {
     const { error } = await supabase.from('products').delete().eq('id', id);
     if (error) {
       setProducts(prev);
-      toast({ title: 'Erro ao remover produto', description: error.message, variant: 'destructive' });
+      toast.error('Erro ao remover produto', { description: error.message });
     }
   };
 
