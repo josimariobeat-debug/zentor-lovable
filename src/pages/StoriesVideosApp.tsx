@@ -779,10 +779,11 @@ function ProdutosTab() {
 
 function AddProductModal({
   open,
+  editing,
   onClose,
-  onAdd,
+  onSave,
   saving
-}: {open: boolean;onClose: () => void;onAdd: (p: {name: string;price: string;currency: string;url: string;image: string | null;}) => void;saving?: boolean;}) {
+}: {open: boolean;editing?: ProductRow | null;onClose: () => void;onSave: (p: {name: string;price: string;currency: string;url: string;image: string | null;}) => void;saving?: boolean;}) {
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
   const [currency, setCurrency] = useState('BRL');
@@ -793,8 +794,18 @@ function AddProductModal({
   useEffect(() => {
     if (!open) {
       setName('');setPrice('');setCurrency('BRL');setUrl('');setImage(null);
+      return;
     }
-  }, [open]);
+    if (editing) {
+      setName(editing.name);
+      setPrice(editing.price);
+      setCurrency(editing.currency);
+      setUrl(editing.url);
+      setImage(editing.image);
+    } else {
+      setName('');setPrice('');setCurrency('BRL');setUrl('');setImage(null);
+    }
+  }, [open, editing]);
 
   const handlePickImage = (file?: File | null) => {
     if (!file) return;
@@ -804,15 +815,16 @@ function AddProductModal({
   };
 
   const valid = name.trim().length > 0;
+  const isEdit = !!editing;
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-2xl p-0 overflow-hidden">
         <div className="px-6 pt-6">
           <DialogHeader>
-            <DialogTitle>Adicionar produto manualmente</DialogTitle>
+            <DialogTitle>{isEdit ? 'Editar produto' : 'Adicionar produto manualmente'}</DialogTitle>
             <DialogDescription>
-              Cadastre as informações principais do produto.
+              {isEdit ? 'Atualize as informações do produto.' : 'Cadastre as informações principais do produto.'}
             </DialogDescription>
           </DialogHeader>
         </div>
@@ -904,14 +916,15 @@ function AddProductModal({
           </button>
           <button
             disabled={!valid || saving}
-            onClick={() => onAdd({ name: name.trim(), price: price.trim(), currency, url: url.trim(), image })}
+            onClick={() => onSave({ name: name.trim(), price: price.trim(), currency, url: url.trim(), image })}
             className="inline-flex items-center gap-2 h-10 px-4 text-[13.5px] font-medium text-white bg-neutral-900 hover:bg-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl transition-colors">
 
-            <Plus className="w-4 h-4" /> {saving ? 'Salvando…' : 'Adicionar produto'}
+            {isEdit ? <Edit2 className="w-4 h-4" /> : <Plus className="w-4 h-4" />} {saving ? 'Salvando…' : isEdit ? 'Salvar alterações' : 'Adicionar produto'}
           </button>
         </div>
       </DialogContent>
     </Dialog>);
 
 }
+
 
