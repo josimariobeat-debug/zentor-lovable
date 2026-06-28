@@ -157,8 +157,11 @@ export default function AdicionarStory() {
           const byName = list.find((p) => p.name === current);
           if (byName) return byName.id;
         }
+        // Em modo edição, não force list[0] enquanto o story ainda carrega — evita "piscar" outro nome
+        if (isEdit && loading) return current;
         return list[0]?.id ?? 'default';
       });
+
     })();
     return () => { cancel = true; };
   }, [user]);
