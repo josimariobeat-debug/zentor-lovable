@@ -696,10 +696,17 @@ function ProdutosTab() {
           <Settings2 className="w-4 h-4" /> Medidas
         </button>
         <button
-          onClick={() => {setView('produtos');setAddOpen(true);}}
+          onClick={() => {
+            if (view === 'medidas') {
+              toast.info('Adicionar medidas em breve');
+            } else {
+              setView('produtos');
+              setAddOpen(true);
+            }
+          }}
           className="inline-flex items-center gap-2 text-[13.5px] font-medium px-4 py-2.5 rounded-xl transition-colors bg-neutral-900 text-white hover:bg-neutral-800">
 
-          <Plus className="w-4 h-4" /> Adicionar produtos
+          <Plus className="w-4 h-4" /> {view === 'medidas' ? 'Adicionar medidas' : 'Adicionar produtos'}
         </button>
       </div>
 
