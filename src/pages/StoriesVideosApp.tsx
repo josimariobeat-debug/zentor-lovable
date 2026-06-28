@@ -25,7 +25,8 @@ import {
   Image as ImageIcon,
   Upload,
   Check,
-  CheckSquare } from
+  CheckSquare,
+  Package } from
 'lucide-react';
 
 type Story = Tables<'stories'>;
@@ -602,6 +603,9 @@ function PlaceholderTab({ label }: {label: string;}) {
 
 function ProdutosTab() {
   const [view, setView] = useState<'produtos' | 'medidas'>('produtos');
+  const [addOpen, setAddOpen] = useState(false);
+  const [products, setProducts] = useState<{id: string;name: string;price: string;currency: string;url: string;image: string | null;}[]>([]);
+
   return (
     <div className="fade-in">
       <div className="flex items-center justify-end gap-2 mb-6">
@@ -616,27 +620,205 @@ function ProdutosTab() {
           <Settings2 className="w-4 h-4" /> Medidas
         </button>
         <button
-          onClick={() => setView('produtos')}
-          className={`inline-flex items-center gap-2 text-[13.5px] font-medium px-4 py-2.5 rounded-xl transition-colors ${
-          view === 'produtos' ?
-          'bg-neutral-900 text-white hover:bg-neutral-800' :
-          'bg-neutral-900 text-white hover:bg-neutral-800'}`
-          }>
+          onClick={() => {setView('produtos');setAddOpen(true);}}
+          className="inline-flex items-center gap-2 text-[13.5px] font-medium px-4 py-2.5 rounded-xl transition-colors bg-neutral-900 text-white hover:bg-neutral-800">
 
           <Plus className="w-4 h-4" /> Adicionar produtos
         </button>
       </div>
 
       {view === 'produtos' ?
+      products.length === 0 ?
       <div className="border border-dashed border-neutral-300 rounded-2xl p-16 text-center text-neutral-500">
-          Nenhum produto cadastrado. Clique em <b className="text-neutral-700">Adicionar produtos</b> para começar.
-        </div> :
+            Nenhum produto cadastrado. Clique em <b className="text-neutral-700">Adicionar produtos</b> para começar.
+          </div> :
+
+      <div className="bg-white border border-neutral-200 rounded-2xl overflow-hidden">
+            {products.map((p, idx) =>
+        <div key={p.id} className={`flex items-center gap-4 px-5 py-4 ${idx !== products.length - 1 ? 'border-b border-neutral-100' : ''}`}>
+                <div className="w-12 h-12 shrink-0 rounded-xl bg-neutral-100 border border-neutral-200 flex items-center justify-center overflow-hidden">
+                  {p.image ?
+            <img src={p.image} alt="" className="w-full h-full object-cover" /> :
+
+            <Package className="w-5 h-5 text-neutral-400" />
+            }
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-[14.5px] font-semibold text-neutral-900 truncate">{p.name}</h4>
+                  {p.url &&
+            <p className="text-[12.5px] text-neutral-500 truncate mt-0.5">{p.url}</p>
+            }
+                </div>
+                <div className="text-[14px] font-semibold text-neutral-900 whitespace-nowrap">
+                  {p.currency === 'BRL' ? 'R$' : p.currency} {p.price}
+                </div>
+                <button
+            onClick={() => setProducts((arr) => arr.filter((x) => x.id !== p.id))}
+            className="w-9 h-9 rounded-lg hover:bg-red-50 hover:text-red-600 flex items-center justify-center text-neutral-700 transition-colors">
+
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+        )}
+          </div> :
+
 
       <div className="bg-white border border-neutral-200 rounded-2xl p-16 text-center">
           <h3 className="text-[16px] font-semibold text-neutral-900">Medidas</h3>
           <p className="text-[14px] text-neutral-500 mt-1">Configure as medidas dos seus produtos aqui.</p>
         </div>
       }
+
+      <AddProductModal
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        onAdd={(p) => {
+          setProducts((arr) => [...arr, { id: crypto.randomUUID(), ...p }]);
+          setAddOpen(false);
+        }} />
+
     </div>);
 
 }
+
+function AddProductModal({
+  open,
+  onClose,
+  onAdd
+
+
+
+
+}: {open: boolean;onClose: () => void;onAdd: (p: {name: string;price: string;currency: string;url: string;image: string | null;}) => void;}) {
+  const [name, setName] = useState('');
+  const [price, setPrice] = useState('');
+  const [currency, setCurrency] = useState('BRL');
+  const [url, setUrl] = useState('');
+  const [image, setImage] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!open) {
+      setName('');setPrice('');setCurrency('BRL');setUrl('');setImage(null);
+    }
+  }, [open]);
+
+  const handlePickImage = (file?: File | null) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setImage(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const valid = name.trim().length > 0;
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-2xl p-0 overflow-hidden">
+        <div className="px-6 pt-6">
+          <DialogHeader>
+            <DialogTitle>Adicionar produto manualmente</DialogTitle>
+            <DialogDescription>
+              Cadastre as informações principais do produto.
+            </DialogDescription>
+          </DialogHeader>
+        </div>
+
+        <div className="px-6 py-6">
+          <div className="flex flex-col sm:flex-row items-start gap-5">
+            {/* Imagem */}
+            <div className="relative shrink-0">
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => handlePickImage(e.target.files?.[0])} />
+
+              <div className="w-24 h-24 rounded-2xl bg-neutral-100 border border-neutral-200 flex items-center justify-center overflow-hidden">
+                {image ?
+                <img src={image} alt="" className="w-full h-full object-cover" /> :
+
+                <Package className="w-8 h-8 text-neutral-400" strokeWidth={1.5} />
+                }
+              </div>
+              <div className="absolute -bottom-1.5 -right-1.5 flex items-center gap-1">
+                {image &&
+                <button
+                  onClick={() => setImage(null)}
+                  type="button"
+                  aria-label="Remover imagem"
+                  className="w-7 h-7 rounded-full bg-white border border-neutral-200 shadow-sm hover:bg-red-50 hover:text-red-600 text-neutral-700 flex items-center justify-center transition-colors">
+
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                }
+                <button
+                  onClick={() => fileRef.current?.click()}
+                  type="button"
+                  aria-label="Editar imagem"
+                  className="w-7 h-7 rounded-full bg-neutral-900 hover:bg-neutral-800 text-white shadow-sm flex items-center justify-center transition-colors">
+
+                  <Edit2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Campos */}
+            <div className="flex-1 w-full space-y-3">
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Nome do produto"
+                className="h-11 rounded-xl border-neutral-200" />
+
+
+              <div className="grid grid-cols-[1fr_120px] gap-3">
+                <Input
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value.replace(/[^\d.,]/g, ''))}
+                  placeholder="Preço"
+                  inputMode="decimal"
+                  className="h-11 rounded-xl border-neutral-200" />
+
+                <select
+                  value={currency}
+                  onChange={(e) => setCurrency(e.target.value)}
+                  className="h-11 rounded-xl border border-neutral-200 bg-white px-3 text-[14px] text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900/10">
+
+                  <option value="BRL">Reais</option>
+                  <option value="USD">Dólar</option>
+                  <option value="EUR">Euro</option>
+                </select>
+              </div>
+
+              <Input
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="URL do produto"
+                className="h-11 rounded-xl border-neutral-200" />
+
+            </div>
+          </div>
+        </div>
+
+        <div className="px-6 py-4 border-t border-neutral-100 flex items-center justify-end gap-2">
+          <button
+            onClick={onClose}
+            className="h-10 px-4 text-[13.5px] font-medium text-neutral-700 rounded-xl hover:bg-neutral-100 transition-colors">
+
+            Voltar
+          </button>
+          <button
+            disabled={!valid}
+            onClick={() => onAdd({ name: name.trim(), price: price.trim(), currency, url: url.trim(), image })}
+            className="inline-flex items-center gap-2 h-10 px-4 text-[13.5px] font-medium text-white bg-neutral-900 hover:bg-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl transition-colors">
+
+            <Plus className="w-4 h-4" /> Adicionar produto
+          </button>
+        </div>
+      </DialogContent>
+    </Dialog>);
+
+}
+
