@@ -7,9 +7,9 @@ function AppLayout() {
   return (
     <div
       data-ev-id="ev_3539cb7e88"
-      className="bg-white text-neutral-900 flex w-full"
-      style={{ height: '100dvh', overflow: 'hidden' }}
+      className="app-shell bg-white text-neutral-900 flex w-full overflow-hidden"
     >
+
       <Sidebar />
       <main
         data-ev-id="ev_099528319d"

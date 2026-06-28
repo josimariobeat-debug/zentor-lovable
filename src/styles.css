@@ -53,14 +53,23 @@ html, body, #root {
 
 body {
   overflow-x: hidden;
+  overscroll-behavior-y: none;
 }
 
 html {
-  overflow-y: scroll;
-  scrollbar-gutter: stable;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
+
+/* App shell height — vh fallback for older iOS Safari, dvh for modern browsers
+   to account for the dynamic URL/toolbar without producing extra scroll. */
+.app-shell {
+  height: 100vh; /* fallback */
+  height: 100dvh;
+  max-height: 100vh;
+  max-height: 100dvh;
+}
+
 
 body {
   font-family: var(--font-sans);
