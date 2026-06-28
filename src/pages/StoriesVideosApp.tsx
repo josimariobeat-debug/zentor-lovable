@@ -968,8 +968,8 @@ function AddProductModal({
     }
     setErrors({});setTouched({});
     // Foco inicial no nome
-    const t = setTimeout(() => nameRef.current?.focus({ preventScroll: true }), 50);
-    return () => clearTimeout(t);
+    // Foco automático removido a pedido — evita teclado abrir no mobile e scroll inesperado
+    
   }, [open, editing]);
 
   const handlePickImage = (file?: File | null) => {
