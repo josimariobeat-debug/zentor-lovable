@@ -675,7 +675,7 @@ function ProdutosTab() {
     if (!user) return;
     let cancelled = false;
     (async () => {
-      setLoading(true);
+      if (!productsCache.has(user.id)) setLoading(true);
       const { data, error } = await supabase
         .from('products')
         .select('id,name,price,currency,url,image')
@@ -685,6 +685,7 @@ function ProdutosTab() {
       if (error) {
         toast.error('Erro ao carregar produtos', { description: error.message });
       } else if (data) {
+        productsCache.set(user.id, data as any);
         setProducts(data as any);
       }
       setLoading(false);
