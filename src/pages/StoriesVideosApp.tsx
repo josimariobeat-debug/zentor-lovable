@@ -1329,7 +1329,7 @@ import mannequinUrl from '@/assets/mannequin.svg';
 // of bust / waist / hip — raised slightly to sit above the silhouette anchors.
 const MEASURE_Y: Record<string, number> = {
   Busto: 198,
-  Cintura: 262,
+  Cintura: 266,
   Quadril: 343,
 };
 
