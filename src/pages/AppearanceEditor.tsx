@@ -404,7 +404,7 @@ export default function AppearanceEditor() {
             />
           </label>
 
-          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_400px] gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(260px,32%)] lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_380px] gap-4 md:gap-5 xl:gap-6">
             {/* Preview */}
             <div className="rounded-2xl border border-neutral-200 bg-neutral-50/60 p-4 min-h-[520px] min-w-0 overflow-hidden">
               <div className="flex justify-center mb-4">
