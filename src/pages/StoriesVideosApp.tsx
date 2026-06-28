@@ -606,7 +606,14 @@ type ProductRow = {id: string;name: string;price: string;currency: string;url: s
 
 function ProdutosTab() {
   const { user } = useAuth();
-  const [view, setView] = useState<'produtos' | 'medidas'>('produtos');
+  const [view, setView] = useState<'produtos' | 'medidas'>(() => {
+    if (typeof window === 'undefined') return 'produtos';
+    const saved = window.localStorage.getItem('storiesvideos:produtos-view');
+    return saved === 'medidas' ? 'medidas' : 'produtos';
+  });
+  useEffect(() => {
+    try { window.localStorage.setItem('storiesvideos:produtos-view', view); } catch {}
+  }, [view]);
   const [addOpen, setAddOpen] = useState(false);
   const [editing, setEditing] = useState<ProductRow | null>(null);
   const [products, setProducts] = useState<ProductRow[]>([]);
