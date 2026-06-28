@@ -458,35 +458,37 @@ export default function AdicionarStory() {
           <Label>Aparência</Label>
           <div data-ev-id="ev_90d3e83fe4" className="flex items-center gap-3">
             <div data-ev-id="ev_c7cecbe96d" className="flex-1">
-              <Select value={aparencia} onValueChange={setAparencia}>
-                <SelectTrigger className="w-full h-11 rounded-xl border-neutral-200"><SelectValue /></SelectTrigger>
+              <Select value={aparencia} onValueChange={setAparencia} disabled={!presetsLoaded}>
+                <SelectTrigger className="w-full h-11 rounded-xl border-neutral-200"><SelectValue placeholder="Selecionar aparência" /></SelectTrigger>
                 <SelectContent>
-                  {aparenciaOptions.map((o) =>
-                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                  {presets.length === 0 && (
+                    <SelectItem value="default">Padrão</SelectItem>
                   )}
+                  {presets.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
             <button data-ev-id="ev_593c0a615b"
-            type="button"
-            onClick={() => {
-              const next = aparenciaOptions.length + 1;
-              const newOpt = { value: `Padrão ${next}`, label: `Padrão ${next}` };
-              setAparenciaOptions([...aparenciaOptions, newOpt]);
-              setAparencia(newOpt.value);
-              toast.success(`Aparência "${newOpt.label}" criada`);
-            }}
-            title="Adicionar aparência"
-            className="w-11 h-11 rounded-full bg-neutral-900 text-white flex items-center justify-center hover:bg-neutral-800 transition-colors shrink-0">
-
+              type="button"
+              onClick={() => goToAppearance('new')}
+              title="Criar nova aparência"
+              className="w-11 h-11 rounded-full bg-neutral-900 text-white flex items-center justify-center hover:bg-neutral-800 transition-colors shrink-0">
               <Plus className="w-4 h-4" strokeWidth={2.25} />
             </button>
             <button data-ev-id="ev_52dc55b214"
-            type="button"
-            onClick={() => toast.message('Editar aparência', { description: 'Em breve você editará cores, formato e bordas.' })}
-            title="Editar aparência"
-            className="w-11 h-11 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center hover:bg-amber-200 transition-colors shrink-0 ring-1 ring-amber-200">
-
+              type="button"
+              onClick={() => {
+                if (aparencia === 'default' || !aparencia) {
+                  toast.message('Selecione uma aparência cadastrada para editar.');
+                  return;
+                }
+                goToAppearance(aparencia);
+              }}
+              disabled={aparencia === 'default' || !aparencia}
+              title="Editar aparência selecionada"
+              className="w-11 h-11 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center hover:bg-amber-200 transition-colors shrink-0 ring-1 ring-amber-200 disabled:opacity-50 disabled:cursor-not-allowed">
               <Pencil className="w-4 h-4" strokeWidth={2} />
             </button>
           </div>
