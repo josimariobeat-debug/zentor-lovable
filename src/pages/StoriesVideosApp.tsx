@@ -883,12 +883,16 @@ function ProdutosTab() {
                   <Settings2 className="w-5 h-5 text-neutral-500" />
                 </button>
 
-                <div className="flex-1 min-w-0">
-                  <h4 className="text-[14.5px] font-semibold text-neutral-900 truncate">{m.name}</h4>
+                <button
+                  type="button"
+                  onClick={() => setPreviewMeasure(m)}
+                  className="flex-1 min-w-0 text-left">
+                  <h4 className="text-[14.5px] font-semibold text-neutral-900 truncate hover:underline underline-offset-2 decoration-neutral-300">{m.name}</h4>
                   <p className="text-[12.5px] text-neutral-500 truncate mt-0.5">
                     {m.rows.length} {m.rows.length === 1 ? 'linha' : 'linhas'}
                   </p>
-                </div>
+                </button>
+
                 <button
             onClick={() => { setEditingMeasure(m); setMeasureOpen(true); }}
             aria-label="Editar modelo"
