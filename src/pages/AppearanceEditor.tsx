@@ -317,6 +317,8 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
               alt=""
               className="absolute inset-0 w-full h-full object-cover"
               draggable={false}
+              onLoad={() => setImgLoaded(true)}
+              onError={() => setImgLoaded(true)}
             />
           )}
 
