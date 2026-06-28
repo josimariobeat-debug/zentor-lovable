@@ -1278,9 +1278,10 @@ function AddMeasureModelModal({
             </button>
             <button
               type="submit"
-              className="inline-flex items-center gap-2 h-10 px-4 text-[13.5px] font-medium text-white bg-neutral-900 hover:bg-neutral-800 rounded-xl transition-colors">
+              disabled={saving}
+              className="inline-flex items-center gap-2 h-10 px-4 text-[13.5px] font-medium text-white bg-neutral-900 hover:bg-neutral-800 disabled:opacity-60 disabled:cursor-not-allowed rounded-xl transition-colors">
               {isEdit ? <Edit2 className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-              {isEdit ? 'Salvar alterações' : 'Adicionar modelo'}
+              {saving ? 'Salvando…' : isEdit ? 'Salvar alterações' : 'Adicionar modelo'}
             </button>
           </div>
         </form>
