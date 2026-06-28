@@ -79,9 +79,37 @@ export default function AdicionarStory() {
   const [galleryOpen, setGalleryOpen] = useState(false);
 
   useEffect(() => {
-    if (isEdit) {
+    // Restaura estado quando retornamos do editor de aparência
+    const selectedFromUrl = searchParams.get('selectedPreset');
+    let restored = false;
+    if (selectedFromUrl) {
+      try {
+        const raw = sessionStorage.getItem(stateKey);
+        if (raw) {
+          const s = JSON.parse(raw);
+          setTitle(s.title ?? '');
+          setFormat(s.format ?? 'widget');
+          setScroll(s.scroll ?? 'vertical');
+          setActive(s.active ?? true);
+          setCta(s.cta ?? '');
+          if (Array.isArray(s.media)) setMedia(s.media);
+          if (Array.isArray(s.urls) && s.urls.length) setUrls(s.urls);
+          restored = true;
+        }
+      } catch (err) {
+        console.error('Erro ao restaurar formulário do story:', err);
+      }
+      setAparencia(selectedFromUrl);
+      sessionStorage.removeItem(stateKey);
+      // limpa o search param para não re-restaurar em navegações futuras
+      const next = new URLSearchParams(searchParams);
+      next.delete('selectedPreset');
+      setSearchParams(next, { replace: true });
+    }
+
+    if (isEdit && !restored) {
       loadStory();
-    } else {
+    } else if (!isEdit && !restored) {
       // Carregar mídias selecionadas da galeria (se houver)
       const savedMedia = sessionStorage.getItem('gallery_selected_media');
       if (savedMedia) {
@@ -106,6 +134,34 @@ export default function AdicionarStory() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEdit, storyId]);
+
+  // Carrega aparências cadastradas do usuário
+  useEffect(() => {
+    if (!user) return;
+    let cancel = false;
+    (async () => {
+      const { data } = await supabase
+        .from('appearance_presets')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('kind', 'floating')
+        .order('created_at', { ascending: true });
+      if (cancel) return;
+      const list = data ?? [];
+      setPresets(list);
+      setPresetsLoaded(true);
+      setAparencia((current) => {
+        if (current && current !== 'default' && list.some((p) => p.id === current)) return current;
+        // tenta resolver legado (nome salvo no DB) → preset.id
+        if (current && current !== 'default') {
+          const byName = list.find((p) => p.name === current);
+          if (byName) return byName.id;
+        }
+        return list[0]?.id ?? 'default';
+      });
+    })();
+    return () => { cancel = true; };
+  }, [user]);
 
   const loadStory = async () => {
     if (!supabase || !storyId) return;
