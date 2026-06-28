@@ -1,7 +1,7 @@
 import { Play, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { memo, useCallback, useState, type MouseEvent } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { ConfirmDeleteDialog } from '@/components/ui/ConfirmDeleteDialog';
 import { toast } from '@/components/ui/toaster';
 
 interface App {
