@@ -25,7 +25,8 @@ import {
   Image as ImageIcon,
   Upload,
   Check,
-  CheckSquare } from
+  CheckSquare,
+  Package } from
 'lucide-react';
 
 type Story = Tables<'stories'>;
