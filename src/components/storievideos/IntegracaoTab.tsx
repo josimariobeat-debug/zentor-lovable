@@ -18,34 +18,45 @@ const POSITIONS = [
   { value: 'top-right', label: 'Superior direita' },
 ];
 
+// Module-level cache so the skeleton only shows on the very first load.
+const storeCache = new Map<string, { store: Store | null; stats: { impressions: number; opens: number; clicks: number } | null }>();
+
 export default function IntegracaoTab() {
   const { user } = useAuth();
-  const [store, setStore] = useState<Store | null>(null);
-  const [loading, setLoading] = useState(true);
+  const cached = user ? storeCache.get(user.id) : undefined;
+  const [store, setStore] = useState<Store | null>(cached?.store ?? null);
+  const [loading, setLoading] = useState(!cached);
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [stats, setStats] = useState<{ impressions: number; opens: number; clicks: number } | null>(null);
+  const [stats, setStats] = useState<{ impressions: number; opens: number; clicks: number } | null>(cached?.stats ?? null);
 
   useEffect(() => {
     if (!user) return;
+    let cancelled = false;
     (async () => {
       const { data } = await supabase.from('stores').select('*').eq('user_id', user.id).maybeSingle();
+      if (cancelled) return;
       setStore(data);
       setLoading(false);
+      let nextStats: { impressions: number; opens: number; clicks: number } | null = null;
       if (data) {
         const { data: events } = await supabase
           .from('widget_events')
           .select('event_type')
           .eq('store_id', data.store_id);
+        if (cancelled) return;
         if (events) {
-          setStats({
+          nextStats = {
             impressions: events.filter((e) => e.event_type === 'impression').length,
             opens: events.filter((e) => e.event_type === 'open').length,
             clicks: events.filter((e) => e.event_type === 'click').length,
-          });
+          };
+          setStats(nextStats);
         }
       }
+      storeCache.set(user.id, { store: data, stats: nextStats });
     })();
+    return () => { cancelled = true; };
   }, [user]);
 
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
