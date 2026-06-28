@@ -2,7 +2,8 @@ import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/components/ui/toaster';
-import { Copy, Check, ExternalLink, Code2, Eye, Loader2 } from 'lucide-react';
+import { Copy, Check, ExternalLink, Code2, Eye } from 'lucide-react';
+import { StoriesRowsSkeleton } from '@/components/ui/skeleton';
 import type { Tables } from '@/integrations/supabase/helpers';
 
 
