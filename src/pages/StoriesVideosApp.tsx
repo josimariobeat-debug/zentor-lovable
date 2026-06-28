@@ -1434,20 +1434,20 @@ function MeasurePreviewModal({ model, onClose }: { model: MeasureModel | null; o
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
-      <DialogContent className="w-full max-w-[min(100%,56rem)] sm:max-w-4xl mx-auto my-auto p-0 overflow-hidden max-h-[calc(100vh-2rem)] flex flex-col">
-        <div className="px-4 sm:px-6 pt-5 shrink-0">
+      <DialogContent className="w-[calc(100vw-1rem)] sm:w-full max-w-[min(100%,56rem)] sm:max-w-4xl mx-auto my-auto p-0 overflow-hidden max-h-[90vh] max-h-[90dvh] flex flex-col">
+        <div className="px-4 sm:px-6 pt-4 sm:pt-5 shrink-0">
           <DialogHeader>
-            <DialogTitle>{model?.name ?? 'Modelo de medidas'}</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-base sm:text-lg">{model?.name ?? 'Modelo de medidas'}</DialogTitle>
+            <DialogDescription className="text-xs sm:text-[13px]">
               Pré-visualização do manequim com as referências de medida e a tabela completa.
             </DialogDescription>
           </DialogHeader>
         </div>
 
-        <div className="px-4 sm:px-6 py-4 overflow-y-auto flex-1 min-h-0">
-          <div className="grid grid-cols-1 md:grid-cols-[260px_minmax(0,1fr)] gap-5 items-start">
+        <div className="px-3 sm:px-6 py-3 sm:py-4 overflow-y-auto flex-1 min-h-0">
+          <div className="grid grid-cols-1 md:grid-cols-[240px_minmax(0,1fr)] lg:grid-cols-[260px_minmax(0,1fr)] gap-4 sm:gap-5 items-start">
             {/* Mannequin */}
-            <div className="bg-neutral-50 border border-neutral-200 rounded-2xl p-4 flex items-center justify-center">
+            <div className="bg-neutral-50 border border-neutral-200 rounded-2xl p-3 sm:p-4 flex items-center justify-center mx-auto w-full max-w-[260px] md:max-w-none">
               <MannequinSVG activeTypes={activeTypes} />
             </div>
 
