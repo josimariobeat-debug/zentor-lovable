@@ -1362,21 +1362,22 @@ function MannequinSVG({ activeTypes }: { activeTypes: MeasureType[] }) {
           viewBox="0 0 242 727"
           preserveAspectRatio="xMidYMid meet"
           className="pointer-events-none absolute inset-0 h-full w-full"
+          style={{ overflow: 'visible' }}
           aria-hidden
         >
           {(Object.entries(HORIZONTAL_MEASURES) as [MeasureType, { y: number; x1?: number; x2?: number }][])
             .filter(([m]) => isActive(m))
             .map(([label, cfg]) => {
               const x1 = cfg.x1 ?? 8;
-              const x2 = cfg.x2 ?? 210;
+              const x2 = cfg.x2 ?? 150;
               return (
                 <g key={label}>
                   <line x1={x1} x2={x2} y1={cfg.y} y2={cfg.y} stroke="#ef4444" strokeWidth={1.2} strokeDasharray="4 3" />
                   <text
                     x={x2 + 4}
-                    y={cfg.y - 3}
+                    y={cfg.y + 4}
                     textAnchor="start"
-                    fontSize={11}
+                    fontSize={12}
                     fontWeight={600}
                     fill="#ef4444"
                     style={{ paintOrder: 'stroke' }}
@@ -1391,28 +1392,34 @@ function MannequinSVG({ activeTypes }: { activeTypes: MeasureType[] }) {
 
           {(Object.entries(VERTICAL_MEASURES) as [MeasureType, { x: number; y1: number; y2: number }][])
             .filter(([m]) => isActive(m))
-            .map(([label, cfg]) => (
-              <g key={label}>
-                <line x1={cfg.x} x2={cfg.x} y1={cfg.y1} y2={cfg.y2} stroke="#ef4444" strokeWidth={1.2} strokeDasharray="4 3" />
-                <line x1={cfg.x - 5} x2={cfg.x + 5} y1={cfg.y1} y2={cfg.y1} stroke="#ef4444" strokeWidth={1.2} />
-                <line x1={cfg.x - 5} x2={cfg.x + 5} y1={cfg.y2} y2={cfg.y2} stroke="#ef4444" strokeWidth={1.2} />
-                <text
-                  x={cfg.x + 8}
-                  y={(cfg.y1 + cfg.y2) / 2 + 4}
-                  textAnchor="start"
-                  fontSize={11}
-                  fontWeight={600}
-                  fill="#ef4444"
-                  style={{ paintOrder: 'stroke' }}
-                  stroke="#fff"
-                  strokeWidth={3}
-                >
-                  {label}
-                </text>
-              </g>
-            ))}
+            .map(([label, cfg]) => {
+              const cy = (cfg.y1 + cfg.y2) / 2;
+              const tx = cfg.x + 10;
+              return (
+                <g key={label}>
+                  <line x1={cfg.x} x2={cfg.x} y1={cfg.y1} y2={cfg.y2} stroke="#ef4444" strokeWidth={1.2} strokeDasharray="4 3" />
+                  <line x1={cfg.x - 5} x2={cfg.x + 5} y1={cfg.y1} y2={cfg.y1} stroke="#ef4444" strokeWidth={1.2} />
+                  <line x1={cfg.x - 5} x2={cfg.x + 5} y1={cfg.y2} y2={cfg.y2} stroke="#ef4444" strokeWidth={1.2} />
+                  <text
+                    x={tx}
+                    y={cy}
+                    textAnchor="middle"
+                    fontSize={12}
+                    fontWeight={600}
+                    fill="#ef4444"
+                    style={{ paintOrder: 'stroke' }}
+                    stroke="#fff"
+                    strokeWidth={3}
+                    transform={`rotate(-90 ${tx} ${cy})`}
+                  >
+                    {label}
+                  </text>
+                </g>
+              );
+            })}
         </svg>
       </div>
+
     </div>
   );
 }
