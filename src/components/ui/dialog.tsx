@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -38,19 +39,21 @@ function Dialog({ open, onOpenChange, children }: DialogProps) {
     onOpenChange(false);
   };
 
-  return (
+  return createPortal(
     <>
-      {/* Backdrop: cobre o conteúdo mas deixa a sidebar visível no desktop */}
+      {/* Backdrop global: acima de todo o app, incluindo sidebar e cabeçalho */}
       <div
         data-ev-id="ev_1bfe293004"
-        className="fixed inset-0 bg-black/50 animate-in fade-in-0 z-[2147483646]"
+        className="fixed inset-0 bg-black/50 animate-in fade-in-0"
+        style={{ zIndex: 2147483646 }}
         onClick={handleOverlayClick}
       />
-      {/* Modal: acima de tudo, inclusive da sidebar */}
+      {/* Modal global: camada máxima acima de qualquer conteúdo da página */}
       <div
         data-ev-id="ev_48a5fcedd5"
         ref={overlayRef}
-        className="fixed inset-0 overflow-y-auto z-[2147483647]"
+        className="fixed inset-0 overflow-y-auto"
+        style={{ zIndex: 2147483647 }}
         onClick={handleOverlayClick}
       >
         <div className="flex min-h-full items-center justify-center p-4 pointer-events-none">
@@ -59,7 +62,9 @@ function Dialog({ open, onOpenChange, children }: DialogProps) {
           </div>
         </div>
       </div>
-    </>);
+    </>,
+    document.body
+  );
 
 
 }
