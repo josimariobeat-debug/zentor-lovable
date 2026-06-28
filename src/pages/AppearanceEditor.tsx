@@ -287,8 +287,11 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
 
           {/* TikTok-style right action column — vertically centered, white icons */}
           <div
-            className="absolute right-0.5 sm:right-1 top-1/2 -translate-y-1/2 z-20 flex flex-col items-center gap-2"
-            style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+            className="absolute top-1/2 -translate-y-1/2 z-20 flex flex-col items-center gap-2"
+            style={{
+              right: 'max(2px, env(safe-area-inset-right))',
+              paddingBottom: 'env(safe-area-inset-bottom)',
+            }}
           >
             <button
               onClick={toggleLike}
