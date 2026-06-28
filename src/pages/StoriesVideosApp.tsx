@@ -723,7 +723,8 @@ function ProdutosTab() {
         <button
           onClick={() => {
             if (view === 'medidas') {
-              toast.info('Adicionar medidas em breve');
+              setEditingMeasure(null);
+              setMeasureOpen(true);
             } else {
               setAddOpen(true);
             }
