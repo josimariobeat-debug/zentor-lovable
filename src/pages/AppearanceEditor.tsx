@@ -63,10 +63,21 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
 
   return (
     <div
-      className="fixed inset-0 z-[9999] grid place-items-center bg-black/70 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-[9999] grid place-items-center p-3 sm:p-6 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200"
       onClick={onClose}
     >
-      <div className="relative" style={{ width: 340, maxWidth: '92vw' }} onClick={(e) => e.stopPropagation()}>
+      <div
+        className="relative"
+        style={{
+          aspectRatio: '9 / 16',
+          height: 'min(92dvh, calc((100vw - 24px) * 16 / 9))',
+          maxHeight: '92dvh',
+          width: 'auto',
+          maxWidth: 'min(92vw, 420px)',
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+
         {/* progress bar */}
         <div className="absolute top-3 left-3 right-3 h-[3px] bg-white/30 rounded-full overflow-hidden z-20">
           <div className="h-full w-1/3 bg-white rounded-full" />
