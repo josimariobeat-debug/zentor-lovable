@@ -13,26 +13,41 @@ type Kind = 'floating' | 'carousel';
 const PAGE_SIZE_OPTIONS = [8, 16, 32, 64];
 
 
+// Module-level cache to avoid skeleton flicker on tab re-entry / kind switch.
+const presetsCache = new Map<string, Preset[]>();
+const cacheKey = (userId: string, kind: Kind) => `${userId}::${kind}`;
+
 export default function AppearancePresets() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { appId } = useParams();
   const [kind, setKind] = useState<Kind>('floating');
-  const [items, setItems] = useState<Preset[]>([]);
-  const [loading, setLoading] = useState(true);
+  const initialKey = user ? cacheKey(user.id, 'floating') : null;
+  const initialCached = initialKey ? presetsCache.get(initialKey) : undefined;
+  const [items, setItems] = useState<Preset[]>(initialCached ?? []);
+  const [loading, setLoading] = useState(!initialCached);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(16);
 
   async function load() {
     if (!user) return;
-    setLoading(true);
+    const key = cacheKey(user.id, kind);
+    const cached = presetsCache.get(key);
+    if (cached) {
+      setItems(cached);
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
     const { data } = await supabase
       .from('appearance_presets')
       .select('*')
       .eq('user_id', user.id)
       .eq('kind', kind)
       .order('created_at', { ascending: true });
-    setItems(data ?? []);
+    const next = data ?? [];
+    presetsCache.set(key, next);
+    setItems(next);
     setLoading(false);
   }
 
