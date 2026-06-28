@@ -743,17 +743,18 @@ export default function AppearanceEditor() {
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100">
                 <button
                   onClick={backToTab}
-                  className="h-10 px-3 sm:px-4 rounded-xl border border-neutral-200 text-sm font-medium hover:bg-neutral-50 shrink-0"
+                  className="h-10 px-4 rounded-lg border border-neutral-200 bg-white text-neutral-900 text-sm font-semibold hover:bg-neutral-50 inline-flex items-center gap-2 shrink-0"
                 >
                   Voltar
                 </button>
                 <button
                   onClick={save}
                   disabled={saving}
-                  className="h-10 px-4 sm:px-5 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white text-sm font-semibold inline-flex items-center gap-2 shrink-0"
+                  className="h-10 px-4 rounded-lg border border-neutral-900 bg-neutral-900 text-white text-sm font-semibold hover:bg-neutral-800 inline-flex items-center gap-2 shrink-0 disabled:opacity-60"
                 >
                   {saving && <Loader2 className="w-4 h-4 animate-spin" />} Salvar
                 </button>
+
               </div>
 
             </div>
