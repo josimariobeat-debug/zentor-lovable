@@ -480,30 +480,42 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
               os headers, então ainda economizamos dados.
               Cada elemento chama storyMetrics.markPreloaded ao terminar,
               permitindo medir se a próxima mídia estava quente antes do "end". */}
-          <div aria-hidden className="hidden">
-            {DEMO_STORIES.map((s, i) =>
-              i === idx ? null : s.type === 'video' ? (
-                <video
-                  key={`pre-${s.src}`}
-                  src={s.src}
-                  poster={s.poster}
-                  preload={profile.videoPreload}
-                  muted
-                  playsInline
-                  onLoadedData={() => storyMetrics.markPreloaded(s.src)}
-                />
-              ) : (
-                <img
-                  key={`pre-${s.src}`}
-                  src={rewriteImageForProfile(s.src, profile)}
-                  alt=""
-                  decoding="async"
-                  loading="eager"
-                  onLoad={() => storyMetrics.markPreloaded(s.src)}
-                />
-              ),
-            )}
-          </div>
+          {(() => {
+            // Próximo story (wrap-around) recebe tratamento prioritário:
+            // preload="auto" e fetchpriority="high" mesmo em tier baixo, porque
+            // ele é o que vai aparecer no próximo tap/auto-advance. Os demais
+            // seguem o perfil de rede para não desperdiçar dados móveis.
+            const nextIdx = (idx + 1) % DEMO_STORIES.length;
+            return (
+              <div aria-hidden className="hidden">
+                {DEMO_STORIES.map((s, i) => {
+                  if (i === idx) return null;
+                  const isNext = i === nextIdx;
+                  return s.type === 'video' ? (
+                    <video
+                      key={`pre-${s.src}`}
+                      src={s.src}
+                      poster={s.poster}
+                      preload={isNext ? 'auto' : profile.videoPreload}
+                      muted
+                      playsInline
+                      onLoadedData={() => storyMetrics.markPreloaded(s.src)}
+                    />
+                  ) : (
+                    <img
+                      key={`pre-${s.src}`}
+                      src={rewriteImageForProfile(s.src, profile)}
+                      alt=""
+                      decoding="async"
+                      loading="eager"
+                      {...(isNext ? { fetchPriority: 'high' as const } : {})}
+                      onLoad={() => storyMetrics.markPreloaded(s.src)}
+                    />
+                  );
+                })}
+              </div>
+            );
+          })()}
 
 
 
