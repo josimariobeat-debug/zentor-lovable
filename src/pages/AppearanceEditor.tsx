@@ -707,7 +707,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
             aria-label="Anterior"
             onClick={goPrev}
             className="absolute left-0 top-12 w-[30%] z-10 cursor-default"
-            style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 220px)' }}
+            style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 180px)' }}
           />
           <button
             aria-label="Próximo"
@@ -716,9 +716,10 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
             style={{
               left: '30%',
               right: 'env(safe-area-inset-right, 0px)',
-              bottom: 'calc(env(safe-area-inset-bottom, 0px) + 220px)',
+              bottom: 'calc(env(safe-area-inset-bottom, 0px) + 180px)',
             }}
           />
+
 
           {/* Heart burst on double-like (centered) */}
           {likeBurst && (
