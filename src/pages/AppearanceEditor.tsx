@@ -521,7 +521,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
               </span>
             </button>
             <button
-              onClick={() => setCommentsOpen(true)}
+              onClick={openComments}
               aria-label="Comentar"
               className="group flex flex-col items-center gap-1 min-w-[44px] min-h-[44px] justify-center text-white transition-transform active:scale-90 hover:scale-110"
             >
@@ -564,7 +564,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
           {commentsOpen && (
             <div
               className="absolute inset-0 z-40 flex flex-col justify-end"
-              onClick={() => setCommentsOpen(false)}
+              onClick={closeComments}
             >
               <div className="absolute inset-0 bg-black/40" />
               <div
@@ -574,7 +574,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
                 <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-neutral-100">
                   <div className="w-10 h-1 rounded-full bg-neutral-300 mx-auto absolute left-1/2 -translate-x-1/2 top-1.5" />
                   <h3 className="text-sm font-semibold text-neutral-900 mt-2">Comentários</h3>
-                  <button onClick={() => setCommentsOpen(false)} aria-label="Fechar comentários" className="w-8 h-8 rounded-full hover:bg-neutral-100 grid place-items-center text-neutral-600 mt-1">
+                  <button onClick={closeComments} aria-label="Fechar comentários" className="w-8 h-8 rounded-full hover:bg-neutral-100 grid place-items-center text-neutral-600 mt-1">
                     <X className="w-4 h-4" />
                   </button>
                 </div>
@@ -597,7 +597,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
           {shareOpen && (
             <div
               className="absolute inset-0 z-40 grid place-items-end sm:place-items-center"
-              onClick={() => setShareOpen(false)}
+              onClick={closeShare}
             >
               <div className="absolute inset-0 bg-black/50" />
               <div
@@ -606,7 +606,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
               >
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-sm font-semibold text-neutral-900">Compartilhar</h3>
-                  <button onClick={() => setShareOpen(false)} aria-label="Fechar" className="w-8 h-8 rounded-full hover:bg-neutral-100 grid place-items-center text-neutral-600">
+                  <button onClick={closeShare} aria-label="Fechar" className="w-8 h-8 rounded-full hover:bg-neutral-100 grid place-items-center text-neutral-600">
                     <X className="w-4 h-4" />
                   </button>
                 </div>
