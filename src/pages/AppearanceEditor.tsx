@@ -258,6 +258,15 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
     };
   }, [idx, isVideo, muted]);
 
+  // Pause/resume on toggle (including comments/share overlays)
+  useEffect(() => {
+    if (!isVideo) return;
+    const v = videoRef.current; if (!v) return;
+    if (interactionPaused) v.pause(); else v.play().catch(() => {});
+  }, [interactionPaused, isVideo, idx]);
+
+
+
   function togglePlay() {
     setPaused((p) => {
       if (!isVideo) {
