@@ -19,10 +19,12 @@ const STORY_DEMO_2_POSTER = storyDemo2Poster.url;
 const STORY_DEMO_3_URL = storyDemo3Asset.url;
 const STORY_DEMO_3_POSTER = storyDemo3Poster.url;
 
+interface DemoProduct { title: string; price: string; thumb: string }
 interface DemoStory {
   type: 'video' | 'image';
   src: string;
-  product: { title: string; price: string; thumb: string };
+  product: DemoProduct;
+  products?: DemoProduct[]; // múltiplos cards empilhados; fallback para [product]
   duration?: number; // seconds, used for images
   poster?: string; // JPG do primeiro frame — LCP instantâneo para vídeos
 }
@@ -42,13 +44,21 @@ const DEMO_STORIES: DemoStory[] = [
     type: 'video',
     src: STORY_DEMO_2_URL,
     poster: STORY_DEMO_2_POSTER,
-    product: { title: 'Coleção em destaque', price: 'R$ 259,90', thumb: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=120&h=120&fit=crop' },
+    product: { title: 'Cropped last', price: 'R$ 109,99', thumb: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=120&h=120&fit=crop' },
+    products: [
+      { title: 'Cropped last', price: 'R$ 109,99', thumb: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=120&h=120&fit=crop' },
+      { title: 'Saia Ariella', price: 'R$ 109,99', thumb: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=120&h=120&fit=crop' },
+    ],
   },
   {
     type: 'video',
     src: STORY_DEMO_3_URL,
     poster: STORY_DEMO_3_POSTER,
     product: { title: 'TV em destaque', price: 'R$ 2.499,00', thumb: STORY_DEMO_3_POSTER },
+    products: [
+      { title: 'TV 55" 4K', price: 'R$ 2.499,00', thumb: STORY_DEMO_3_POSTER },
+      { title: 'Soundbar Pro', price: 'R$ 899,00', thumb: STORY_DEMO_3_POSTER },
+    ],
   },
 ];
 
@@ -690,75 +700,24 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
 
 
           {/* Instagram-style tap zones for prev/next.
-              A coluna de ações fica em z-30 (acima da tap zone z-10), então os
-              botões capturam os próprios cliques. Por isso a zona "Próximo"
-              pode ir até a borda direita sem hijack — só recuamos uma faixa
-              estreita atrás dos ícones para evitar tap acidental ao mirar neles. */}
+              Recuamos a base para que o bottom action bar + cards de produto
+              capturem seus próprios cliques sem hijack das tap zones. */}
           <button
             aria-label="Anterior"
             onClick={goPrev}
-            className="absolute left-0 top-12 bottom-24 w-[30%] z-10 cursor-default"
+            className="absolute left-0 top-12 w-[30%] z-10 cursor-default"
+            style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 220px)' }}
           />
           <button
             aria-label="Próximo"
             onClick={() => goNext('manual-next')}
-            className="absolute top-12 bottom-24 z-10 cursor-default"
+            className="absolute top-12 z-10 cursor-default"
             style={{
               left: '30%',
               right: 'env(safe-area-inset-right, 0px)',
+              bottom: 'calc(env(safe-area-inset-bottom, 0px) + 220px)',
             }}
           />
-
-
-          {/* TikTok-style right action column.
-              - `right` uses safe-area-inset-right (iOS notch landscape + Android gesture nav) plus
-                a fluid clamp so the gap to the edge stays visually consistent from mobile→desktop.
-              - Vertical centering offsets half of the bottom safe area so URL bars / gesture pills
-                don't push the column off-center on Android Chrome and iOS Safari. */}
-          <div
-            className="absolute z-20 flex flex-col items-center gap-2"
-            style={{
-              right: 'calc(env(safe-area-inset-right, 0px) + clamp(4px, 1.2vw, 12px))',
-              top: 'calc(50% - (env(safe-area-inset-bottom, 0px) - env(safe-area-inset-top, 0px)) / 2)',
-              transform: 'translateY(-50%)',
-              paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-              paddingTop: 'env(safe-area-inset-top, 0px)',
-            }}
-          >
-            <button
-              onClick={toggleLike}
-              aria-label={isLiked ? 'Descurtir' : 'Curtir'}
-              aria-pressed={isLiked}
-              className="group flex flex-col items-center gap-1 min-w-[44px] min-h-[44px] justify-center text-white transition-transform active:scale-90 hover:scale-110"
-            >
-              <span className="w-9 h-9 rounded-full bg-black/30 backdrop-blur-sm grid place-items-center group-hover:bg-black/50 transition-colors">
-                <Heart
-                  className={`w-5 h-5 transition-all ${isLiked ? 'text-red-500 scale-110' : 'text-white'} ${likeBurst ? 'animate-[heartPulse_.6s_ease-out]' : ''}`}
-                  fill={isLiked ? 'currentColor' : 'none'}
-                  strokeWidth={2}
-                />
-              </span>
-            </button>
-            <button
-              onClick={openComments}
-              aria-label="Comentar"
-              className="group flex flex-col items-center gap-1 min-w-[44px] min-h-[44px] justify-center text-white transition-transform active:scale-90 hover:scale-110"
-            >
-              <span className="w-9 h-9 rounded-full bg-black/30 backdrop-blur-sm grid place-items-center group-hover:bg-black/50 transition-colors">
-                <MessageCircle className="w-5 h-5" strokeWidth={2} />
-              </span>
-            </button>
-            <button
-              onClick={handleShare}
-              aria-label="Compartilhar"
-              className="group flex flex-col items-center gap-1 min-w-[44px] min-h-[44px] justify-center text-white transition-transform active:scale-90 hover:scale-110"
-            >
-              <span className="w-9 h-9 rounded-full bg-black/30 backdrop-blur-sm grid place-items-center group-hover:bg-black/50 transition-colors">
-                <Send className="w-[18px] h-[18px] -rotate-12" strokeWidth={2} />
-              </span>
-            </button>
-          </div>
-
 
           {/* Heart burst on double-like (centered) */}
           {likeBurst && (
@@ -767,17 +726,81 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
             </div>
           )}
 
-          {/* product card — preserved exactly in original position/layout */}
-          <div className="absolute left-3 right-3 bottom-3 z-20 bg-white rounded-xl shadow-lg p-2 flex items-center gap-3">
-            <div className="w-12 h-12 rounded-lg overflow-hidden bg-neutral-200 shrink-0">
-              <img src={current.product.thumb} alt="" className="w-full h-full object-cover" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-[13px] font-semibold text-neutral-900 truncate">{current.product.title}</div>
-              <div className="text-[13px] font-bold text-neutral-900">{current.product.price}</div>
+          {/* Stacked product cards — empilhados acima da barra de ações inferior */}
+          <div
+            className="absolute left-3 right-3 z-20 flex flex-col gap-2"
+            style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 76px)' }}
+          >
+            {(current.products && current.products.length > 0 ? current.products : [current.product])
+              .slice(0, 2)
+              .map((p, i) => (
+                <div
+                  key={`${idx}-prod-${i}`}
+                  className="bg-white rounded-xl shadow-lg p-2 flex items-center gap-3 ml-auto w-[78%] max-w-[280px]"
+                >
+                  <div className="w-11 h-11 rounded-lg overflow-hidden bg-neutral-200 shrink-0">
+                    <img src={p.thumb} alt="" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[13px] font-semibold text-neutral-900 truncate">{p.title}</div>
+                    <div className="text-[12px] font-bold text-neutral-900">{p.price}</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => e.stopPropagation()}
+                    className="shrink-0 h-8 px-3 rounded-md bg-neutral-900 text-white text-[11px] font-bold tracking-wide hover:bg-neutral-800 transition-colors"
+                  >
+                    COMPRAR
+                  </button>
+                </div>
+              ))}
+          </div>
+
+          {/* Bottom action bar (Instagram-style): Comentar pill + Like / Comment / Share */}
+          <div
+            className="absolute left-0 right-0 bottom-0 z-30 px-3 pt-3 pb-3 bg-gradient-to-t from-black/80 via-black/40 to-transparent"
+            style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)' }}
+          >
+            <div className="flex items-center gap-2">
+              <button
+                onClick={openComments}
+                className="flex-1 h-11 px-5 rounded-full bg-black/70 backdrop-blur-md border border-white/15 text-white/90 text-sm text-left hover:bg-black/80 transition-colors"
+              >
+                Comentar
+              </button>
+              <button
+                onClick={toggleLike}
+                aria-label={isLiked ? 'Descurtir' : 'Curtir'}
+                aria-pressed={isLiked}
+                className="w-11 h-11 grid place-items-center text-white transition-transform active:scale-90"
+              >
+                <Heart
+                  className={`w-7 h-7 transition-all ${isLiked ? 'text-red-500' : 'text-white'} ${likeBurst ? 'animate-[heartPulse_.6s_ease-out]' : ''}`}
+                  fill={isLiked ? 'currentColor' : 'none'}
+                  strokeWidth={2}
+                />
+              </button>
+              <button
+                onClick={openComments}
+                aria-label="Comentar"
+                className="relative w-11 h-11 grid place-items-center text-white transition-transform active:scale-90"
+              >
+                <MessageCircle className="w-7 h-7" strokeWidth={2} />
+                <span className="absolute top-1 right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-white text-neutral-900 text-[10px] font-bold grid place-items-center leading-none">3</span>
+              </button>
+              <button
+                onClick={handleShare}
+                aria-label="Compartilhar"
+                className="w-11 h-11 grid place-items-center text-white transition-transform active:scale-90"
+              >
+                <Send className="w-[26px] h-[26px] -rotate-12" strokeWidth={2} />
+              </button>
             </div>
           </div>
-          <div className="absolute bottom-1 right-2 text-[10px] font-bold text-white/80 tracking-wider z-20">PLANWEB</div>
+          <div
+            className="absolute right-2 text-[10px] font-bold text-white/70 tracking-wider z-30 pointer-events-none"
+            style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 60px)' }}
+          >PLANWEB</div>
 
           {/* Comments panel — bottom sheet inside the player frame */}
           {commentsOpen && (
