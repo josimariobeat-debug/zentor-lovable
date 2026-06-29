@@ -343,7 +343,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
             {productList.map((p) => (
               <div
                 key={p.id}
-                className={`pointer-events-auto bg-white flex items-center shadow-[0_6px_18px_rgba(0,0,0,0.22)] ${hasPlaylist ? 'h-12 px-2 gap-2 rounded-xl' : 'p-2 gap-2.5 rounded-2xl'}`}
+                className={`pointer-events-auto bg-white flex items-center shadow-[0_6px_18px_rgba(0,0,0,0.22)] ${hasPlaylist ? 'h-12 px-2 gap-2 rounded-none' : 'p-2 gap-2.5 rounded-2xl'}`}
               >
                 {p.image ? (
                   <img src={p.image} alt={p.name} className={`object-cover bg-neutral-100 shrink-0 ${hasPlaylist ? 'w-8 h-8 rounded-md' : 'w-11 h-11 rounded-xl'}`} />
