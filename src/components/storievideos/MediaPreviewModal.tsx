@@ -357,7 +357,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                 <button
                   type="button"
                   onClick={() => openProduct(p)}
-                  className="bg-neutral-900 text-white text-[10px] font-bold rounded-lg px-2.5 py-2 shrink-0 hover:bg-neutral-700 transition-colors tracking-wider"
+                  className={`bg-neutral-900 text-white font-bold rounded-lg shrink-0 hover:bg-neutral-700 transition-colors tracking-wider ${hasPlaylist ? 'text-[9px] px-2 py-1.5' : 'text-[10px] px-2.5 py-2'}`}
                 >
                   COMPRAR
                 </button>
