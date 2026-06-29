@@ -12,6 +12,8 @@ import storyDemo3Asset from '@/assets/story-demo-3.mp4.asset.json';
 import storyDemo3Poster from '@/assets/story-demo-3-poster.jpg.asset.json';
 import { getMediaProfile, getNetworkTier, rewriteImageForProfile, subscribeNetworkChange, type MediaProfile, type NetworkTier } from '@/lib/networkProfile';
 import { storyMetrics } from '@/lib/storyMetrics';
+import MediaPreviewModal from '@/components/storievideos/MediaPreviewModal';
+
 
 
 const STORY_DEMO_2_URL = storyDemo2Asset.url;
