@@ -29,6 +29,16 @@ interface DemoStory {
   poster?: string; // JPG do primeiro frame — LCP instantâneo para vídeos
 }
 
+const STORY_FLOW_LOGS_ENABLED = true;
+
+function storyFlowLog(message: string, details?: Record<string, unknown>) {
+  if (!STORY_FLOW_LOGS_ENABLED || typeof window === 'undefined') return;
+  // Logs temporários de diagnóstico do autoplay: mostram exatamente onde o
+  // fluxo para sem inundar o console a cada frame.
+  // eslint-disable-next-line no-console
+  console.info(`[stories:flow] ${message}`, details ?? '');
+}
+
 const DEMO_STORIES: DemoStory[] = [
   {
     type: 'video',
@@ -55,6 +65,9 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
   const barRefs = useRef<Array<HTMLDivElement | null>>([]);
   const startedAtRef = useRef<number>(0);
   const accumRef = useRef<number>(0);
+  const advancingRef = useRef(false);
+  const timerStartedLogRef = useRef(false);
+  const progressMilestoneRef = useRef(0);
 
   // Perfil adaptativo (rede + dispositivo). Reage a mudanças Wi-Fi ⇄ 4G.
   const [tier, setTier] = useState<NetworkTier>(() => (typeof navigator === 'undefined' ? 'high' : getNetworkTier()));
@@ -99,20 +112,53 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
     }
   };
 
-  const goNext = useCallback(() => {
-    setIdx((i) => {
-      const n = i + 1 < DEMO_STORIES.length ? i + 1 : 0;
-      // Pinta a barra anterior como cheia imediatamente (sem esperar rAF).
-      setBar(i, 1);
-      // Métrica: marca o "end" antes da próxima mídia montar para medir o
-      // gap real percebido (end → ready → firstFrame).
-      const next = DEMO_STORIES[n];
-      storyMetrics.markEnd(i, n, next.type, next.src);
-      return n;
-    });
+  const logProgressMilestone = (storyIndex: number, progress: number) => {
+    const milestone = progress >= 1 ? 100 : progress >= 0.75 ? 75 : progress >= 0.5 ? 50 : progress >= 0.25 ? 25 : 0;
+    if (milestone > progressMilestoneRef.current) {
+      progressMilestoneRef.current = milestone;
+      storyFlowLog(`Progresso: ${milestone}%`, { idx: storyIndex });
+    }
+  };
+
+  const logTimerStarted = (storyIndex: number, type: DemoStory['type'], durationMs?: number) => {
+    if (timerStartedLogRef.current) return;
+    timerStartedLogRef.current = true;
+    storyFlowLog('Timer iniciado', { idx: storyIndex, type, durationMs });
+  };
+
+  const goToStory = useCallback((target: number, reason: string) => {
+    const from = idxRef.current;
+    const to = (target + DEMO_STORIES.length) % DEMO_STORIES.length;
+
+    if (advancingRef.current) {
+      storyFlowLog('nextStory() ignorado: avanço já em andamento', { from, to, reason });
+      return;
+    }
+
+    advancingRef.current = true;
+    idxRef.current = to;
+    // Pinta a barra anterior como cheia imediatamente (sem esperar rAF).
+    setBar(from, reason === 'manual-prev' ? 0 : 1);
+    const next = DEMO_STORIES[to];
+    storyFlowLog('nextStory() chamado', { from, to, reason, nextType: next.type });
+    // Métrica: marca o "end" antes da próxima mídia montar para medir o
+    // gap real percebido (end → ready → firstFrame).
+    storyMetrics.markEnd(from, to, next.type, next.src);
+    setIdx(to);
+
+    // Failsafe para o caso raro de transição para o mesmo índice (lista com 1 story)
+    // ou render interrompido antes do useEffect de idx liberar o lock.
+    window.setTimeout(() => {
+      advancingRef.current = false;
+    }, 180);
   }, []);
+
+  const goNext = useCallback((reason = 'manual-next') => {
+    goToStory(idxRef.current + 1, reason);
+  }, [goToStory]);
+
   const goPrev = useCallback(() => {
-    setIdx((i) => (i - 1 >= 0 ? i - 1 : DEMO_STORIES.length - 1));
+    goToStory(idxRef.current - 1, 'manual-prev');
   }, []);
 
 
@@ -124,7 +170,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
         onClose();
       }
       if (commentsOpen || shareOpen) return;
-      if (e.key === 'ArrowRight') goNext();
+      if (e.key === 'ArrowRight') goNext('keyboard-next');
       if (e.key === 'ArrowLeft') goPrev();
     };
     window.addEventListener('keydown', onKey);
@@ -160,11 +206,16 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
     accumRef.current = 0;
     startedAtRef.current = 0;
     imgLoadedRef.current = false;
+    advancingRef.current = false;
+    timerStartedLogRef.current = false;
+    progressMilestoneRef.current = 0;
     mountedAtRef.current = performance.now();
     videoFullAtRef.current = 0;
     lastVideoTimeRef.current = 0;
     lastVideoTimeAtRef.current = performance.now();
     resetBarsFor(idx);
+    storyFlowLog('Índice alterado', { idx, type: current.type });
+    storyFlowLog('Story iniciado', { idx, type: current.type, src: current.src });
   }, [idx]);
 
   // Loop rAF único, vivo durante toda a vida do componente.
@@ -185,11 +236,17 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
 
           // Sinal direto do navegador: vídeo terminou mesmo que 'ended' tenha
           // sido perdido (perda de evento em troca rápida de aba/idx).
-          if (v.ended) {
+          logProgressMilestone(i, fill);
+
+          if (!pausedRef.current && !v.paused && fill > 0) {
+            logTimerStarted(i, 'video', Math.round(v.duration * 1000));
+          }
+
+          if (v.ended || fill >= 1 || v.currentTime >= v.duration - 0.05) {
             videoFullAtRef.current = 0;
             mountedAtRef.current = now;
             setBar(i, 1);
-            goNext();
+            goNext(v.ended ? 'video-ended-event-or-flag' : 'video-currentTime-complete');
             raf = requestAnimationFrame(tick);
             return;
           }
@@ -213,7 +270,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
               lastVideoTimeAtRef.current = now;
               storyMetrics.markStuck(i, 'video-end-stall');
               setBar(i, 1);
-              goNext();
+              goNext('video-frozen-watchdog');
               raf = requestAnimationFrame(tick);
               return;
             }
@@ -228,7 +285,10 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
               videoFullAtRef.current = 0;
               mountedAtRef.current = now;
               storyMetrics.markStuck(i, 'video-end-stall');
-              goNext();
+              setBar(i, 1);
+              goNext('video-full-bar-watchdog');
+              raf = requestAnimationFrame(tick);
+              return;
             }
           } else {
             videoFullAtRef.current = 0;
@@ -237,7 +297,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
           mountedAtRef.current = now;
           storyMetrics.markStuck(i, 'video-timeout');
           setBar(i, 1);
-          goNext();
+          goNext('video-ready-timeout');
           raf = requestAnimationFrame(tick);
           return;
         }
@@ -261,12 +321,14 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
         return;
       }
       if (startedAtRef.current === 0) startedAtRef.current = now;
+      logTimerStarted(i, 'image', durationRef.current);
       const elapsed = accumRef.current + (now - startedAtRef.current);
       const p = Math.min(1, elapsed / durationRef.current);
       setBar(i, p);
+      logProgressMilestone(i, p);
       if (p >= 1) {
         accumRef.current = durationRef.current;
-        goNext();
+        goNext('image-duration-complete');
       }
       raf = requestAnimationFrame(tick);
       } catch (err) {
@@ -337,7 +399,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
       }
     };
 
-    const onEnd = () => goNext();
+    const onEnd = () => goNext('video-ended-event');
     const onPauseUnexpected = () => {
       // iOS às vezes pausa sozinho ao retomar do background; retentamos se não pedimos pause.
       if (!interactionPaused && !paused) retryTimer = window.setTimeout(tryPlay, 60);
@@ -345,7 +407,17 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
     const onStalled = () => { retryTimer = window.setTimeout(tryPlay, 200); };
     const onVisibility = () => { if (!document.hidden) tryPlay(); };
 
+    const onLoadedData = () => {
+      storyFlowLog('Vídeo carregado', { idx: idxRef.current, duration: v.duration });
+    };
+    const onPlaying = () => {
+      logTimerStarted(idxRef.current, 'video', Number.isFinite(v.duration) ? Math.round(v.duration * 1000) : undefined);
+      storyFlowLog('Story seguinte carregado', { idx: idxRef.current, type: 'video' });
+    };
+
     v.addEventListener('ended', onEnd);
+    v.addEventListener('loadeddata', onLoadedData);
+    v.addEventListener('playing', onPlaying);
     v.addEventListener('pause', onPauseUnexpected);
     v.addEventListener('stalled', onStalled);
     v.addEventListener('suspend', onStalled);
@@ -355,12 +427,14 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
     return () => {
       window.clearTimeout(retryTimer);
       v.removeEventListener('ended', onEnd);
+      v.removeEventListener('loadeddata', onLoadedData);
+      v.removeEventListener('playing', onPlaying);
       v.removeEventListener('pause', onPauseUnexpected);
       v.removeEventListener('stalled', onStalled);
       v.removeEventListener('suspend', onStalled);
       document.removeEventListener('visibilitychange', onVisibility);
     };
-  }, [idx, isVideo, muted]);
+  }, [idx, isVideo, muted, goNext, interactionPaused, paused]);
 
   // Pause/resume on toggle (including comments/share overlays)
   useEffect(() => {
