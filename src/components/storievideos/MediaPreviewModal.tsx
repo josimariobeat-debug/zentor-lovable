@@ -360,7 +360,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                   <button
                     type="button"
                     onClick={() => openProduct(p)}
-                    className="w-full bg-black/70 hover:bg-black/85 transition-colors text-white font-semibold text-[13px] py-2 border-t border-white/10"
+                    className="w-full bg-white hover:bg-neutral-100 transition-colors text-neutral-900 font-semibold text-[13px] py-2 border-t border-white/10"
                   >
                     Comprar
                   </button>
