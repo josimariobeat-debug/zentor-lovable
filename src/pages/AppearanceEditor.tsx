@@ -20,6 +20,7 @@ interface DemoStory {
   src: string;
   product: { title: string; price: string; thumb: string };
   duration?: number; // seconds, used for images
+  poster?: string; // JPG do primeiro frame — LCP instantâneo para vídeos
 }
 
 const DEMO_STORIES: DemoStory[] = [
