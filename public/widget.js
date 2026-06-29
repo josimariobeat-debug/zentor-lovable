@@ -170,6 +170,7 @@
 
     function show() {
       cleanup();
+      rafId = null;
       var story = stories[idx];
       if (!story) { destroy(); return; }
       var items = story.media && story.media.length ? story.media : [{ url: story.cover, type: 'image' }];
@@ -190,59 +191,62 @@
       if (isVideo) {
         var v = document.createElement('video');
         v.src = item.url; v.autoplay = true; v.playsInline = true; v.controls = false; v.muted = false;
-        v.addEventListener('loadedmetadata', function () {
-          flowLog('Vídeo carregado', { storyIndex: idx, mediaIndex: mediaIdx, duration: v.duration });
-          var bar = progress.children[mediaIdx] && progress.children[mediaIdx].firstChild;
-          function tick(now) {
-            try {
-              if (!bar || advancing) return;
-              if (!v.duration || Number.isNaN(v.duration)) {
-                if (now - mountedAt > VIDEO_READY_TIMEOUT_MS) nextOnce('video-ready-timeout');
-                else rafId = requestAnimationFrame(tick);
-                return;
-              }
-              var fill = Math.min(1, v.currentTime / v.duration);
-              bar.style.width = (fill * 100) + '%';
-              logProgress(fill);
-              if (!v.paused && fill > 0) logTimerStarted('video', Math.round(v.duration * 1000));
-              if (v.ended || fill >= 1 || v.currentTime >= v.duration - 0.05) {
+        var bar = progress.children[mediaIdx] && progress.children[mediaIdx].firstChild;
+        function tick(now) {
+          try {
+            if (!bar || advancing) return;
+            if (!v.duration || Number.isNaN(v.duration)) {
+              if (now - mountedAt > VIDEO_READY_TIMEOUT_MS) nextOnce('video-ready-timeout');
+              else rafId = requestAnimationFrame(tick);
+              return;
+            }
+            var fill = Math.min(1, v.currentTime / v.duration);
+            bar.style.width = (fill * 100) + '%';
+            logProgress(fill);
+            if (!v.paused && fill > 0) logTimerStarted('video', Math.round(v.duration * 1000));
+            if (v.ended || fill >= 1 || v.currentTime >= v.duration - 0.05) {
+              bar.style.width = '100%';
+              track('completed', story.id);
+              nextOnce(v.ended ? 'video-ended-event-or-flag' : 'video-currentTime-complete');
+              return;
+            }
+            if (!v.paused) {
+              if (v.currentTime !== lastVideoTime) {
+                lastVideoTime = v.currentTime;
+                lastVideoTimeAt = now;
+              } else if (lastVideoTimeAt > 0 && now - lastVideoTimeAt > VIDEO_FROZEN_MS && v.currentTime > 0.1) {
                 bar.style.width = '100%';
                 track('completed', story.id);
-                nextOnce(v.ended ? 'video-ended-event-or-flag' : 'video-currentTime-complete');
+                nextOnce('video-frozen-watchdog');
                 return;
               }
-              if (!v.paused) {
-                if (v.currentTime !== lastVideoTime) {
-                  lastVideoTime = v.currentTime;
-                  lastVideoTimeAt = now;
-                } else if (lastVideoTimeAt > 0 && now - lastVideoTimeAt > VIDEO_FROZEN_MS && v.currentTime > 0.1) {
-                  bar.style.width = '100%';
-                  track('completed', story.id);
-                  nextOnce('video-frozen-watchdog');
-                  return;
-                }
-              } else {
-                lastVideoTimeAt = now;
-              }
-              if (fill >= 0.995) {
-                if (!videoFullAt) videoFullAt = now;
-                else if (now - videoFullAt > VIDEO_END_GRACE_MS) {
-                  bar.style.width = '100%';
-                  track('completed', story.id);
-                  nextOnce('video-full-bar-watchdog');
-                  return;
-                }
-              } else {
-                videoFullAt = 0;
-              }
-              rafId = requestAnimationFrame(tick);
-            } catch (err) {
-              try { console.warn('[Zentor stories] tick error, continuando loop:', err); } catch (_) {}
-              rafId = requestAnimationFrame(tick);
+            } else {
+              lastVideoTimeAt = now;
             }
+            if (fill >= 0.995) {
+              if (!videoFullAt) videoFullAt = now;
+              else if (now - videoFullAt > VIDEO_END_GRACE_MS) {
+                bar.style.width = '100%';
+                track('completed', story.id);
+                nextOnce('video-full-bar-watchdog');
+                return;
+              }
+            } else {
+              videoFullAt = 0;
+            }
+            rafId = requestAnimationFrame(tick);
+          } catch (err) {
+            try { console.warn('[Zentor stories] tick error, continuando loop:', err); } catch (_) {}
+            rafId = requestAnimationFrame(tick);
           }
-          rafId = requestAnimationFrame(tick);
+        }
+        v.addEventListener('loadedmetadata', function () {
+          flowLog('Vídeo carregado', { storyIndex: idx, mediaIndex: mediaIdx, duration: v.duration });
+          if (!rafId) rafId = requestAnimationFrame(tick);
         });
+        if (bar) {
+          rafId = requestAnimationFrame(tick);
+        }
         v.addEventListener('playing', function () {
           logTimerStarted('video', Number.isFinite(v.duration) ? Math.round(v.duration * 1000) : undefined);
           flowLog('Story seguinte carregado', { storyIndex: idx, mediaIndex: mediaIdx, type: 'video' });
