@@ -189,14 +189,14 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products 
     >
       <div className="w-full max-w-[420px] bg-black overflow-hidden flex flex-col relative rounded-2xl max-sm:rounded-none max-sm:max-w-none max-sm:!h-[100dvh]" style={{ height: 'min(92dvh, 780px)' }}>
         {/* Zone 1 — progress bars */}
-        <div className="absolute top-2.5 left-2 right-2 flex gap-1 z-10">
+        <div className="absolute left-2 right-2 flex gap-1 z-10" style={{ top: 'max(10px, env(safe-area-inset-top))' }}>
           <div className="flex-1 h-[2.5px] bg-white/30 rounded-full overflow-hidden">
             <div ref={progressRef} className="h-full bg-white rounded-full" style={{ width: '0%' }} />
           </div>
         </div>
 
         {/* Zone 2 — top controls */}
-        <div className="absolute top-6 right-3 flex items-center gap-2.5 z-20">
+        <div className="absolute right-3 flex items-center gap-2.5 z-20" style={{ top: 'calc(max(10px, env(safe-area-inset-top)) + 14px)' }}>
           <button
             type="button"
             onClick={() => setPaused((p) => !p)}
