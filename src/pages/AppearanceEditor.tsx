@@ -196,12 +196,6 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
     const v = videoRef.current;
     if (!v) return;
     // iOS/iPadOS require playsinline attributes BEFORE play() or it goes fullscreen / drops audio.
-  // Video lifecycle: autoplay + ended handling. Progress is driven by rAF above.
-  useEffect(() => {
-    if (!isVideo) return;
-    const v = videoRef.current;
-    if (!v) return;
-    // iOS/iPadOS require playsinline attributes BEFORE play() or it goes fullscreen / drops audio.
     (v as HTMLVideoElement & { playsInline?: boolean }).playsInline = true;
     v.setAttribute('playsinline', '');
     v.setAttribute('webkit-playsinline', 'true');
