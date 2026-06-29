@@ -340,6 +340,22 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
               />
             </>
           )}
+
+          {/* Preload upcoming playlist items (next 2) to avoid load delay on advance */}
+          {hasPlaylist && (
+            <div aria-hidden className="hidden">
+              {playlist!.slice(currentIdx + 1, currentIdx + 3).map((it, i) => {
+                const u = it.media?.url ?? '';
+                const isVid = it.media?.type === 'video' || (it.media?.type ?? '').includes('video');
+                if (!u) return null;
+                return isVid ? (
+                  <video key={`pre-v-${currentIdx + 1 + i}-${u}`} src={u} preload="auto" muted playsInline />
+                ) : (
+                  <img key={`pre-i-${currentIdx + 1 + i}-${u}`} src={u} alt="" />
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Zone 4 — product cards (bottom-right, larger stack matching reference) */}
