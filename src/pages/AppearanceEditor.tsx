@@ -412,6 +412,10 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
               preload="auto"
               disableRemotePlayback
               className="absolute inset-0 w-full h-full object-cover"
+              // Métrica: loadeddata = bytes suficientes para começar.
+              onLoadedData={() => storyMetrics.markReady(current.src)}
+              // playing = decoder enviou primeiro frame ao compositor (paint iminente).
+              onPlaying={() => storyMetrics.markFirstFrame(current.src)}
             />
           ) : (
             <img
@@ -420,9 +424,14 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
               alt=""
               className="absolute inset-0 w-full h-full object-cover"
               draggable={false}
-              onLoad={() => { imgLoadedRef.current = true; }}
+              onLoad={(e) => {
+                imgLoadedRef.current = true;
+                const src = (e.currentTarget as HTMLImageElement).currentSrc || current.src;
+                storyMetrics.markReady(src);
+                // Próximo rAF aproxima o "primeiro frame pintado" para imagens.
+                requestAnimationFrame(() => storyMetrics.markFirstFrame(src));
+              }}
               onError={() => { imgLoadedRef.current = true; }}
-
             />
           )}
 
@@ -430,7 +439,9 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
               Elementos persistem entre trocas de story → bytes ficam quentes em
               cache do browser + decoder de mídia, eliminando "tela preta" na
               transição. Em 2G/Save-Data, profile.videoPreload="none" só baixa
-              os headers, então ainda economizamos dados. */}
+              os headers, então ainda economizamos dados.
+              Cada elemento chama storyMetrics.markPreloaded ao terminar,
+              permitindo medir se a próxima mídia estava quente antes do "end". */}
           <div aria-hidden className="hidden">
             {DEMO_STORIES.map((s, i) =>
               i === idx ? null : s.type === 'video' ? (
@@ -441,6 +452,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
                   preload={profile.videoPreload}
                   muted
                   playsInline
+                  onLoadedData={() => storyMetrics.markPreloaded(s.src)}
                 />
               ) : (
                 <img
@@ -449,10 +461,12 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
                   alt=""
                   decoding="async"
                   loading="eager"
+                  onLoad={(e) => storyMetrics.markPreloaded((e.currentTarget as HTMLImageElement).currentSrc || s.src)}
                 />
               ),
             )}
           </div>
+
 
 
 
