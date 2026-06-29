@@ -256,13 +256,13 @@
     var progress    = el('div', 'zt-progress');
 
     var topCtrl   = el('div', 'zt-top-controls');
-    var btnPause  = el('button', 'zt-ctrl-btn'); btnPause.appendChild(svgIcon(ICO_PAUSE)); btnPause.title = 'Pausar';
     var btnSound  = el('button', 'zt-ctrl-btn'); btnSound.appendChild(svgIcon(ICO_SOUND)); btnSound.title = 'Silenciar';
     var btnClose  = el('button', 'zt-ctrl-btn'); btnClose.appendChild(svgIcon(ICO_CLOSE)); btnClose.title = 'Fechar';
-    topCtrl.appendChild(btnPause); topCtrl.appendChild(btnSound); topCtrl.appendChild(btnClose);
+    topCtrl.appendChild(btnSound); topCtrl.appendChild(btnClose);
 
     var navL = el('div', 'zt-nav zt-nav-l');
     var navR = el('div', 'zt-nav zt-nav-r');
+    var tapPause = el('div', 'zt-tap-pause');
     var productsWrap = el('div', 'zt-products');
 
     var bottomBar       = el('div', 'zt-bottom-bar');
