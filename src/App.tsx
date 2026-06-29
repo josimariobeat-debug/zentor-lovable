@@ -20,6 +20,7 @@ import AppearanceEditor from '@/pages/AppearanceEditor';
 import MobileUpload from '@/pages/MobileUpload';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
+import DevStoryViewer from '@/pages/DevStoryViewer';
 
 
 export default function App() {
@@ -32,6 +33,7 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/mobile-upload/:token" element={<MobileUpload />} />
+      <Route path="/dev/story-viewer" element={<DevStoryViewer />} />
       <Route
         element={
           <ProtectedRoute>

@@ -44,7 +44,7 @@ const DEMO_STORIES: DemoStory[] = [
   },
 ];
 
-function StoryViewer({ onClose }: { onClose: () => void }) {
+export function StoryViewer({ onClose }: { onClose: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [idx, setIdx] = useState(0);
   const [paused, setPaused] = useState(false);
