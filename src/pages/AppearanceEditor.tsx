@@ -271,8 +271,8 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
 
 
 
-  function togglePlay() {
   const togglePlay = useCallback(() => {
+
     setPaused((p) => {
       if (!isVideoRef.current) {
         if (p) {
