@@ -6,7 +6,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/components/ui/toaster';
 import { Switch } from '@/components/ui/switch';
-import previewVideoAsset from '@/assets/widget-preview.mp4.asset.json';
 import storyDemo2Asset from '@/assets/story-demo-2.mp4.asset.json';
 import storyDemo2Poster from '@/assets/story-demo-2-poster.jpg.asset.json';
 import storyDemo3Asset from '@/assets/story-demo-3.mp4.asset.json';
@@ -15,7 +14,6 @@ import { getMediaProfile, getNetworkTier, rewriteImageForProfile, subscribeNetwo
 import { storyMetrics } from '@/lib/storyMetrics';
 
 
-const PREVIEW_VIDEO_URL = previewVideoAsset.url;
 const STORY_DEMO_2_URL = storyDemo2Asset.url;
 const STORY_DEMO_2_POSTER = storyDemo2Poster.url;
 const STORY_DEMO_3_URL = storyDemo3Asset.url;
