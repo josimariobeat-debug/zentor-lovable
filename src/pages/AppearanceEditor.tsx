@@ -181,13 +181,49 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
         if (v && v.duration > 0 && !Number.isNaN(v.duration)) {
           const fill = Math.min(1, v.currentTime / v.duration);
           setBar(i, fill);
+
+          // Sinal direto do navegador: vídeo terminou mesmo que 'ended' tenha
+          // sido perdido (perda de evento em troca rápida de aba/idx).
+          if (v.ended) {
+            videoFullAtRef.current = 0;
+            mountedAtRef.current = now;
+            setBar(i, 1);
+            goNext();
+            raf = requestAnimationFrame(tick);
+            return;
+          }
+
+          // Detecta congelamento: currentTime não avança por VIDEO_FROZEN_MS
+          // enquanto deveria estar tocando (cobre o caso "barra para no meio
+          // ou perto do fim e o player nunca dispara 'ended'").
+          if (!pausedRef.current) {
+            if (v.currentTime !== lastVideoTimeRef.current) {
+              lastVideoTimeRef.current = v.currentTime;
+              lastVideoTimeAtRef.current = now;
+            } else if (
+              lastVideoTimeAtRef.current > 0 &&
+              now - lastVideoTimeAtRef.current > VIDEO_FROZEN_MS &&
+              // só consideramos "congelado" se já passamos do começo (evita
+              // pular vídeos que ainda estão iniciando o buffer)
+              v.currentTime > 0.1
+            ) {
+              videoFullAtRef.current = 0;
+              mountedAtRef.current = now;
+              lastVideoTimeAtRef.current = now;
+              storyMetrics.markStuck(i, 'video-end-stall');
+              setBar(i, 1);
+              goNext();
+              raf = requestAnimationFrame(tick);
+              return;
+            }
+          } else {
+            lastVideoTimeAtRef.current = now;
+          }
+
           if (fill >= 0.995) {
             if (videoFullAtRef.current === 0) {
               videoFullAtRef.current = now;
             } else if (now - videoFullAtRef.current > VIDEO_END_GRACE_MS) {
-              // Barra cheia há tempo demais e o 'ended' nativo não chegou —
-              // provavelmente um trecho final estático do clipe. Avança nós
-              // mesmos em vez de deixar o usuário olhando pra tela parada.
               videoFullAtRef.current = 0;
               mountedAtRef.current = now;
               storyMetrics.markStuck(i, 'video-end-stall');
@@ -198,8 +234,6 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
           }
         } else if (sinceMount > VIDEO_READY_TIMEOUT_MS) {
           mountedAtRef.current = now;
-          // Vídeo nunca ficou pronto (sem metadata, rede caiu, codec falhou).
-          // Avança em vez de prender o usuário em tela preta.
           storyMetrics.markStuck(i, 'video-timeout');
           setBar(i, 1);
           goNext();
