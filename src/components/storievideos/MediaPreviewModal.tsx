@@ -346,9 +346,9 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                 className="pointer-events-auto bg-white rounded-2xl p-2 flex items-center gap-2.5 shadow-[0_6px_18px_rgba(0,0,0,0.22)]"
               >
                 {p.image ? (
-                  <img src={p.image} alt={p.name} className="w-11 h-11 rounded-xl object-cover bg-neutral-100 shrink-0" />
+                  <img src={p.image} alt={p.name} className={`object-cover bg-neutral-100 shrink-0 ${hasPlaylist ? 'w-8 h-8 rounded-md' : 'w-11 h-11 rounded-xl'}`} />
                 ) : (
-                  <div className="w-11 h-11 rounded-xl bg-neutral-100 shrink-0" />
+                  <div className={`bg-neutral-100 shrink-0 ${hasPlaylist ? 'w-8 h-8 rounded-md' : 'w-11 h-11 rounded-xl'}`} />
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="text-[13px] font-semibold text-neutral-900 truncate leading-tight">{p.name}</div>
