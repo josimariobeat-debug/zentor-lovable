@@ -24,16 +24,15 @@ interface Props {
   kind?: 'floating' | 'carousel';
   /** Largura do thumb em px. Altura é calculada com aspect 9/16. */
   width?: number;
+  /** Mídia do primeiro story (oldest) — renderizada dentro do balão.
+   *  Vídeos tocam o trecho 0–3s em loop sem áudio. */
+  firstMedia?: { url: string; type: 'image' | 'video' } | null;
 }
 
 const BASE_W = 300; // mesma base do editor (mobile phone width)
 const BASE_H = 600;
 
-/**
- * Render reduzido do preview do celular usado no AppearanceEditor.
- * Reflete forma, cor, borda, posição e espaçamento da aparência salva.
- */
-export default function AppearanceMiniPreview({ config, kind = 'floating', width = 64 }: Props) {
+export default function AppearanceMiniPreview({ config, kind = 'floating', width = 64, firstMedia }: Props) {
   const cfg = {
     shape: 'circular' as Shape,
     width: 100,
@@ -147,8 +146,30 @@ export default function AppearanceMiniPreview({ config, kind = 'floating', width
                 ))}
               </div>
             </div>
-            {/* Widget bubble */}
-            {!cfg.hideStories && <div style={bubbleStyle} />}
+            {/* Widget bubble — preview do primeiro Stories (3s para vídeo) */}
+            {!cfg.hideStories && (
+              <div style={bubbleStyle}>
+                {firstMedia?.type === 'video' ? (
+                  <video
+                    // Toca apenas o trecho 0–3s usando media fragments
+                    src={`${firstMedia.url}#t=0,3`}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    preload="metadata"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                  />
+                ) : firstMedia?.url ? (
+                  <img
+                    src={firstMedia.url}
+                    alt=""
+                    loading="lazy"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                  />
+                ) : null}
+              </div>
+            )}
           </div>
         </div>
       </div>
