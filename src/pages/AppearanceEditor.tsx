@@ -1348,7 +1348,7 @@ export default function AppearanceEditor() {
                           )}
                           <div
                             style={{ ...bubbleStyle, cursor: 'pointer' }}
-                            onClick={(e) => { e.stopPropagation(); setViewerOpen(true); }}
+                            onClick={(e) => e.stopPropagation()}
                           >
                             <PreviewMedia fit={cfg.mediaFit} />
                             {cfg.allowClose && (
