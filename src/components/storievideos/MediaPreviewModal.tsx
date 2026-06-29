@@ -346,6 +346,15 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
             />
           )}
 
+          {/* Indicador central de pause (somente quando pausado) */}
+          {paused && (
+            <div className="absolute inset-0 z-[6] flex items-center justify-center pointer-events-none">
+              <div className="w-16 h-16 rounded-full bg-black/45 backdrop-blur-sm flex items-center justify-center">
+                <Play className="w-7 h-7 text-white fill-white ml-0.5" />
+              </div>
+            </div>
+          )}
+
           {/* Preload upcoming playlist items (next 2) to avoid load delay on advance */}
           {hasPlaylist && (
             <div aria-hidden className="hidden">
