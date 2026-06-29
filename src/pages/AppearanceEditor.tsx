@@ -19,10 +19,12 @@ const STORY_DEMO_2_POSTER = storyDemo2Poster.url;
 const STORY_DEMO_3_URL = storyDemo3Asset.url;
 const STORY_DEMO_3_POSTER = storyDemo3Poster.url;
 
+interface DemoProduct { title: string; price: string; thumb: string }
 interface DemoStory {
   type: 'video' | 'image';
   src: string;
-  product: { title: string; price: string; thumb: string };
+  product: DemoProduct;
+  products?: DemoProduct[]; // múltiplos cards empilhados; fallback para [product]
   duration?: number; // seconds, used for images
   poster?: string; // JPG do primeiro frame — LCP instantâneo para vídeos
 }
