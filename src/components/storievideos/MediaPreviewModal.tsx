@@ -350,7 +350,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
           {paused && (
             <div
               className="absolute left-0 right-0 top-0 z-[6] flex items-center justify-center gap-3 pointer-events-none"
-              style={{ bottom: hasPlaylist ? '0' : 'calc(56px + env(safe-area-inset-bottom))' }}
+              style={{ bottom: 'calc(56px + env(safe-area-inset-bottom))' }}
             >
               <div className="w-11 h-11 rounded-full bg-black/45 backdrop-blur-sm flex items-center justify-center">
                 <Play className="w-4 h-4 text-white fill-white ml-0.5" />
