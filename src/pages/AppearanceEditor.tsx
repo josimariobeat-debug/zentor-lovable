@@ -731,10 +731,18 @@ export default function AppearanceEditor() {
         img.src = rewriteImageForProfile(s.src, profile);
         cleanups.push(() => { img.src = ''; });
       } else {
+        // Warm-up do poster (LCP instantâneo ao abrir o story).
+        if (s.poster) {
+          const pimg = new Image();
+          pimg.decoding = 'async';
+          pimg.src = s.poster;
+          cleanups.push(() => { pimg.src = ''; });
+        }
         const v = document.createElement('video');
         v.preload = profile.videoPreload;
         v.muted = true;
         v.playsInline = true;
+        if (s.poster) v.poster = s.poster;
         v.src = s.src;
         cleanups.push(() => { v.removeAttribute('src'); try { v.load(); } catch { /* ignore */ } });
       }
