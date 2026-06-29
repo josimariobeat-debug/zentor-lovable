@@ -88,6 +88,8 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
   const isVideoRef = useRef(isVideo);
   const pausedRef = useRef(interactionPaused);
   const imgLoadedRef = useRef(false);
+  const activeImgRef = useRef<HTMLImageElement | null>(null);
+
   const durationRef = useRef((current.duration ?? 5) * 1000);
   useEffect(() => { idxRef.current = idx; }, [idx]);
   useEffect(() => { isVideoRef.current = isVideo; }, [isVideo]);
