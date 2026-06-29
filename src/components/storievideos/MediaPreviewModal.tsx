@@ -241,6 +241,15 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products 
           </button>
           <button
             type="button"
+            onClick={() => { setFitUserSet(true); setFit((f) => (f === 'cover' ? 'contain' : 'cover')); }}
+            className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm border-0 flex items-center justify-center text-white cursor-pointer hover:bg-black/70"
+            aria-label={fit === 'cover' ? 'Ajustar (contain)' : 'Preencher (cover)'}
+            title={fit === 'cover' ? 'Ajustar à tela (contain)' : 'Preencher tela (cover)'}
+          >
+            {fit === 'cover' ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+          </button>
+          <button
+            type="button"
             onClick={() => onOpenChange(false)}
             className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm border-0 flex items-center justify-center text-white cursor-pointer hover:bg-black/70"
             aria-label="Fechar"
