@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Pause, Play, Volume2, VolumeX, X, Heart, MessageCircle, Send } from 'lucide-react';
+import { Volume2, VolumeX, X, Heart, MessageCircle, Send } from 'lucide-react';
 
 interface Product {
   id: string;
@@ -276,14 +276,6 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
         <div className="absolute right-3 flex items-center gap-2.5 z-20" style={{ top: 'calc(max(10px, env(safe-area-inset-top)) + 14px)' }}>
           <button
             type="button"
-            onClick={() => setPaused((p) => !p)}
-            className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm border-0 flex items-center justify-center text-white cursor-pointer hover:bg-black/70"
-            aria-label={paused ? 'Reproduzir' : 'Pausar'}
-          >
-            {paused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
-          </button>
-          <button
-            type="button"
             onClick={() => setMuted((m) => !m)}
             className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm border-0 flex items-center justify-center text-white cursor-pointer hover:bg-black/70"
             aria-label={muted ? 'Ativar som' : 'Silenciar'}
@@ -323,8 +315,8 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
             )
           ) : null}
 
-          {/* Invisible nav zones — só ativas em playlist */}
-          {hasPlaylist && (
+          {/* Tap zones: prev/next em playlist + center toggles pause */}
+          {hasPlaylist ? (
             <>
               <button
                 type="button"
@@ -334,11 +326,24 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
               />
               <button
                 type="button"
+                aria-label={paused ? 'Reproduzir' : 'Pausar'}
+                onClick={() => setPaused((p) => !p)}
+                className="absolute left-[30%] right-[30%] top-0 bottom-0 z-[5] cursor-default bg-transparent border-0"
+              />
+              <button
+                type="button"
                 aria-label="Próximo"
                 onClick={goNext}
                 className="absolute right-0 top-0 bottom-0 w-[30%] z-[5] cursor-default bg-transparent border-0"
               />
             </>
+          ) : (
+            <button
+              type="button"
+              aria-label={paused ? 'Reproduzir' : 'Pausar'}
+              onClick={() => setPaused((p) => !p)}
+              className="absolute inset-0 z-[5] cursor-default bg-transparent border-0"
+            />
           )}
 
           {/* Preload upcoming playlist items (next 2) to avoid load delay on advance */}

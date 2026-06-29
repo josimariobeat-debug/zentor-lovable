@@ -82,8 +82,9 @@
     '.zt-ctrl-btn{background:rgba(0,0,0,.45);border:0;color:#fff;border-radius:50%;width:34px;height:34px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);transition:background .15s}',
     '.zt-ctrl-btn:hover{background:rgba(0,0,0,.65)}',
     '.zt-ctrl-btn svg{width:16px;height:16px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}',
-    '.zt-nav{position:absolute;top:0;bottom:80px;width:38%;z-index:5;cursor:pointer}',
+    '.zt-nav{position:absolute;top:0;bottom:80px;width:30%;z-index:5;cursor:pointer}',
     '.zt-nav-l{left:0}.zt-nav-r{right:0}',
+    '.zt-tap-pause{position:absolute;top:0;bottom:80px;left:30%;right:30%;z-index:5;cursor:pointer;background:transparent}',
     '.zt-products{position:absolute;bottom:80px;left:12px;right:12px;z-index:8;display:flex;flex-direction:column;gap:8px;pointer-events:none}',
     '.zt-product-card{display:flex;align-items:center;gap:10px;background:#fff;border-radius:12px;padding:8px 10px;pointer-events:all;box-shadow:0 2px 12px rgba(0,0,0,.18)}',
     '.zt-product-img{width:44px;height:44px;border-radius:8px;object-fit:cover;background:#eee;flex-shrink:0}',
@@ -255,13 +256,13 @@
     var progress    = el('div', 'zt-progress');
 
     var topCtrl   = el('div', 'zt-top-controls');
-    var btnPause  = el('button', 'zt-ctrl-btn'); btnPause.appendChild(svgIcon(ICO_PAUSE)); btnPause.title = 'Pausar';
     var btnSound  = el('button', 'zt-ctrl-btn'); btnSound.appendChild(svgIcon(ICO_SOUND)); btnSound.title = 'Silenciar';
     var btnClose  = el('button', 'zt-ctrl-btn'); btnClose.appendChild(svgIcon(ICO_CLOSE)); btnClose.title = 'Fechar';
-    topCtrl.appendChild(btnPause); topCtrl.appendChild(btnSound); topCtrl.appendChild(btnClose);
+    topCtrl.appendChild(btnSound); topCtrl.appendChild(btnClose);
 
     var navL = el('div', 'zt-nav zt-nav-l');
     var navR = el('div', 'zt-nav zt-nav-r');
+    var tapPause = el('div', 'zt-tap-pause');
     var productsWrap = el('div', 'zt-products');
 
     var bottomBar       = el('div', 'zt-bottom-bar');
@@ -329,6 +330,7 @@
     player.appendChild(topCtrl);
     player.appendChild(navL);
     player.appendChild(navR);
+    player.appendChild(tapPause);
     player.appendChild(productsWrap);
     player.appendChild(bottomBar);
     player.appendChild(commentDrawer);
@@ -360,7 +362,6 @@
 
     function togglePause() {
       paused = !paused;
-      btnPause.innerHTML = ''; btnPause.appendChild(svgIcon(paused ? ICO_PLAY : ICO_PAUSE));
       if (currentEl && currentEl.tagName === 'VIDEO') {
         if (paused) { try { currentEl.pause(); } catch(_){} }
         else { try { var p = currentEl.play(); if (p && p.catch) p.catch(function(){}); } catch(_){} }
@@ -538,12 +539,12 @@
     }
     document.addEventListener('keydown', onKey);
 
-    btnPause.addEventListener('click', function (e) { e.stopPropagation(); togglePause(); });
     btnSound.addEventListener('click', function (e) { e.stopPropagation(); toggleMute(); });
     btnClose.addEventListener('click', function (e) { e.stopPropagation(); destroy(); });
     overlay.addEventListener('click', function (e) { if (e.target === overlay) destroy(); });
     navL.addEventListener('click', prev);
     navR.addEventListener('click', next);
+    tapPause.addEventListener('click', function (e) { e.stopPropagation(); togglePause(); });
 
     btnLike.addEventListener('click', function (e) {
       e.stopPropagation(); liked = !liked; likeCount += liked ? 1 : -1; updateLike();
