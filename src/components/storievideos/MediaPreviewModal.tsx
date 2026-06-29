@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Pause, Play, Volume2, VolumeX, X, Heart, MessageCircle, Send, Maximize2, Minimize2 } from 'lucide-react';
+import { Pause, Play, Volume2, VolumeX, X, Heart, MessageCircle, Send } from 'lucide-react';
 
 interface Product {
   id: string;
@@ -52,8 +52,6 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products 
   const [showCommentForm, setShowCommentForm] = useState(false);
   const [showCommentList, setShowCommentList] = useState(false);
   const [showShare, setShowShare] = useState(false);
-  const [fit, setFit] = useState<'cover' | 'contain'>('cover');
-  const [fitUserSet, setFitUserSet] = useState(false);
 
   const [formName, setFormName] = useState('');
   const [formEmail, setFormEmail] = useState('');
@@ -79,8 +77,6 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products 
     setFormPhone('');
     setFormText('');
     imgElapsedRef.current = 0;
-    setFit('cover');
-    setFitUserSet(false);
   }, [open, url]);
 
   // Image progress animation via rAF (so we can pause)
@@ -120,26 +116,13 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products 
       const pct = Math.min(100, (v.currentTime / v.duration) * 100);
       progressRef.current.style.width = pct + '%';
     };
-    const onMeta = () => {
-      if (fitUserSet) return;
-      const w = v.videoWidth;
-      const h = v.videoHeight;
-      if (!w || !h) return;
-      const ratio = w / h;
-      const target = 9 / 16;
-      // If not close to 9:16 (tolerance ~5%), default to 'contain' to avoid cropping.
-      setFit(Math.abs(ratio - target) / target > 0.05 ? 'contain' : 'cover');
-    };
     v.addEventListener('loadeddata', onLoaded);
     v.addEventListener('timeupdate', onTime);
-    v.addEventListener('loadedmetadata', onMeta);
-    if (v.readyState >= 1) onMeta();
     return () => {
       v.removeEventListener('loadeddata', onLoaded);
       v.removeEventListener('timeupdate', onTime);
-      v.removeEventListener('loadedmetadata', onMeta);
     };
-  }, [open, isVideo, url, fitUserSet]);
+  }, [open, isVideo, url]);
 
   // Apply pause/mute and drawer pausing to video
   useEffect(() => {
@@ -204,16 +187,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products 
       style={{ zIndex: 2147483600 }}
       onClick={(e) => { if (e.target === e.currentTarget) onOpenChange(false); }}
     >
-      <div
-        className="bg-black overflow-hidden flex flex-col relative rounded-2xl max-sm:rounded-none max-sm:!w-screen max-sm:!h-[100dvh] max-sm:!max-w-none max-sm:!max-h-none"
-        style={{
-          aspectRatio: '9 / 16',
-          // Derive width from height to lock 9:16; cap by viewport so portrait tablets don't overflow.
-          height: 'min(92dvh, calc((100vw - 32px) * 16 / 9), 780px)',
-          width: 'min(calc(92dvh * 9 / 16), 100vw - 32px, calc(780px * 9 / 16))',
-          maxWidth: '100%',
-        }}
-      >
+      <div className="bg-black overflow-hidden flex flex-col relative rounded-2xl max-sm:rounded-none max-sm:!w-screen max-sm:!h-[100dvh] max-sm:!max-w-none max-sm:!max-h-none" style={{ aspectRatio: '9 / 16', height: 'min(92dvh, 780px)', maxWidth: '100%' }}>
         {/* Zone 1 — progress bars */}
         <div className="absolute left-2 right-2 flex gap-1 z-10" style={{ top: 'max(10px, env(safe-area-inset-top))' }}>
           <div className="flex-1 h-[2.5px] bg-white/30 rounded-full overflow-hidden">
@@ -241,15 +215,6 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products 
           </button>
           <button
             type="button"
-            onClick={() => { setFitUserSet(true); setFit((f) => (f === 'cover' ? 'contain' : 'cover')); }}
-            className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm border-0 flex items-center justify-center text-white cursor-pointer hover:bg-black/70"
-            aria-label={fit === 'cover' ? 'Ajustar (contain)' : 'Preencher (cover)'}
-            title={fit === 'cover' ? 'Ajustar à tela (contain)' : 'Preencher tela (cover)'}
-          >
-            {fit === 'cover' ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-          </button>
-          <button
-            type="button"
             onClick={() => onOpenChange(false)}
             className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm border-0 flex items-center justify-center text-white cursor-pointer hover:bg-black/70"
             aria-label="Fechar"
@@ -267,22 +232,14 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products 
                 src={url}
                 autoPlay
                 playsInline
-                className={`absolute inset-0 w-full h-full ${fit === 'cover' ? 'object-cover' : 'object-contain'}`}
+                className="absolute inset-0 w-full h-full object-cover"
               />
             ) : (
               <img
                 src={url}
                 alt={media?.name ?? ''}
-                onLoad={(e) => {
-                  setProgressStarted(true);
-                  if (!fitUserSet) {
-                    const img = e.currentTarget;
-                    const ratio = img.naturalWidth / img.naturalHeight;
-                    const target = 9 / 16;
-                    setFit(Math.abs(ratio - target) / target > 0.05 ? 'contain' : 'cover');
-                  }
-                }}
-                className={`absolute inset-0 w-full h-full ${fit === 'cover' ? 'object-cover' : 'object-contain'}`}
+                onLoad={() => setProgressStarted(true)}
+                className="absolute inset-0 w-full h-full object-cover"
               />
             )
           ) : null}
