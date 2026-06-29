@@ -401,33 +401,35 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
             />
           )}
 
-          {/* Pré-carrega os próximos stories conforme perfil de rede/dispositivo.
-              - Wi-Fi/desktop forte: 2 próximos com vídeo preload="auto".
-              - 3G/dispositivo médio: 1 próximo com preload="metadata" (só headers).
-              - 2G/Save-Data/baixa memória: nada — evita estourar dados móveis. */}
-          {profile.preloadCount > 0 && (
-            <div aria-hidden className="hidden">
-              {Array.from({ length: profile.preloadCount }, (_, k) => k + 1).map((offset) => {
-                const next = DEMO_STORIES[(idx + offset) % DEMO_STORIES.length];
-                return next.type === 'video' ? (
-                  <video
-                    key={`pre-v-${idx}-${offset}`}
-                    src={next.src}
-                    poster={next.poster}
-                    preload={profile.videoPreload}
-                    muted
-                    playsInline
-                  />
-                ) : (
-                  <img
-                    key={`pre-i-${idx}-${offset}`}
-                    src={rewriteImageForProfile(next.src, profile)}
-                    alt=""
-                  />
-                );
-              })}
-            </div>
-          )}
+          {/* Pré-carrega TODAS as outras mídias com chaves estáveis por URL.
+              Elementos persistem entre trocas de story → bytes ficam quentes em
+              cache do browser + decoder de mídia, eliminando "tela preta" na
+              transição. Em 2G/Save-Data, profile.videoPreload="none" só baixa
+              os headers, então ainda economizamos dados. */}
+          <div aria-hidden className="hidden">
+            {DEMO_STORIES.map((s, i) =>
+              i === idx ? null : s.type === 'video' ? (
+                <video
+                  key={`pre-${s.src}`}
+                  src={s.src}
+                  poster={s.poster}
+                  preload={profile.videoPreload}
+                  muted
+                  playsInline
+                />
+              ) : (
+                <img
+                  key={`pre-${s.src}`}
+                  src={rewriteImageForProfile(s.src, profile)}
+                  alt=""
+                  decoding="async"
+                  loading="eager"
+                />
+              ),
+            )}
+          </div>
+
+
 
 
           {/* Instagram-style tap zones for prev/next.
