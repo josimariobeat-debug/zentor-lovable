@@ -1101,7 +1101,7 @@ export default function AppearanceEditor() {
     backToTab();
   }
 
-  const [viewerOpen, setViewerOpen] = useState(false);
+  
 
   const bubbleStyle = useMemo<React.CSSProperties>(() => {
     const isBottom = cfg.position.startsWith('bottom');
