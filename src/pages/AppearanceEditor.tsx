@@ -424,13 +424,12 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
               alt=""
               className="absolute inset-0 w-full h-full object-cover"
               draggable={false}
-              onLoad={(e) => {
+              onLoad={() => {
                 imgLoadedRef.current = true;
-                const src = (e.currentTarget as HTMLImageElement).currentSrc || current.src;
-                storyMetrics.markReady(src);
-                // Próximo rAF aproxima o "primeiro frame pintado" para imagens.
-                requestAnimationFrame(() => storyMetrics.markFirstFrame(src));
+                storyMetrics.markReady(current.src);
+                requestAnimationFrame(() => storyMetrics.markFirstFrame(current.src));
               }}
+
               onError={() => { imgLoadedRef.current = true; }}
             />
           )}
