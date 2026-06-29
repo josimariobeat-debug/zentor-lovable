@@ -89,18 +89,56 @@
     var st = document.createElement('style'); st.textContent = STYLES; shadow.appendChild(st);
   }
 
+  var BUBBLE_LOOP_SECONDS = 3;
+  function firstVideoUrl(story) {
+    if (!story) return null;
+    var media = story.media && story.media.length ? story.media : null;
+    if (!media) return null;
+    for (var i = 0; i < media.length; i++) {
+      var m = media[i];
+      if (m && m.type && String(m.type).indexOf('video') !== -1 && m.url) return m.url;
+    }
+    return null;
+  }
+
   function renderBubbles(cfg, stories) {
     var wrap = el('div', 'zt-wrap zt-pos-' + (cfg.theme && cfg.theme.position || 'bottom-left'));
     if (cfg.theme && cfg.theme.mode === 'dark') wrap.classList.add('zt-dark');
-    stories.forEach(function (story) {
+    stories.forEach(function (story, storyIdx) {
       var item = el('div', 'zt-story');
       var bubble = el('div', 'zt-bubble');
       var inner = el('div', 'zt-bubble-inner');
-      var img = el('img', 'zt-bubble-img');
-      img.loading = 'lazy';
-      img.alt = story.title || '';
-      if (story.cover) img.src = story.cover;
-      inner.appendChild(img); bubble.appendChild(inner); item.appendChild(bubble);
+      // A capa do PRIMEIRO story usa o vídeo (loop dos primeiros 3s) quando há
+      // mídia de vídeo disponível — espelha o preview do editor. Demais stories
+      // mantêm a thumbnail estática para não custar banda em loops simultâneos.
+      var videoUrl = storyIdx === 0 ? firstVideoUrl(story) : null;
+      if (videoUrl) {
+        var v = document.createElement('video');
+        v.className = 'zt-bubble-video';
+        v.src = videoUrl;
+        v.muted = true; v.defaultMuted = true; v.autoplay = true; v.loop = false;
+        v.playsInline = true; v.setAttribute('playsinline', '');
+        v.setAttribute('webkit-playsinline', '');
+        v.preload = 'auto';
+        if (story.cover) v.poster = story.cover;
+        v.addEventListener('timeupdate', function () {
+          if (v.currentTime >= BUBBLE_LOOP_SECONDS) {
+            try { v.currentTime = 0; } catch (_) {}
+            var p = v.play(); if (p && p.catch) p.catch(function(){});
+          }
+        });
+        v.addEventListener('loadedmetadata', function () {
+          var p = v.play(); if (p && p.catch) p.catch(function(){});
+        });
+        inner.appendChild(v);
+      } else {
+        var img = el('img', 'zt-bubble-img');
+        img.loading = 'lazy';
+        img.alt = story.title || '';
+        if (story.cover) img.src = story.cover;
+        inner.appendChild(img);
+      }
+      bubble.appendChild(inner); item.appendChild(bubble);
       var label = el('div', 'zt-label', story.title || ''); item.appendChild(label);
       item.addEventListener('click', function () { openPlayer(stories, stories.indexOf(story)); });
       wrap.appendChild(item);
