@@ -1101,7 +1101,21 @@ export default function AppearanceEditor() {
     backToTab();
   }
 
-  
+  const [viewerOpen, setViewerOpen] = useState(false);
+
+  // Playlist do preview: clona o modal da lista de stories, mas com os 2 vídeos demo
+  // e os produtos do StoryViewer antigo.
+  const previewPlaylist = useMemo(() => DEMO_STORIES.map((s, i) => ({
+    media: { url: s.src, type: s.type === 'video' ? 'video/mp4' : 'image/jpeg', name: s.product.title },
+    products: (s.products && s.products.length > 0 ? s.products : [s.product]).map((p, j) => ({
+      id: `${i}-${j}`,
+      name: p.title,
+      price: p.price,
+      image: p.thumb,
+      url: null as string | null,
+    })),
+  })), []);
+
 
   const bubbleStyle = useMemo<React.CSSProperties>(() => {
     const isBottom = cfg.position.startsWith('bottom');
