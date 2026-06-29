@@ -145,6 +145,15 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
   const mountedAtRef = useRef<number>(performance.now());
   const IMAGE_LOAD_TIMEOUT_MS = 3500; // assume carregada e começa a contar
   const VIDEO_READY_TIMEOUT_MS = 6000; // sem duration → pula
+  // Marca o instante em que a barra do vídeo bateu ~100%. Alguns clipes têm
+  // um trecho final estático (ex.: card de encerramento com marca d'água) em
+  // que o navegador já reporta currentTime≈duration, mas o evento nativo
+  // 'ended' só dispara segundos depois — dando a impressão de "travado" só
+  // na transição automática (o toque manual chama goNext() direto, por isso
+  // nunca trava). Se a barra ficar cheia por mais que essa margem sem o
+  // 'ended' chegar, avançamos nós mesmos.
+  const videoFullAtRef = useRef<number>(0);
+  const VIDEO_END_GRACE_MS = 1200;
 
   // Reset progresso e timers ao trocar de story — direto no DOM, sem re-render.
   useEffect(() => {
@@ -152,6 +161,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
     startedAtRef.current = 0;
     imgLoadedRef.current = false;
     mountedAtRef.current = performance.now();
+    videoFullAtRef.current = 0;
     resetBarsFor(idx);
   }, [idx]);
 
@@ -167,7 +177,23 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
       if (isVideoRef.current) {
         const v = videoRef.current;
         if (v && v.duration > 0 && !Number.isNaN(v.duration)) {
-          setBar(i, Math.min(1, v.currentTime / v.duration));
+          const fill = Math.min(1, v.currentTime / v.duration);
+          setBar(i, fill);
+          if (fill >= 0.995) {
+            if (videoFullAtRef.current === 0) {
+              videoFullAtRef.current = now;
+            } else if (now - videoFullAtRef.current > VIDEO_END_GRACE_MS) {
+              // Barra cheia há tempo demais e o 'ended' nativo não chegou —
+              // provavelmente um trecho final estático do clipe. Avança nós
+              // mesmos em vez de deixar o usuário olhando pra tela parada.
+              videoFullAtRef.current = 0;
+              mountedAtRef.current = now;
+              storyMetrics.markStuck(i, 'video-end-stall');
+              goNext();
+            }
+          } else {
+            videoFullAtRef.current = 0;
+          }
         } else if (sinceMount > VIDEO_READY_TIMEOUT_MS) {
           mountedAtRef.current = now;
           // Vídeo nunca ficou pronto (sem metadata, rede caiu, codec falhou).
