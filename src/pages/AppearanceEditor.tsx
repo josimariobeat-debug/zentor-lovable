@@ -761,10 +761,10 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
             className="absolute left-0 right-0 bottom-0 z-30 bg-[#1f1f1f] px-4 pt-3"
             style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 14px)' }}
           >
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-5">
               <button
                 onClick={openComments}
-                className="flex-1 h-[52px] px-6 rounded-full bg-transparent border border-white/80 text-white text-[15px] font-medium text-center hover:bg-white/5 transition-colors"
+                className="flex-1 h-[52px] px-6 rounded-full bg-transparent border-2 border-white text-white text-[16px] font-medium text-center hover:bg-white/5 transition-colors"
               >
                 Comentar
               </button>
@@ -772,29 +772,29 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
                 onClick={toggleLike}
                 aria-label={isLiked ? 'Descurtir' : 'Curtir'}
                 aria-pressed={isLiked}
-                className="w-9 h-9 grid place-items-center text-white transition-transform active:scale-90"
+                className="w-8 h-8 grid place-items-center transition-transform active:scale-90"
               >
                 <Heart
-                  className={`w-8 h-8 transition-all ${likeBurst ? 'animate-[heartPulse_.6s_ease-out]' : ''}`}
+                  className={`w-[30px] h-[30px] transition-all ${likeBurst ? 'animate-[heartPulse_.6s_ease-out]' : ''}`}
                   style={{ color: '#ef2c4a' }}
                   fill="currentColor"
-                  strokeWidth={2}
+                  stroke="none"
                 />
               </button>
               <button
                 onClick={openComments}
                 aria-label="Comentar"
-                className="relative w-9 h-9 grid place-items-center text-white transition-transform active:scale-90"
+                className="relative w-8 h-8 grid place-items-center text-white transition-transform active:scale-90"
               >
-                <MessageCircle className="w-8 h-8" strokeWidth={1.75} />
-                <span className="absolute -top-0.5 right-0 text-white text-[11px] font-semibold leading-none">3</span>
+                <MessageCircle className="w-[30px] h-[30px]" strokeWidth={1.75} />
+                <span className="absolute -top-1 -right-1 text-white text-[11px] font-semibold leading-none">3</span>
               </button>
               <button
                 onClick={handleShare}
                 aria-label="Compartilhar"
-                className="w-9 h-9 grid place-items-center text-white transition-transform active:scale-90"
+                className="w-8 h-8 grid place-items-center text-white transition-transform active:scale-90"
               >
-                <Send className="w-8 h-8 -rotate-12" strokeWidth={1.75} />
+                <Send className="w-[28px] h-[28px] -rotate-12 -translate-y-[1px]" strokeWidth={1.75} />
               </button>
             </div>
           </div>
