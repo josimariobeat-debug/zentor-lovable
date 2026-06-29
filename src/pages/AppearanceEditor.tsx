@@ -88,6 +88,16 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [fit, setFit] = useState<'cover' | 'contain'>('cover');
+  const [fitUserSet, setFitUserSet] = useState(false);
+
+  // Auto-detect aspect ratio of current media to default fit (skip when user overrode).
+  const autoFit = useCallback((w: number, h: number) => {
+    if (fitUserSet || !w || !h) return;
+    const ratio = w / h;
+    const target = 9 / 16;
+    setFit(Math.abs(ratio - target) / target > 0.05 ? 'contain' : 'cover');
+  }, [fitUserSet]);
 
   const current = DEMO_STORIES[idx];
   const isVideo = current.type === 'video';
