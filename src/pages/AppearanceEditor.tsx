@@ -358,6 +358,18 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
             />
           )}
 
+          {/* Pré-carrega os próximos 2 stories (sem render) para troca instantânea estilo Instagram. */}
+          <div aria-hidden className="hidden">
+            {[1, 2].map((offset) => {
+              const next = DEMO_STORIES[(idx + offset) % DEMO_STORIES.length];
+              return next.type === 'video' ? (
+                <video key={`pre-v-${idx}-${offset}`} src={next.src} preload="auto" muted playsInline />
+              ) : (
+                <img key={`pre-i-${idx}-${offset}`} src={next.src} alt="" />
+              );
+            })}
+          </div>
+
           {/* Instagram-style tap zones for prev/next.
               Right zone stops before the action column so taps on icons aren't hijacked.
               The reserved gutter mirrors the action column's right offset + icon width. */}

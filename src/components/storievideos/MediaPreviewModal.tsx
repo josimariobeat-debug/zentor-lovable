@@ -27,6 +27,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media }: MediaPr
               autoPlay
               controls
               playsInline
+              preload="auto"
               className="w-full h-full object-cover"
             />
           ) : (
