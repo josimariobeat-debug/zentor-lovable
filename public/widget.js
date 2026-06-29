@@ -276,8 +276,9 @@
     var pauseSoundBtn = el('button', 'zt-pause-indicator-inner zt-pi-sound');
     pauseSoundBtn.appendChild(svgIcon(ICO_SOUND));
     pauseSoundBtn.title = 'Som';
-    pauseIndicator.appendChild(pauseIndicatorInner);
     pauseIndicator.appendChild(pauseSoundBtn);
+    pauseIndicator.appendChild(pauseIndicatorInner);
+
     var productsWrap = el('div', 'zt-products');
 
     var bottomBar       = el('div', 'zt-bottom-bar');
