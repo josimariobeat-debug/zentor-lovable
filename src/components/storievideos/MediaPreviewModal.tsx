@@ -315,8 +315,8 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
             )
           ) : null}
 
-          {/* Invisible nav zones — só ativas em playlist */}
-          {hasPlaylist && (
+          {/* Tap zones: prev/next em playlist + center toggles pause */}
+          {hasPlaylist ? (
             <>
               <button
                 type="button"
@@ -326,11 +326,24 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
               />
               <button
                 type="button"
+                aria-label={paused ? 'Reproduzir' : 'Pausar'}
+                onClick={() => setPaused((p) => !p)}
+                className="absolute left-[30%] right-[30%] top-0 bottom-0 z-[5] cursor-default bg-transparent border-0"
+              />
+              <button
+                type="button"
                 aria-label="Próximo"
                 onClick={goNext}
                 className="absolute right-0 top-0 bottom-0 w-[30%] z-[5] cursor-default bg-transparent border-0"
               />
             </>
+          ) : (
+            <button
+              type="button"
+              aria-label={paused ? 'Reproduzir' : 'Pausar'}
+              onClick={() => setPaused((p) => !p)}
+              className="absolute inset-0 z-[5] cursor-default bg-transparent border-0"
+            />
           )}
 
           {/* Preload upcoming playlist items (next 2) to avoid load delay on advance */}
