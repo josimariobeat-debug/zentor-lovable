@@ -265,9 +265,9 @@
     var progress    = el('div', 'zt-progress');
 
     var topCtrl   = el('div', 'zt-top-controls');
-    var btnSound  = el('button', 'zt-ctrl-btn'); btnSound.appendChild(svgIcon(ICO_SOUND)); btnSound.title = 'Silenciar';
     var btnClose  = el('button', 'zt-ctrl-btn'); btnClose.appendChild(svgIcon(ICO_CLOSE)); btnClose.title = 'Fechar';
-    topCtrl.appendChild(btnSound); topCtrl.appendChild(btnClose);
+    topCtrl.appendChild(btnClose);
+
 
     var navL = el('div', 'zt-nav zt-nav-l');
     var navR = el('div', 'zt-nav zt-nav-r');
