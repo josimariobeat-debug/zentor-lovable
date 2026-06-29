@@ -196,37 +196,73 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
     const v = videoRef.current;
     if (!v) return;
     // iOS/iPadOS require playsinline attributes BEFORE play() or it goes fullscreen / drops audio.
+  // Video lifecycle: autoplay + ended handling. Progress is driven by rAF above.
+  useEffect(() => {
+    if (!isVideo) return;
+    const v = videoRef.current;
+    if (!v) return;
+    // iOS/iPadOS require playsinline attributes BEFORE play() or it goes fullscreen / drops audio.
     (v as HTMLVideoElement & { playsInline?: boolean }).playsInline = true;
     v.setAttribute('playsinline', '');
     v.setAttribute('webkit-playsinline', 'true');
     v.setAttribute('x5-playsinline', 'true');
     v.muted = muted;
     if (!muted) v.volume = 1;
+
+    // Tentativa robusta de play com retry usando o estado de mudo/volume *atual*.
+    // iOS bloqueia por: política de autoplay, mudança de página, AirPlay, audio session
+    // perdida e até stalls de rede. Em qualquer dessas situações, retentamos —
+    // primeiro com o som pedido, depois caindo para mudo se necessário.
+    let retryTimer = 0;
+    let retryCount = 0;
+    const tryPlay = () => {
+      const cur = videoRef.current;
+      if (!cur) return;
+      // Re-aplica estado de áudio sempre que retentamos (usuário pode ter alternado mudo).
+      cur.muted = muted;
+      if (!muted) cur.volume = 1;
+      const p = cur.play();
+      if (p && typeof p.then === 'function') {
+        p.catch(() => {
+          if (!cur.muted && retryCount < 1) {
+            // Primeira falha com som: cai para mudo e tenta de novo (gesto pendente).
+            cur.muted = true;
+            setMuted(true);
+            retryCount += 1;
+            retryTimer = window.setTimeout(tryPlay, 120);
+          } else if (retryCount < 3) {
+            // Backoff curto para stalls/interrupções (AirPlay, audio session, etc.)
+            retryCount += 1;
+            retryTimer = window.setTimeout(tryPlay, 250 * retryCount);
+          }
+        });
+      }
+    };
+
     const onEnd = () => goNext();
+    const onPauseUnexpected = () => {
+      // iOS às vezes pausa sozinho ao retomar do background; retentamos se não pedimos pause.
+      if (!interactionPaused && !paused) retryTimer = window.setTimeout(tryPlay, 60);
+    };
+    const onStalled = () => { retryTimer = window.setTimeout(tryPlay, 200); };
+    const onVisibility = () => { if (!document.hidden) tryPlay(); };
+
     v.addEventListener('ended', onEnd);
-    const p = v.play();
-    if (p && typeof p.then === 'function') {
-      p.catch(() => {
-        // Autoplay with sound is blocked on iOS/Safari until a user gesture — fall back to muted.
-        if (!v.muted) {
-          v.muted = true;
-          setMuted(true);
-          v.play().catch(() => {});
-        }
-      });
-    }
+    v.addEventListener('pause', onPauseUnexpected);
+    v.addEventListener('stalled', onStalled);
+    v.addEventListener('suspend', onStalled);
+    document.addEventListener('visibilitychange', onVisibility);
+    tryPlay();
+
     return () => {
+      window.clearTimeout(retryTimer);
       v.removeEventListener('ended', onEnd);
+      v.removeEventListener('pause', onPauseUnexpected);
+      v.removeEventListener('stalled', onStalled);
+      v.removeEventListener('suspend', onStalled);
+      document.removeEventListener('visibilitychange', onVisibility);
     };
   }, [idx, isVideo, muted]);
-
-
-  // Pause/resume on toggle (including comments/share overlays)
-  useEffect(() => {
-    if (!isVideo) return;
-    const v = videoRef.current; if (!v) return;
-    if (interactionPaused) v.pause(); else v.play().catch(() => {});
-  }, [interactionPaused, isVideo, idx]);
 
   function togglePlay() {
     setPaused((p) => {
