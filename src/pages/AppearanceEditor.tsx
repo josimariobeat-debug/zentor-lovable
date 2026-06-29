@@ -55,8 +55,10 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
   const [idx, setIdx] = useState(0);
   const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(false);
-  const [progress, setProgress] = useState(0); // 0..1 for current story
-  const rafRef = useRef<number | null>(null);
+  // Progress is intentionally NOT React state — updating 60×/s would re-render
+  // the entire player (action column, product card, preloaders) and stutter the
+  // transition. We mutate the DOM directly via refs to <div> bars.
+  const barRefs = useRef<Array<HTMLDivElement | null>>([]);
   const startedAtRef = useRef<number>(0);
   const accumRef = useRef<number>(0);
 
@@ -78,8 +80,36 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
 
   const interactionPaused = paused || commentsOpen || shareOpen;
 
+  // Refs lidos pelo rAF — evita reiniciar o loop a cada mudança e mantém o
+  // player montado (sem unmount/remount entre stories).
+  const idxRef = useRef(idx);
+  const isVideoRef = useRef(isVideo);
+  const pausedRef = useRef(interactionPaused);
+  const imgLoadedRef = useRef(false);
+  const durationRef = useRef((current.duration ?? 5) * 1000);
+  useEffect(() => { idxRef.current = idx; }, [idx]);
+  useEffect(() => { isVideoRef.current = isVideo; }, [isVideo]);
+  useEffect(() => { pausedRef.current = interactionPaused; }, [interactionPaused]);
+  useEffect(() => { durationRef.current = (current.duration ?? 5) * 1000; }, [current.duration]);
+
+  // Aplica o preenchimento de uma barra diretamente no DOM (sem re-render).
+  const setBar = (i: number, fill: number) => {
+    const el = barRefs.current[i];
+    if (el) el.style.transform = `scaleX(${fill})`;
+  };
+  const resetBarsFor = (active: number) => {
+    for (let i = 0; i < DEMO_STORIES.length; i++) {
+      setBar(i, i < active ? 1 : 0);
+    }
+  };
+
   const goNext = () => {
-    setIdx((i) => (i + 1 < DEMO_STORIES.length ? i + 1 : 0));
+    setIdx((i) => {
+      const n = i + 1 < DEMO_STORIES.length ? i + 1 : 0;
+      // Pinta a barra anterior como cheia imediatamente (sem esperar rAF).
+      setBar(i, 1);
+      return n;
+    });
   };
   const goPrev = () => {
     setIdx((i) => (i - 1 >= 0 ? i - 1 : DEMO_STORIES.length - 1));
@@ -100,74 +130,53 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose, commentsOpen, shareOpen]);
 
-  // Track when current image finishes loading so the bar starts in sync.
-  const [imgLoaded, setImgLoaded] = useState(false);
-
-  // Reset progress and timers whenever the active story changes
+  // Reset progresso e timers ao trocar de story — direto no DOM, sem re-render.
   useEffect(() => {
-    setProgress(0);
     accumRef.current = 0;
     startedAtRef.current = 0;
-    setImgLoaded(false);
+    imgLoadedRef.current = false;
+    resetBarsFor(idx);
   }, [idx]);
 
-  // Progress driver — single rAF loop for both images and videos.
-  // Images: time-based with pause accumulation.
-  // Videos: read currentTime/duration each frame for perfect sync.
+  // Loop rAF único, vivo durante toda a vida do componente.
+  // Lê tudo via refs → não reinicia entre stories e não dispara setState por frame.
   useEffect(() => {
     let raf = 0;
     let cancelled = false;
-
     const tick = (now: number) => {
       if (cancelled) return;
-
-      if (isVideo) {
+      const i = idxRef.current;
+      if (isVideoRef.current) {
         const v = videoRef.current;
         if (v && v.duration > 0 && !Number.isNaN(v.duration)) {
-          setProgress(Math.min(1, v.currentTime / v.duration));
+          setBar(i, Math.min(1, v.currentTime / v.duration));
         }
         raf = requestAnimationFrame(tick);
-        rafRef.current = raf;
         return;
       }
-
-      // Image: don't start until the image has actually loaded.
-      if (!imgLoaded) {
+      if (!imgLoadedRef.current) {
         raf = requestAnimationFrame(tick);
-        rafRef.current = raf;
         return;
       }
-
-      if (interactionPaused) {
-        // Freeze: keep last accum, reset start anchor so resume continues from here.
+      if (pausedRef.current) {
         startedAtRef.current = 0;
         raf = requestAnimationFrame(tick);
-        rafRef.current = raf;
         return;
       }
-
       if (startedAtRef.current === 0) startedAtRef.current = now;
-      const duration = (current.duration ?? 5) * 1000;
       const elapsed = accumRef.current + (now - startedAtRef.current);
-      const p = Math.min(1, elapsed / duration);
-      setProgress(p);
+      const p = Math.min(1, elapsed / durationRef.current);
+      setBar(i, p);
       if (p >= 1) {
-        // Lock to full and advance once.
-        accumRef.current = duration;
+        accumRef.current = durationRef.current;
         goNext();
-        return;
       }
       raf = requestAnimationFrame(tick);
-      rafRef.current = raf;
     };
-
     raf = requestAnimationFrame(tick);
-    rafRef.current = raf;
-    return () => {
-      cancelled = true;
-      if (raf) cancelAnimationFrame(raf);
-    };
-  }, [idx, isVideo, interactionPaused, imgLoaded, current.duration]);
+    return () => { cancelled = true; if (raf) cancelAnimationFrame(raf); };
+  }, []);
+
 
   // When pausing an image story, fold elapsed time into accum so resume continues.
   useEffect(() => {
@@ -336,23 +345,22 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* progress bars (one segment per story) */}
+        {/* progress bars (one segment per story) — mutadas via ref, sem re-render. */}
         <div className="absolute top-3 left-3 right-3 flex gap-1 z-30">
-          {DEMO_STORIES.map((_, i) => {
-            const fill = i < idx ? 1 : i === idx ? progress : 0;
-            return (
-              <div key={i} className="flex-1 h-[3px] bg-white/30 rounded-full overflow-hidden">
-                <div
-                  className="h-full w-full bg-white rounded-full origin-left"
-                  style={{
-                    transform: `scaleX(${fill})`,
-                    willChange: 'transform',
-                  }}
-                />
-              </div>
-            );
-          })}
+          {DEMO_STORIES.map((_, i) => (
+            <div key={i} className="flex-1 h-[3px] bg-white/30 rounded-full overflow-hidden">
+              <div
+                ref={(el) => { barRefs.current[i] = el; }}
+                className="h-full w-full bg-white rounded-full origin-left"
+                style={{
+                  transform: `scaleX(${i < idx ? 1 : 0})`,
+                  willChange: 'transform',
+                }}
+              />
+            </div>
+          ))}
         </div>
+
         {/* top controls */}
         <div className="absolute top-7 right-3 z-30 flex items-center gap-2">
           <button onClick={togglePlay} aria-label={paused ? 'Reproduzir' : 'Pausar'} className="w-9 h-9 rounded-full bg-black/40 hover:bg-black/60 text-white grid place-items-center transition-colors">
@@ -387,38 +395,41 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
               alt=""
               className="absolute inset-0 w-full h-full object-cover"
               draggable={false}
-              onLoad={() => setImgLoaded(true)}
-              onError={() => setImgLoaded(true)}
+              onLoad={() => { imgLoadedRef.current = true; }}
+              onError={() => { imgLoadedRef.current = true; }}
+
             />
           )}
 
-          {/* Pré-carrega os próximos stories conforme perfil de rede/dispositivo.
-              - Wi-Fi/desktop forte: 2 próximos com vídeo preload="auto".
-              - 3G/dispositivo médio: 1 próximo com preload="metadata" (só headers).
-              - 2G/Save-Data/baixa memória: nada — evita estourar dados móveis. */}
-          {profile.preloadCount > 0 && (
-            <div aria-hidden className="hidden">
-              {Array.from({ length: profile.preloadCount }, (_, k) => k + 1).map((offset) => {
-                const next = DEMO_STORIES[(idx + offset) % DEMO_STORIES.length];
-                return next.type === 'video' ? (
-                  <video
-                    key={`pre-v-${idx}-${offset}`}
-                    src={next.src}
-                    poster={next.poster}
-                    preload={profile.videoPreload}
-                    muted
-                    playsInline
-                  />
-                ) : (
-                  <img
-                    key={`pre-i-${idx}-${offset}`}
-                    src={rewriteImageForProfile(next.src, profile)}
-                    alt=""
-                  />
-                );
-              })}
-            </div>
-          )}
+          {/* Pré-carrega TODAS as outras mídias com chaves estáveis por URL.
+              Elementos persistem entre trocas de story → bytes ficam quentes em
+              cache do browser + decoder de mídia, eliminando "tela preta" na
+              transição. Em 2G/Save-Data, profile.videoPreload="none" só baixa
+              os headers, então ainda economizamos dados. */}
+          <div aria-hidden className="hidden">
+            {DEMO_STORIES.map((s, i) =>
+              i === idx ? null : s.type === 'video' ? (
+                <video
+                  key={`pre-${s.src}`}
+                  src={s.src}
+                  poster={s.poster}
+                  preload={profile.videoPreload}
+                  muted
+                  playsInline
+                />
+              ) : (
+                <img
+                  key={`pre-${s.src}`}
+                  src={rewriteImageForProfile(s.src, profile)}
+                  alt=""
+                  decoding="async"
+                  loading="eager"
+                />
+              ),
+            )}
+          </div>
+
+
 
 
           {/* Instagram-style tap zones for prev/next.
