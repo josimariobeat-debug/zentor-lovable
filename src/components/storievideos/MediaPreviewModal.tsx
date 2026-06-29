@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Volume2, VolumeX, X, Heart, MessageCircle, Send } from 'lucide-react';
+import { Play, Volume2, VolumeX, X, Heart, MessageCircle, Send } from 'lucide-react';
 
 interface Product {
   id: string;
@@ -344,6 +344,15 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
               onClick={() => setPaused((p) => !p)}
               className="absolute inset-0 z-[5] cursor-default bg-transparent border-0"
             />
+          )}
+
+          {/* Indicador central de pause (somente quando pausado) */}
+          {paused && (
+            <div className="absolute inset-0 z-[6] flex items-center justify-center pointer-events-none">
+              <div className="w-16 h-16 rounded-full bg-black/45 backdrop-blur-sm flex items-center justify-center">
+                <Play className="w-7 h-7 text-white fill-white ml-0.5" />
+              </div>
+            </div>
           )}
 
           {/* Preload upcoming playlist items (next 2) to avoid load delay on advance */}

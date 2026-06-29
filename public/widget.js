@@ -85,6 +85,10 @@
     '.zt-nav{position:absolute;top:0;bottom:80px;width:30%;z-index:5;cursor:pointer}',
     '.zt-nav-l{left:0}.zt-nav-r{right:0}',
     '.zt-tap-pause{position:absolute;top:0;bottom:80px;left:30%;right:30%;z-index:5;cursor:pointer;background:transparent}',
+    '.zt-pause-indicator{position:absolute;top:0;bottom:80px;left:0;right:0;z-index:6;display:none;align-items:center;justify-content:center;pointer-events:none}',
+    '.zt-pause-indicator.show{display:flex}',
+    '.zt-pause-indicator-inner{width:64px;height:64px;border-radius:50%;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center}',
+    '.zt-pause-indicator-inner svg{width:28px;height:28px;fill:#fff;margin-left:3px}',
     '.zt-products{position:absolute;bottom:80px;left:12px;right:12px;z-index:8;display:flex;flex-direction:column;gap:8px;pointer-events:none}',
     '.zt-product-card{display:flex;align-items:center;gap:10px;background:#fff;border-radius:12px;padding:8px 10px;pointer-events:all;box-shadow:0 2px 12px rgba(0,0,0,.18)}',
     '.zt-product-img{width:44px;height:44px;border-radius:8px;object-fit:cover;background:#eee;flex-shrink:0}',
@@ -263,6 +267,10 @@
     var navL = el('div', 'zt-nav zt-nav-l');
     var navR = el('div', 'zt-nav zt-nav-r');
     var tapPause = el('div', 'zt-tap-pause');
+    var pauseIndicator = el('div', 'zt-pause-indicator');
+    var pauseIndicatorInner = el('div', 'zt-pause-indicator-inner');
+    pauseIndicatorInner.appendChild(svgIcon(ICO_PLAY));
+    pauseIndicator.appendChild(pauseIndicatorInner);
     var productsWrap = el('div', 'zt-products');
 
     var bottomBar       = el('div', 'zt-bottom-bar');
@@ -331,6 +339,7 @@
     player.appendChild(navL);
     player.appendChild(navR);
     player.appendChild(tapPause);
+    player.appendChild(pauseIndicator);
     player.appendChild(productsWrap);
     player.appendChild(bottomBar);
     player.appendChild(commentDrawer);
@@ -362,6 +371,8 @@
 
     function togglePause() {
       paused = !paused;
+      if (paused) pauseIndicator.classList.add('show');
+      else pauseIndicator.classList.remove('show');
       if (currentEl && currentEl.tagName === 'VIDEO') {
         if (paused) { try { currentEl.pause(); } catch(_){} }
         else { try { var p = currentEl.play(); if (p && p.catch) p.catch(function(){}); } catch(_){} }
