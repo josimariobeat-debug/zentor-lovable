@@ -247,7 +247,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
             logTimerStarted(i, 'video', Math.round(v.duration * 1000));
           }
 
-          if (!pausedRef.current && v.paused && v.currentTime <= 0.1 && sinceMount > VIDEO_START_TIMEOUT_MS) {
+          if (!pausedRef.current && v.currentTime <= 0.1 && sinceMount > VIDEO_START_TIMEOUT_MS) {
             mountedAtRef.current = now;
             storyMetrics.markStuck(i, 'video-timeout');
             setBar(i, 1);
