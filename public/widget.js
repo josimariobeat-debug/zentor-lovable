@@ -64,7 +64,7 @@
     '.zt-story{cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;transition:transform .15s ease}',
     '.zt-story:hover{transform:translateY(-2px)}',
     '.zt-bubble{width:64px;height:64px;border-radius:50%;padding:2px;background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);display:flex;align-items:center;justify-content:center}',
-    '.zt-bubble-inner{width:100%;height:100%;border-radius:50%;background:#fff;padding:2px;overflow:hidden;display:block;position:relative}',
+    '.zt-bubble-inner{width:100%;height:100%;border-radius:50%;overflow:hidden;display:block;position:relative}',
     '.zt-bubble-img,.zt-bubble-video{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;background:#eee}',
     '.zt-label{font-size:11px;color:#111;max-width:72px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
     '.zt-dark .zt-label{color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.4)}',
