@@ -702,6 +702,35 @@ export default function AppearanceEditor() {
     })();
   }, [isNew, presetId, user]);
 
+  // Pré-aquece TODOS os stories de demo assim que a página de edição carrega.
+  // Quando o usuário abrir o preview do reprodutor, o primeiro frame já está
+  // em cache de disco/HTTP e não há travamento inicial. Respeita o perfil de
+  // rede: em 2G/Save-Data o warm-up é pulado para não consumir dados móveis.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const profile = getMediaProfile();
+    if (profile.preloadCount === 0) return;
+    const cleanups: Array<() => void> = [];
+    DEMO_STORIES.forEach((s) => {
+      if (s.type === 'image') {
+        const img = new Image();
+        img.decoding = 'async';
+        img.src = rewriteImageForProfile(s.src, profile);
+        cleanups.push(() => { img.src = ''; });
+      } else {
+        const v = document.createElement('video');
+        v.preload = profile.videoPreload;
+        v.muted = true;
+        v.playsInline = true;
+        v.src = s.src;
+        cleanups.push(() => { v.removeAttribute('src'); try { v.load(); } catch { /* ignore */ } });
+      }
+    });
+    return () => { cleanups.forEach((fn) => fn()); };
+  }, []);
+
+
+
   function backToTab() {
     if (returnTo) {
       navigate(returnTo);
