@@ -566,10 +566,10 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* progress bars (one segment per story) — mutadas via ref, sem re-render. */}
-        <div className="absolute top-3 left-3 right-3 flex gap-1 z-30">
+        {/* Zone 1 — progress bars (padronizado com MediaPreviewModal) */}
+        <div className="absolute left-2 right-2 flex gap-1 z-30" style={{ top: 'max(10px, env(safe-area-inset-top))' }}>
           {DEMO_STORIES.map((_, i) => (
-            <div key={i} className="flex-1 h-[3px] bg-white/30 rounded-full overflow-hidden">
+            <div key={i} className="flex-1 h-[2.5px] bg-white/30 rounded-full overflow-hidden">
               <div
                 ref={(el) => { barRefs.current[i] = el; }}
                 className="h-full w-full bg-white rounded-full origin-left"
@@ -582,18 +582,19 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
           ))}
         </div>
 
-        {/* top controls */}
-        <div className="absolute top-7 right-3 z-30 flex items-center gap-2">
-          <button onClick={togglePlay} aria-label={paused ? 'Reproduzir' : 'Pausar'} className="w-9 h-9 rounded-full bg-black/40 hover:bg-black/60 text-white grid place-items-center transition-colors">
+        {/* Zone 2 — top controls (padronizado com MediaPreviewModal) */}
+        <div className="absolute right-3 z-30 flex items-center gap-2.5" style={{ top: 'calc(max(10px, env(safe-area-inset-top)) + 14px)' }}>
+          <button onClick={togglePlay} aria-label={paused ? 'Reproduzir' : 'Pausar'} className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm border-0 flex items-center justify-center text-white cursor-pointer hover:bg-black/70 transition-colors">
             {paused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
           </button>
-          <button onClick={toggleMute} aria-label={muted ? 'Ativar som' : 'Silenciar'} className="w-9 h-9 rounded-full bg-black/40 hover:bg-black/60 text-white grid place-items-center transition-colors">
+          <button onClick={toggleMute} aria-label={muted ? 'Ativar som' : 'Silenciar'} className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm border-0 flex items-center justify-center text-white cursor-pointer hover:bg-black/70 transition-colors">
             {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
           </button>
-          <button onClick={onClose} aria-label="Fechar" className="w-9 h-9 rounded-full bg-black/40 hover:bg-black/60 text-white grid place-items-center transition-colors">
+          <button onClick={onClose} aria-label="Fechar" className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm border-0 flex items-center justify-center text-white cursor-pointer hover:bg-black/70 transition-colors">
             <X className="w-4 h-4" />
           </button>
         </div>
+
 
         <div className="relative rounded-2xl overflow-hidden bg-black shadow-2xl" style={{ aspectRatio: '9 / 16' }}>
           {isVideo ? (
@@ -706,7 +707,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
             aria-label="Anterior"
             onClick={goPrev}
             className="absolute left-0 top-12 w-[30%] z-10 cursor-default"
-            style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 220px)' }}
+            style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 180px)' }}
           />
           <button
             aria-label="Próximo"
@@ -715,9 +716,10 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
             style={{
               left: '30%',
               right: 'env(safe-area-inset-right, 0px)',
-              bottom: 'calc(env(safe-area-inset-bottom, 0px) + 220px)',
+              bottom: 'calc(env(safe-area-inset-bottom, 0px) + 180px)',
             }}
           />
+
 
           {/* Heart burst on double-like (centered) */}
           {likeBurst && (
@@ -726,29 +728,27 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
             </div>
           )}
 
-          {/* Stacked product cards — empilhados acima da barra de ações inferior */}
+          {/* Zone 4 — product cards (padronizado: bottom-right, w-[58%] max-w-[200px]) */}
           <div
-            className="absolute left-3 right-3 z-20 flex flex-col gap-2.5"
-            style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 88px)' }}
+            className="absolute right-2.5 z-20 flex flex-col gap-1.5 pointer-events-none w-[58%] max-w-[200px]"
+            style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 76px)' }}
           >
             {(current.products && current.products.length > 0 ? current.products : [current.product])
-              .slice(0, 2)
+              .slice(0, 3)
               .map((p, i) => (
                 <div
                   key={`${idx}-prod-${i}`}
-                  className="bg-white rounded-xl shadow-[0_6px_18px_rgba(0,0,0,0.18)] p-1 pr-1.5 flex items-center gap-2 ml-auto w-[62%] max-w-[240px]"
+                  className="pointer-events-auto bg-white rounded-lg p-1.5 flex items-center gap-1.5 shadow-[0_4px_12px_rgba(0,0,0,0.18)]"
                 >
-                  <div className="w-8 h-8 rounded-lg overflow-hidden bg-neutral-200 shrink-0">
-                    <img src={p.thumb} alt="" className="w-full h-full object-cover" />
-                  </div>
+                  <img src={p.thumb} alt="" className="w-8 h-8 rounded-md object-cover bg-neutral-100 shrink-0" />
                   <div className="flex-1 min-w-0">
                     <div className="text-[11px] font-semibold text-neutral-900 truncate leading-tight">{p.title}</div>
-                    <div className="text-[10px] font-semibold text-neutral-700 leading-tight mt-0.5">{p.price}</div>
+                    <div className="text-[10px] text-neutral-500 leading-tight">{p.price}</div>
                   </div>
                   <button
                     type="button"
                     onClick={(e) => e.stopPropagation()}
-                    className="shrink-0 h-7 px-2.5 rounded-lg bg-neutral-900 text-white text-[9px] font-extrabold tracking-wider hover:bg-neutral-800 transition-colors"
+                    className="bg-neutral-900 text-white text-[9px] font-bold rounded-md px-2 py-1 shrink-0 hover:bg-neutral-700 transition-colors tracking-wide"
                   >
                     COMPRAR
                   </button>
@@ -756,52 +756,48 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
               ))}
           </div>
 
-          {/* Bottom action bar — barra sólida escura ocupando toda a largura */}
+          {/* Zone 5 — bottom bar (padronizado com MediaPreviewModal) */}
           <div
-            className="absolute left-0 right-0 bottom-0 z-30 bg-[#1f1f1f] px-4 pt-3"
-            style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 14px)' }}
+            className="absolute bottom-0 left-0 right-0 bg-[#111] flex items-center px-3.5 gap-3 z-30"
+            style={{ height: 'calc(56px + env(safe-area-inset-bottom, 0px))', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
           >
-            <div className="flex items-center gap-4">
-              <button
-                onClick={openComments}
-                className="flex-1 h-[52px] px-6 rounded-full bg-transparent border border-white/80 text-white text-[15px] font-medium text-center hover:bg-white/5 transition-colors"
-              >
-                Comentar
-              </button>
+            <button
+              onClick={openComments}
+              className="flex-1 bg-transparent border border-white/30 text-white/60 rounded-full px-4 py-1.5 text-[13px] text-left cursor-pointer hover:border-white/50 transition-colors"
+            >
+              Comentar
+            </button>
+
+            <div className="flex items-center gap-3">
               <button
                 onClick={toggleLike}
                 aria-label={isLiked ? 'Descurtir' : 'Curtir'}
                 aria-pressed={isLiked}
-                className="w-7 h-7 grid place-items-center text-white transition-transform active:scale-90"
+                className="flex items-center justify-center bg-transparent border-0 cursor-pointer text-white p-0"
               >
-                <Heart
-                  className={`w-6 h-6 transition-all ${likeBurst ? 'animate-[heartPulse_.6s_ease-out]' : ''}`}
-                  style={{ color: '#ef2c4a' }}
-                  fill="currentColor"
-                  strokeWidth={2}
-                />
+                <Heart className={`w-5 h-5 ${isLiked ? 'fill-red-500 stroke-red-500' : ''}`} />
               </button>
               <button
                 onClick={openComments}
                 aria-label="Comentar"
-                className="relative w-7 h-7 grid place-items-center text-white transition-transform active:scale-90"
+                className="relative flex items-center justify-center bg-transparent border-0 cursor-pointer text-white p-0"
               >
-                <MessageCircle className="w-6 h-6" strokeWidth={1.75} />
-                <span className="absolute -top-0.5 right-0 text-white text-[10px] font-semibold leading-none">3</span>
+                <MessageCircle className="w-5 h-5" />
               </button>
               <button
                 onClick={handleShare}
                 aria-label="Compartilhar"
-                className="w-7 h-7 grid place-items-center text-white transition-transform active:scale-90"
+                className="flex items-center justify-center bg-transparent border-0 cursor-pointer p-0"
               >
-                <Send className="w-6 h-6 -rotate-12" strokeWidth={1.75} />
+                <Send className="w-5 h-5 text-white" style={{ transform: 'rotate(3deg)' }} />
               </button>
             </div>
           </div>
           <div
             className="absolute right-2 text-[10px] font-bold text-white/70 tracking-wider z-30 pointer-events-none"
-            style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 190px)' }}
+            style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 170px)' }}
           >PLANWEB</div>
+
 
           {/* Comments panel — bottom sheet inside the player frame */}
           {commentsOpen && (
