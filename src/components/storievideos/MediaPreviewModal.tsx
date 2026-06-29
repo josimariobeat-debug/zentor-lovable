@@ -194,31 +194,31 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products 
           </div>
         </div>
 
-        {/* Zone 2 — top controls (plain white icons, no chip) */}
-        <div className="absolute top-3 right-3 flex items-center gap-3 z-20">
+        {/* Zone 2 — top controls */}
+        <div className="absolute top-6 right-3 flex items-center gap-2.5 z-20">
           <button
             type="button"
             onClick={() => setPaused((p) => !p)}
-            className="bg-transparent border-0 p-0 text-white cursor-pointer drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]"
+            className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm border-0 flex items-center justify-center text-white cursor-pointer hover:bg-black/70"
             aria-label={paused ? 'Reproduzir' : 'Pausar'}
           >
-            {paused ? <Play className="w-[18px] h-[18px]" strokeWidth={2.2} /> : <Pause className="w-[18px] h-[18px]" strokeWidth={2.2} />}
+            {paused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
           </button>
           <button
             type="button"
             onClick={() => setMuted((m) => !m)}
-            className="bg-transparent border-0 p-0 text-white cursor-pointer drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]"
+            className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm border-0 flex items-center justify-center text-white cursor-pointer hover:bg-black/70"
             aria-label={muted ? 'Ativar som' : 'Silenciar'}
           >
-            {muted ? <VolumeX className="w-[18px] h-[18px]" strokeWidth={2.2} /> : <Volume2 className="w-[18px] h-[18px]" strokeWidth={2.2} />}
+            {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
           </button>
           <button
             type="button"
             onClick={() => onOpenChange(false)}
-            className="bg-transparent border-0 p-0 text-white cursor-pointer drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]"
+            className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm border-0 flex items-center justify-center text-white cursor-pointer hover:bg-black/70"
             aria-label="Fechar"
           >
-            <X className="w-[18px] h-[18px]" strokeWidth={2.2} />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
@@ -248,27 +248,27 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products 
           <div className="absolute right-0 top-0 bottom-0 w-[38%] z-[5] cursor-pointer" />
         </div>
 
-        {/* Zone 4 — product cards (bottom-right, narrow stack) */}
+        {/* Zone 4 — product cards */}
         {productList.length > 0 && (
-          <div className="absolute bottom-[72px] right-2.5 z-10 flex flex-col gap-1.5 pointer-events-none w-[60%] max-w-[210px]">
+          <div className="absolute bottom-[72px] left-3 right-3 z-10 flex flex-col gap-2 pointer-events-none">
             {productList.map((p) => (
               <div
                 key={p.id}
-                className="pointer-events-auto bg-white rounded-xl p-1.5 pr-2 flex items-center gap-2 shadow-[0_4px_14px_rgba(0,0,0,0.22)]"
+                className="pointer-events-auto bg-white rounded-xl p-2.5 flex items-center gap-3 shadow-lg"
               >
                 {p.image ? (
-                  <img src={p.image} alt={p.name} className="w-9 h-9 rounded-lg object-cover bg-neutral-100 shrink-0" />
+                  <img src={p.image} alt={p.name} className="w-11 h-11 rounded-lg object-cover bg-neutral-100 shrink-0" />
                 ) : (
-                  <div className="w-9 h-9 rounded-lg bg-neutral-100 shrink-0" />
+                  <div className="w-11 h-11 rounded-lg bg-neutral-100 shrink-0" />
                 )}
                 <div className="flex-1 min-w-0">
-                  <div className="text-[11px] font-semibold text-neutral-900 truncate leading-tight">{p.name}</div>
-                  <div className="text-[10px] text-neutral-500 leading-tight mt-0.5">{formatPrice(p.price)}</div>
+                  <div className="text-[13px] font-semibold text-neutral-900 truncate">{p.name}</div>
+                  <div className="text-[12px] text-neutral-500 mt-0.5">{formatPrice(p.price)}</div>
                 </div>
                 <button
                   type="button"
                   onClick={() => openProduct(p)}
-                  className="bg-white text-neutral-900 text-[9px] font-bold rounded-full px-2.5 py-1 shrink-0 border border-neutral-300 hover:bg-neutral-50 transition-colors tracking-wider"
+                  className="bg-neutral-900 text-white text-[12px] font-bold rounded-lg px-3.5 py-2 shrink-0 hover:bg-neutral-700 transition-colors"
                 >
                   COMPRAR
                 </button>
@@ -277,61 +277,57 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products 
           </div>
         )}
 
-        {/* Zone 5 — bottom floating bar */}
-        <div className="absolute bottom-3 left-3 right-3 h-11 bg-[#111] rounded-full flex items-center pl-5 pr-3 gap-3 z-20 shadow-[0_4px_14px_rgba(0,0,0,0.35)]">
+        {/* Zone 5 — bottom bar */}
+        <div className="absolute bottom-0 left-0 right-0 h-[68px] bg-[#111] flex items-center px-3.5 gap-3 z-20">
           <button
             type="button"
             onClick={() => setShowCommentForm(true)}
-            className="flex-1 bg-transparent text-white/55 text-[13px] text-left cursor-pointer p-0 border-0"
+            className="flex-1 bg-transparent border border-white/30 text-white/60 rounded-full px-4 py-2.5 text-[14px] text-left cursor-pointer hover:border-white/50 transition-colors"
           >
             Comentar
           </button>
 
-          <div className="flex items-center gap-3.5">
-            {/* Like (small filled red square-ish heart) */}
-            <button
-              type="button"
-              onClick={() => {
-                setLiked((l) => {
-                  setLikeCount((c) => c + (l ? -1 : 1));
-                  return !l;
-                });
-              }}
-              className="flex items-center justify-center bg-transparent border-0 cursor-pointer p-0"
-              aria-label="Curtir"
-            >
-              <Heart
-                className="w-[18px] h-[18px]"
-                strokeWidth={0}
-                fill={liked ? '#ef2c4a' : '#ef2c4a'}
-              />
-            </button>
+          {/* Like */}
+          <button
+            type="button"
+            onClick={() => {
+              setLiked((l) => {
+                setLikeCount((c) => c + (l ? -1 : 1));
+                return !l;
+              });
+            }}
+            className="flex flex-col items-center gap-1 bg-transparent border-0 cursor-pointer text-white"
+            aria-label="Curtir"
+          >
+            <Heart className={`w-6 h-6 ${liked ? 'fill-red-500 stroke-red-500' : ''}`} />
+            {likeCount > 0 && <span className="text-[10px] text-white/70">{likeCount}</span>}
+          </button>
 
-            {/* Comments */}
-            <button
-              type="button"
-              onClick={() => setShowCommentList(true)}
-              className="relative flex items-center justify-center bg-transparent border-0 cursor-pointer text-white p-0"
-              aria-label="Comentários"
-            >
-              <MessageCircle className="w-[18px] h-[18px]" strokeWidth={1.8} />
-              {comments.length > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[14px] h-3.5 flex items-center justify-center px-1">
-                  {comments.length}
-                </span>
-              )}
-            </button>
+          {/* Comments */}
+          <button
+            type="button"
+            onClick={() => setShowCommentList(true)}
+            className="relative flex flex-col items-center gap-1 bg-transparent border-0 cursor-pointer text-white"
+            aria-label="Comentários"
+          >
+            <MessageCircle className="w-6 h-6" />
+            {comments.length > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">
+                {comments.length}
+              </span>
+            )}
+            <span className="text-[10px] text-white/70">{comments.length}</span>
+          </button>
 
-            {/* Share */}
-            <button
-              type="button"
-              onClick={() => setShowShare(true)}
-              className="flex items-center justify-center bg-transparent border-0 cursor-pointer p-0"
-              aria-label="Compartilhar"
-            >
-              <Send className="w-[18px] h-[18px] text-white" strokeWidth={1.8} style={{ transform: 'rotate(3deg)' }} />
-            </button>
-          </div>
+          {/* Share */}
+          <button
+            type="button"
+            onClick={() => setShowShare(true)}
+            className="bg-transparent border-0 cursor-pointer"
+            aria-label="Compartilhar"
+          >
+            <Send className="w-6 h-6 text-white" />
+          </button>
         </div>
 
         {/* Comment Form Drawer */}
