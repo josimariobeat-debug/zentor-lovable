@@ -1101,7 +1101,7 @@ export default function AppearanceEditor() {
     backToTab();
   }
 
-  const [viewerOpen, setViewerOpen] = useState(false);
+  
 
   const bubbleStyle = useMemo<React.CSSProperties>(() => {
     const isBottom = cfg.position.startsWith('bottom');
@@ -1292,7 +1292,8 @@ export default function AppearanceEditor() {
                           )}
                           <div
                             style={{ ...bubbleStyle, cursor: 'pointer' }}
-                            onClick={(e) => { e.stopPropagation(); setViewerOpen(true); }}
+                            onClick={(e) => e.stopPropagation()}
+
                           >
                             <PreviewMedia fit={cfg.mediaFit} />
                             {cfg.allowClose && (
@@ -1347,7 +1348,7 @@ export default function AppearanceEditor() {
                           )}
                           <div
                             style={{ ...bubbleStyle, cursor: 'pointer' }}
-                            onClick={(e) => { e.stopPropagation(); setViewerOpen(true); }}
+                            onClick={(e) => e.stopPropagation()}
                           >
                             <PreviewMedia fit={cfg.mediaFit} />
                             {cfg.allowClose && (
@@ -1582,7 +1583,7 @@ export default function AppearanceEditor() {
           </div>
         </div>
       </main>
-      {viewerOpen && <StoryViewer onClose={() => setViewerOpen(false)} />}
+      {/* Modal de preview removido a pedido — clique no widget é no-op aqui. */}
     </>
   );
 }
