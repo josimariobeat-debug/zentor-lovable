@@ -460,7 +460,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
                   alt=""
                   decoding="async"
                   loading="eager"
-                  onLoad={(e) => storyMetrics.markPreloaded((e.currentTarget as HTMLImageElement).currentSrc || s.src)}
+                  onLoad={() => storyMetrics.markPreloaded(s.src)}
                 />
               ),
             )}
