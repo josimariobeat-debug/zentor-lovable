@@ -159,7 +159,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
 
   const goPrev = useCallback(() => {
     goToStory(idxRef.current - 1, 'manual-prev');
-  }, []);
+  }, [goToStory]);
 
 
   useEffect(() => {
@@ -175,7 +175,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onClose, commentsOpen, shareOpen]);
+  }, [onClose, commentsOpen, shareOpen, goNext, goPrev]);
 
   // Watchdog: tempo em que o story atual montou. Se eventos de mídia
   // (onLoad de imagem ou loadedmetadata/duration de vídeo) não dispararem
@@ -226,6 +226,10 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
     const tick = (now: number) => {
       if (cancelled) return;
       try {
+      if (advancingRef.current) {
+        raf = requestAnimationFrame(tick);
+        return;
+      }
       const i = idxRef.current;
       const sinceMount = now - mountedAtRef.current;
       if (isVideoRef.current) {
@@ -601,6 +605,8 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
                 // Detectamos via .complete no ref callback (roda no commit).
                 if (el && el.complete && el.naturalHeight > 0) {
                   imgLoadedRef.current = true;
+                  storyFlowLog('Imagem carregada', { idx, cached: true });
+                  storyFlowLog('Story seguinte carregado', { idx, type: 'image' });
                   storyMetrics.markReady(current.src);
                   requestAnimationFrame(() => storyMetrics.markFirstFrame(current.src));
                 }
@@ -611,6 +617,8 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
               draggable={false}
               onLoad={() => {
                 imgLoadedRef.current = true;
+                storyFlowLog('Imagem carregada', { idx, cached: false });
+                storyFlowLog('Story seguinte carregado', { idx, type: 'image' });
                 storyMetrics.markReady(current.src);
                 requestAnimationFrame(() => storyMetrics.markFirstFrame(current.src));
               }}
