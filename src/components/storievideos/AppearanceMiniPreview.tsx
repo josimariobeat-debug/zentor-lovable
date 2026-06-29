@@ -175,8 +175,8 @@ export default function AppearanceMiniPreview({ config, kind = 'floating', width
                     muted
                     loop
                     playsInline
-                    // @ts-expect-error iOS-specific attribute
-                    webkit-playsinline="true"
+                    {...({ 'webkit-playsinline': 'true' } as Record<string, string>)}
+
                     preload="auto"
                     style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                   />
