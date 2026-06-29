@@ -167,6 +167,7 @@ export default function AppearancePresets() {
                     config={(p.config as unknown as MiniConfig) ?? null}
                     kind={p.kind as 'floating' | 'carousel'}
                     width={48}
+                    firstMedia={firstMedia}
                   />
                 </span>
                 <span className="inline-block xs:hidden">
@@ -174,6 +175,7 @@ export default function AppearancePresets() {
                     config={(p.config as unknown as MiniConfig) ?? null}
                     kind={p.kind as 'floating' | 'carousel'}
                     width={40}
+                    firstMedia={firstMedia}
                   />
                 </span>
               </div>
