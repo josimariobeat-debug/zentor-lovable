@@ -685,7 +685,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
           />
           <button
             aria-label="Próximo"
-            onClick={goNext}
+            onClick={() => goNext('manual-next')}
             className="absolute top-12 bottom-24 z-10 cursor-default"
             style={{
               left: '30%',
