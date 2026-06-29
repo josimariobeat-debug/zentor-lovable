@@ -145,6 +145,7 @@ export default function StoriesVideosApp() {
     setUploading(true);
 
     const { compressMedia } = await import('@/lib/mediaCompression');
+    const { STORAGE_UPLOAD_OPTIONS } = await import('@/lib/mediaCompression');
     let uploaded = 0;
     for (const original of Array.from(files)) {
       const file = await compressMedia(original);
@@ -152,7 +153,10 @@ export default function StoriesVideosApp() {
       const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
       const fileType = file.type.startsWith('video/') ? 'video' : 'image';
 
-      const { error } = await supabase.storage.from('media').upload(fileName, file);
+      const { error } = await supabase.storage.from('media').upload(fileName, file, {
+        ...STORAGE_UPLOAD_OPTIONS,
+        contentType: file.type || undefined,
+      });
 
       let publicUrl: string;
       if (error) {

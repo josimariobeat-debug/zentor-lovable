@@ -294,7 +294,7 @@ export default function AdicionarStory() {
   const uploadFile = async (original: File): Promise<{ url: string; name: string; type: 'image' | 'video'; size: number }> => {
     if (!supabase || !user) throw new Error('Not authenticated');
 
-    const { compressMedia } = await import('@/lib/mediaCompression');
+    const { compressMedia, STORAGE_UPLOAD_OPTIONS } = await import('@/lib/mediaCompression');
     const file = await compressMedia(original);
 
     const ext = file.name.split('.').pop();
@@ -303,11 +303,10 @@ export default function AdicionarStory() {
 
     const { error } = await supabase.storage.
     from('media').
-    upload(fileName, file);
+    upload(fileName, file, { ...STORAGE_UPLOAD_OPTIONS, contentType: file.type || undefined });
 
     let publicUrl: string;
     if (error) {
-      // If storage bucket doesn't exist, use blob URL
       console.warn('Storage upload failed, using local URL');
       publicUrl = URL.createObjectURL(file);
     } else {
