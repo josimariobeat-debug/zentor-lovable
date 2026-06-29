@@ -146,6 +146,14 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
   // 'ended' chegar, avançamos nós mesmos.
   const videoFullAtRef = useRef<number>(0);
   const VIDEO_END_GRACE_MS = 1200;
+  // Watchdog adicional: alguns vídeos travam (rede instável, decoder em
+  // backoff, último frame estático) sem disparar 'ended' E sem chegar a
+  // currentTime≈duration — então o watchdog de "barra cheia" nunca aciona.
+  // Detectamos via currentTime que não avança por X ms enquanto não estamos
+  // pausados. Resetado a cada troca de story e a cada vez que o tempo anda.
+  const lastVideoTimeRef = useRef<number>(0);
+  const lastVideoTimeAtRef = useRef<number>(0);
+  const VIDEO_FROZEN_MS = 2000;
 
   // Reset progresso e timers ao trocar de story — direto no DOM, sem re-render.
   useEffect(() => {
@@ -154,6 +162,8 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
     imgLoadedRef.current = false;
     mountedAtRef.current = performance.now();
     videoFullAtRef.current = 0;
+    lastVideoTimeRef.current = 0;
+    lastVideoTimeAtRef.current = performance.now();
     resetBarsFor(idx);
   }, [idx]);
 
