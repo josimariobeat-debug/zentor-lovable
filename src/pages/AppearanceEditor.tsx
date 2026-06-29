@@ -1582,7 +1582,7 @@ export default function AppearanceEditor() {
           </div>
         </div>
       </main>
-      {viewerOpen && <StoryViewer onClose={() => setViewerOpen(false)} />}
+      {/* Modal de preview removido a pedido — clique no widget é no-op aqui. */}
     </>
   );
 }
