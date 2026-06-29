@@ -204,7 +204,16 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products 
       style={{ zIndex: 2147483600 }}
       onClick={(e) => { if (e.target === e.currentTarget) onOpenChange(false); }}
     >
-      <div className="bg-black overflow-hidden flex flex-col relative rounded-2xl max-sm:rounded-none max-sm:!w-screen max-sm:!h-[100dvh] max-sm:!max-w-none max-sm:!max-h-none" style={{ aspectRatio: '9 / 16', height: 'min(92dvh, 780px)', maxWidth: '100%' }}>
+      <div
+        className="bg-black overflow-hidden flex flex-col relative rounded-2xl max-sm:rounded-none max-sm:!w-screen max-sm:!h-[100dvh] max-sm:!max-w-none max-sm:!max-h-none"
+        style={{
+          aspectRatio: '9 / 16',
+          // Derive width from height to lock 9:16; cap by viewport so portrait tablets don't overflow.
+          height: 'min(92dvh, calc((100vw - 32px) * 16 / 9), 780px)',
+          width: 'min(calc(92dvh * 9 / 16), 100vw - 32px, calc(780px * 9 / 16))',
+          maxWidth: '100%',
+        }}
+      >
         {/* Zone 1 — progress bars */}
         <div className="absolute left-2 right-2 flex gap-1 z-10" style={{ top: 'max(10px, env(safe-area-inset-top))' }}>
           <div className="flex-1 h-[2.5px] bg-white/30 rounded-full overflow-hidden">
