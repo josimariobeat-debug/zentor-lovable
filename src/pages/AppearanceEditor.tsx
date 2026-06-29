@@ -411,6 +411,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
                   <video
                     key={`pre-v-${idx}-${offset}`}
                     src={next.src}
+                    poster={next.poster}
                     preload={profile.videoPreload}
                     muted
                     playsInline
