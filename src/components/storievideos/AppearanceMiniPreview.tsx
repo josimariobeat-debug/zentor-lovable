@@ -169,15 +169,18 @@ export default function AppearanceMiniPreview({ config, kind = 'floating', width
               <div style={bubbleStyle}>
                 {firstMedia?.type === 'video' ? (
                   <video
-                    // Toca apenas o trecho 0–3s usando media fragments
-                    src={`${firstMedia.url}#t=0,3`}
+                    ref={videoRef}
+                    src={firstMedia.url}
                     autoPlay
                     muted
                     loop
                     playsInline
-                    preload="metadata"
+                    // @ts-expect-error iOS-specific attribute
+                    webkit-playsinline="true"
+                    preload="auto"
                     style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                   />
+
                 ) : firstMedia?.url ? (
                   <img
                     src={firstMedia.url}
