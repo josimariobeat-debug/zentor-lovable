@@ -8,10 +8,12 @@ import { toast } from '@/components/ui/toaster';
 import { Switch } from '@/components/ui/switch';
 import previewVideoAsset from '@/assets/widget-preview.mp4.asset.json';
 import storyIosAsset from '@/assets/story-ios.mp4.asset.json';
+import storyDemo2Asset from '@/assets/story-demo-2.mp4.asset.json';
 import { getMediaProfile, getNetworkTier, rewriteImageForProfile, subscribeNetworkChange, type MediaProfile, type NetworkTier } from '@/lib/networkProfile';
 
 const PREVIEW_VIDEO_URL = previewVideoAsset.url;
 const STORY_IOS_URL = storyIosAsset.url;
+const STORY_DEMO_2_URL = storyDemo2Asset.url;
 
 interface DemoStory {
   type: 'video' | 'image';
@@ -25,6 +27,11 @@ const DEMO_STORIES: DemoStory[] = [
     type: 'video',
     src: STORY_IOS_URL,
     product: { title: 'Novidade da loja', price: 'R$ 189,90', thumb: 'https://images.unsplash.com/photo-1520975916090-3105956dac38?w=120&h=120&fit=crop' },
+  },
+  {
+    type: 'video',
+    src: STORY_DEMO_2_URL,
+    product: { title: 'Coleção em destaque', price: 'R$ 259,90', thumb: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=120&h=120&fit=crop' },
   },
   {
     type: 'image',
