@@ -52,6 +52,8 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products 
   const [showCommentForm, setShowCommentForm] = useState(false);
   const [showCommentList, setShowCommentList] = useState(false);
   const [showShare, setShowShare] = useState(false);
+  const [fit, setFit] = useState<'cover' | 'contain'>('cover');
+  const [fitUserSet, setFitUserSet] = useState(false);
 
   const [formName, setFormName] = useState('');
   const [formEmail, setFormEmail] = useState('');
