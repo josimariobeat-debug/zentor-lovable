@@ -130,6 +130,7 @@
     var lastVideoTime = 0;
     var lastVideoTimeAt = 0;
     var VIDEO_READY_TIMEOUT_MS = 6000;
+    var VIDEO_START_TIMEOUT_MS = 4500;
     var VIDEO_END_GRACE_MS = 1200;
     var VIDEO_FROZEN_MS = 2000;
 
@@ -204,6 +205,11 @@
             bar.style.width = (fill * 100) + '%';
             logProgress(fill);
             if (!v.paused && fill > 0) logTimerStarted('video', Math.round(v.duration * 1000));
+            if (v.paused && v.currentTime <= 0.1 && now - mountedAt > VIDEO_START_TIMEOUT_MS) {
+              bar.style.width = '100%';
+              nextOnce('video-start-timeout');
+              return;
+            }
             if (v.ended || fill >= 1 || v.currentTime >= v.duration - 0.05) {
               bar.style.width = '100%';
               track('completed', story.id);
