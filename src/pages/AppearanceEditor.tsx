@@ -379,6 +379,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
               ref={videoRef}
               key={`v-${idx}`}
               src={current.src}
+              poster={current.poster}
               autoPlay
               muted={muted}
               playsInline
