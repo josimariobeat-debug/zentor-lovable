@@ -41,6 +41,12 @@
     return fetch(url, { credentials: 'omit' }).then(function (r) { if (!r.ok) throw new Error(String(r.status)); return r.json(); });
   }
 
+  var STORY_FLOW_LOGS_ENABLED = true;
+  function flowLog(message, details) {
+    if (!STORY_FLOW_LOGS_ENABLED) return;
+    try { console.info('[Zentor stories:flow] ' + message, details || ''); } catch (_) {}
+  }
+
   // Host + shadow root for full style isolation
   var host = document.createElement('div');
   host.id = 'zentor-widget-root';
@@ -116,9 +122,44 @@
     var ctaBtn = null;
     var rafId = null;
     var currentEl = null;
+    var advancing = false;
+    var timerStartedLogged = false;
+    var progressMilestone = 0;
+    var mountedAt = 0;
+    var videoFullAt = 0;
+    var lastVideoTime = 0;
+    var lastVideoTimeAt = 0;
+    var VIDEO_READY_TIMEOUT_MS = 6000;
+    var VIDEO_START_TIMEOUT_MS = 4500;
+    var VIDEO_END_GRACE_MS = 1200;
+    var VIDEO_FROZEN_MS = 2000;
 
     function cleanup() { if (rafId) cancelAnimationFrame(rafId); if (currentEl && currentEl.tagName === 'VIDEO') { try { currentEl.pause(); } catch(_){} } }
     function destroy() { cleanup(); overlay.remove(); document.removeEventListener('keydown', onKey); }
+
+    function logTimerStarted(type, durationMs) {
+      if (timerStartedLogged) return;
+      timerStartedLogged = true;
+      flowLog('Timer iniciado', { storyIndex: idx, mediaIndex: mediaIdx, type: type, durationMs: durationMs });
+    }
+
+    function logProgress(p) {
+      var milestone = p >= 1 ? 100 : p >= 0.75 ? 75 : p >= 0.5 ? 50 : p >= 0.25 ? 25 : 0;
+      if (milestone > progressMilestone) {
+        progressMilestone = milestone;
+        flowLog('Progresso: ' + milestone + '%', { storyIndex: idx, mediaIndex: mediaIdx });
+      }
+    }
+
+    function nextOnce(reason) {
+      if (advancing) {
+        flowLog('nextStory() ignorado: avanço já em andamento', { storyIndex: idx, mediaIndex: mediaIdx, reason: reason });
+        return;
+      }
+      advancing = true;
+      flowLog('nextStory() chamado', { storyIndex: idx, mediaIndex: mediaIdx, reason: reason });
+      next();
+    }
 
     function renderProgress(items) {
       progress.innerHTML = '';
@@ -130,30 +171,114 @@
 
     function show() {
       cleanup();
+      rafId = null;
       var story = stories[idx];
       if (!story) { destroy(); return; }
       var items = story.media && story.media.length ? story.media : [{ url: story.cover, type: 'image' }];
-      if (mediaIdx >= items.length) { next(); return; }
+      if (mediaIdx >= items.length) { nextOnce('media-index-overflow'); return; }
       var item = items[mediaIdx];
+      advancing = false;
+      timerStartedLogged = false;
+      progressMilestone = 0;
+      mountedAt = performance.now();
+      videoFullAt = 0;
+      lastVideoTime = 0;
+      lastVideoTimeAt = mountedAt;
+      flowLog('Índice alterado', { storyIndex: idx, mediaIndex: mediaIdx });
+      flowLog('Story iniciado', { storyIndex: idx, mediaIndex: mediaIdx, type: item.type || 'image', url: item.url });
       media.querySelectorAll('video,img').forEach(function (n) { n.remove(); });
       renderProgress(items);
       var isVideo = item.type && item.type.indexOf('video') !== -1;
       if (isVideo) {
         var v = document.createElement('video');
         v.src = item.url; v.autoplay = true; v.playsInline = true; v.controls = false; v.muted = false;
+        var bar = progress.children[mediaIdx] && progress.children[mediaIdx].firstChild;
+        function tick(now) {
+          try {
+            if (!bar || advancing) return;
+            if (!v.duration || Number.isNaN(v.duration)) {
+              if (now - mountedAt > VIDEO_READY_TIMEOUT_MS) nextOnce('video-ready-timeout');
+              else rafId = requestAnimationFrame(tick);
+              return;
+            }
+            var fill = Math.min(1, v.currentTime / v.duration);
+            bar.style.width = (fill * 100) + '%';
+            logProgress(fill);
+            if (!v.paused && fill > 0) logTimerStarted('video', Math.round(v.duration * 1000));
+            if (v.currentTime <= 0.1 && now - mountedAt > VIDEO_START_TIMEOUT_MS) {
+              bar.style.width = '100%';
+              nextOnce('video-start-timeout');
+              return;
+            }
+            if (v.ended || fill >= 1 || v.currentTime >= v.duration - 0.05) {
+              bar.style.width = '100%';
+              track('completed', story.id);
+              nextOnce(v.ended ? 'video-ended-event-or-flag' : 'video-currentTime-complete');
+              return;
+            }
+            if (!v.paused) {
+              if (v.currentTime !== lastVideoTime) {
+                lastVideoTime = v.currentTime;
+                lastVideoTimeAt = now;
+              } else if (lastVideoTimeAt > 0 && now - lastVideoTimeAt > VIDEO_FROZEN_MS && v.currentTime > 0.1) {
+                bar.style.width = '100%';
+                track('completed', story.id);
+                nextOnce('video-frozen-watchdog');
+                return;
+              }
+            } else {
+              lastVideoTimeAt = now;
+            }
+            if (fill >= 0.995) {
+              if (!videoFullAt) videoFullAt = now;
+              else if (now - videoFullAt > VIDEO_END_GRACE_MS) {
+                bar.style.width = '100%';
+                track('completed', story.id);
+                nextOnce('video-full-bar-watchdog');
+                return;
+              }
+            } else {
+              videoFullAt = 0;
+            }
+            rafId = requestAnimationFrame(tick);
+          } catch (err) {
+            try { console.warn('[Zentor stories] tick error, continuando loop:', err); } catch (_) {}
+            rafId = requestAnimationFrame(tick);
+          }
+        }
         v.addEventListener('loadedmetadata', function () {
-          var bar = progress.children[mediaIdx] && progress.children[mediaIdx].firstChild;
-          function tick() { if (!bar) return; bar.style.width = Math.min(100, (v.currentTime / v.duration) * 100) + '%'; rafId = requestAnimationFrame(tick); }
-          rafId = requestAnimationFrame(tick);
+          flowLog('Vídeo carregado', { storyIndex: idx, mediaIndex: mediaIdx, duration: v.duration });
+          if (!rafId) rafId = requestAnimationFrame(tick);
         });
-        v.addEventListener('ended', function () { track('completed', story.id); next(); });
+        if (bar) {
+          rafId = requestAnimationFrame(tick);
+        }
+        v.addEventListener('playing', function () {
+          logTimerStarted('video', Number.isFinite(v.duration) ? Math.round(v.duration * 1000) : undefined);
+          flowLog('Story seguinte carregado', { storyIndex: idx, mediaIndex: mediaIdx, type: 'video' });
+        });
+        v.addEventListener('ended', function () { track('completed', story.id); nextOnce('video-ended-event'); });
         media.appendChild(v); currentEl = v;
         v.play().catch(function () { v.muted = true; v.play().catch(function(){}); });
       } else {
         var im = document.createElement('img'); im.src = item.url; media.appendChild(im); currentEl = im;
         var bar2 = progress.children[mediaIdx] && progress.children[mediaIdx].firstChild;
         var start = performance.now(); var DUR = 5000;
-        function tick2(t) { if (!bar2) return; var p = Math.min(1, (t - start) / DUR); bar2.style.width = (p * 100) + '%'; if (p >= 1) { track('completed', story.id); next(); return; } rafId = requestAnimationFrame(tick2); }
+        im.addEventListener('load', function () { flowLog('Imagem carregada', { storyIndex: idx, mediaIndex: mediaIdx }); flowLog('Story seguinte carregado', { storyIndex: idx, mediaIndex: mediaIdx, type: 'image' }); });
+        function tick2(t) {
+          try {
+            if (!bar2 || advancing) return;
+            logTimerStarted('image', DUR);
+            var p = Math.min(1, (t - start) / DUR);
+            bar2.style.width = (p * 100) + '%';
+            logProgress(p);
+            if (p >= 1) { track('completed', story.id); nextOnce('image-duration-complete'); return; }
+            rafId = requestAnimationFrame(tick2);
+          } catch (err) {
+            try { console.warn('[Zentor stories] tick error, continuando loop:', err); } catch (_) {}
+            rafId = requestAnimationFrame(tick2);
+          }
+        }
         rafId = requestAnimationFrame(tick2);
       }
 
