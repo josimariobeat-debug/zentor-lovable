@@ -349,12 +349,9 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
           {/* Indicador central de pause (play + som) */}
           {paused && (
             <div
-              className="absolute left-0 right-0 top-0 z-[6] flex items-center justify-center gap-3 pointer-events-none"
+              className="absolute left-0 right-0 top-0 z-[6] flex flex-col items-center justify-center gap-3 pointer-events-none"
               style={{ bottom: 'calc(56px + env(safe-area-inset-bottom))' }}
             >
-              <div className="w-11 h-11 rounded-full bg-black/45 backdrop-blur-sm flex items-center justify-center">
-                <Play className="w-4 h-4 text-white fill-white ml-0.5" />
-              </div>
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); setMuted((m) => !m); }}
@@ -363,7 +360,11 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
               >
                 {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
               </button>
+              <div className="w-11 h-11 rounded-full bg-black/45 backdrop-blur-sm flex items-center justify-center">
+                <Play className="w-4 h-4 text-white fill-white ml-0.5" />
+              </div>
             </div>
+
           )}
 
           {/* Preload upcoming playlist items (next 2) to avoid load delay on advance */}

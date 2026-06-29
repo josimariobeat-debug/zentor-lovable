@@ -85,7 +85,7 @@
     '.zt-nav{position:absolute;top:0;bottom:80px;width:30%;z-index:5;cursor:pointer}',
     '.zt-nav-l{left:0}.zt-nav-r{right:0}',
     '.zt-tap-pause{position:absolute;top:0;bottom:80px;left:30%;right:30%;z-index:5;cursor:pointer;background:transparent}',
-    '.zt-pause-indicator{position:absolute;top:0;bottom:80px;left:0;right:0;z-index:6;display:none;align-items:center;justify-content:center;gap:12px;pointer-events:none}',
+    '.zt-pause-indicator{position:absolute;top:0;bottom:80px;left:0;right:0;z-index:6;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;pointer-events:none}',
     '.zt-pause-indicator.show{display:flex}',
     '.zt-pause-indicator-inner{width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;border:0;color:#fff;cursor:default;padding:0}',
     '.zt-pause-indicator-inner.zt-pi-sound{pointer-events:auto;cursor:pointer}',
@@ -276,8 +276,9 @@
     var pauseSoundBtn = el('button', 'zt-pause-indicator-inner zt-pi-sound');
     pauseSoundBtn.appendChild(svgIcon(ICO_SOUND));
     pauseSoundBtn.title = 'Som';
-    pauseIndicator.appendChild(pauseIndicatorInner);
     pauseIndicator.appendChild(pauseSoundBtn);
+    pauseIndicator.appendChild(pauseIndicatorInner);
+
     var productsWrap = el('div', 'zt-products');
 
     var bottomBar       = el('div', 'zt-bottom-bar');
