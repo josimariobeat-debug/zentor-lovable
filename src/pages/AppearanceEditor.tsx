@@ -736,19 +736,19 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
               .map((p, i) => (
                 <div
                   key={`${idx}-prod-${i}`}
-                  className="bg-white rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.18)] p-1.5 pr-2 flex items-center gap-2.5 ml-auto w-[72%] max-w-[300px]"
+                  className="bg-white rounded-xl shadow-[0_6px_18px_rgba(0,0,0,0.18)] p-1 pr-1.5 flex items-center gap-2 ml-auto w-[62%] max-w-[240px]"
                 >
-                  <div className="w-10 h-10 rounded-xl overflow-hidden bg-neutral-200 shrink-0">
+                  <div className="w-8 h-8 rounded-lg overflow-hidden bg-neutral-200 shrink-0">
                     <img src={p.thumb} alt="" className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[13px] font-semibold text-neutral-900 truncate leading-tight">{p.title}</div>
-                    <div className="text-[12px] font-semibold text-neutral-700 leading-tight mt-0.5">{p.price}</div>
+                    <div className="text-[11px] font-semibold text-neutral-900 truncate leading-tight">{p.title}</div>
+                    <div className="text-[10px] font-semibold text-neutral-700 leading-tight mt-0.5">{p.price}</div>
                   </div>
                   <button
                     type="button"
                     onClick={(e) => e.stopPropagation()}
-                    className="shrink-0 h-9 px-3.5 rounded-xl bg-neutral-900 text-white text-[11px] font-extrabold tracking-wider hover:bg-neutral-800 transition-colors"
+                    className="shrink-0 h-7 px-2.5 rounded-lg bg-neutral-900 text-white text-[9px] font-extrabold tracking-wider hover:bg-neutral-800 transition-colors"
                   >
                     COMPRAR
                   </button>
