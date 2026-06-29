@@ -136,7 +136,7 @@ class StoryMetrics {
   }
 
   /** Story preso por timeout do watchdog — não houve onLoad/loadedmetadata. */
-  markStuck(idx: number, reason: 'image-timeout' | 'video-timeout') {
+  markStuck(idx: number, reason: 'image-timeout' | 'video-timeout' | 'video-end-stall') {
     // eslint-disable-next-line no-console
     console.warn(`[stories] watchdog idx=${idx} reason=${reason} → fallback advance`);
   }
