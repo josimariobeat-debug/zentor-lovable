@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 type Shape = 'circular' | 'quadrado' | 'personalizado';
 type Position = 'bottom-left' | 'bottom-right' | 'top-left' | 'top-right';
