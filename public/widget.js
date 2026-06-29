@@ -88,9 +88,11 @@
     '.zt-pause-indicator{position:absolute;top:0;bottom:80px;left:0;right:0;z-index:6;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;pointer-events:none}',
     '.zt-pause-indicator.show{display:flex}',
     '.zt-pause-indicator-inner{width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;border:0;color:#fff;cursor:default;padding:0}',
-    '.zt-pause-indicator-inner.zt-pi-sound{pointer-events:auto;cursor:pointer}',
+    '.zt-pause-indicator-inner.zt-pi-sound{pointer-events:auto;cursor:pointer;width:32px;height:32px}',
     '.zt-pause-indicator-inner.zt-pi-sound:hover{background:rgba(0,0,0,.6)}',
     '.zt-pause-indicator-inner svg{width:16px;height:16px;fill:#fff;margin-left:0}',
+    '.zt-pause-indicator-inner.zt-pi-sound svg{width:14px;height:14px}',
+
     '.zt-pause-indicator-inner.zt-pi-play svg{margin-left:2px}',
     '.zt-products{position:absolute;bottom:80px;left:12px;right:12px;z-index:8;display:flex;flex-direction:column;gap:8px;pointer-events:none}',
     '.zt-product-card{display:flex;align-items:center;gap:10px;background:#fff;border-radius:12px;padding:8px 10px;pointer-events:all;box-shadow:0 2px 12px rgba(0,0,0,.18)}',
