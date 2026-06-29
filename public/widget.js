@@ -391,8 +391,8 @@
 
     function toggleMute() {
       muted = !muted;
-      btnSound.innerHTML = ''; btnSound.appendChild(svgIcon(muted ? ICO_MUTE : ICO_SOUND));
       pauseSoundBtn.innerHTML = ''; pauseSoundBtn.appendChild(svgIcon(muted ? ICO_MUTE : ICO_SOUND));
+
       if (currentEl && currentEl.tagName === 'VIDEO') currentEl.muted = muted;
     }
     pauseSoundBtn.addEventListener('click', function (e) { e.stopPropagation(); toggleMute(); });
