@@ -28,11 +28,6 @@ interface DemoStory {
 const DEMO_STORIES: DemoStory[] = [
   {
     type: 'video',
-    src: STORY_IOS_URL,
-    product: { title: 'Novidade da loja', price: 'R$ 189,90', thumb: 'https://images.unsplash.com/photo-1520975916090-3105956dac38?w=120&h=120&fit=crop' },
-  },
-  {
-    type: 'video',
     src: STORY_DEMO_2_URL,
     poster: STORY_DEMO_2_POSTER,
     product: { title: 'Coleção em destaque', price: 'R$ 259,90', thumb: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=120&h=120&fit=crop' },
