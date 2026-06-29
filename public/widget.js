@@ -539,12 +539,12 @@
     }
     document.addEventListener('keydown', onKey);
 
-    btnPause.addEventListener('click', function (e) { e.stopPropagation(); togglePause(); });
     btnSound.addEventListener('click', function (e) { e.stopPropagation(); toggleMute(); });
     btnClose.addEventListener('click', function (e) { e.stopPropagation(); destroy(); });
     overlay.addEventListener('click', function (e) { if (e.target === overlay) destroy(); });
     navL.addEventListener('click', prev);
     navR.addEventListener('click', next);
+    tapPause.addEventListener('click', function (e) { e.stopPropagation(); togglePause(); });
 
     btnLike.addEventListener('click', function (e) {
       e.stopPropagation(); liked = !liked; likeCount += liked ? 1 : -1; updateLike();
