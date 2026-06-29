@@ -171,7 +171,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
         } else if (sinceMount > VIDEO_READY_TIMEOUT_MS) {
           // Vídeo nunca ficou pronto (sem metadata, rede caiu, codec falhou).
           // Avança em vez de prender o usuário em tela preta.
-          storyMetrics.markStuck?.(i, 'video-timeout');
+          storyMetrics.markStuck(i, 'video-timeout');
           setBar(i, 1);
           goNext();
           raf = requestAnimationFrame(tick);
@@ -185,7 +185,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
         // que a imagem está pronta (cache silencioso, decoder lento, etc).
         if (sinceMount > IMAGE_LOAD_TIMEOUT_MS) {
           imgLoadedRef.current = true;
-          storyMetrics.markStuck?.(i, 'image-timeout');
+          storyMetrics.markStuck(i, 'image-timeout');
         } else {
           raf = requestAnimationFrame(tick);
           return;
