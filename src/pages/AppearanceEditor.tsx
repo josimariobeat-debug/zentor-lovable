@@ -272,8 +272,9 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
 
 
   function togglePlay() {
+  const togglePlay = useCallback(() => {
     setPaused((p) => {
-      if (!isVideo) {
+      if (!isVideoRef.current) {
         if (p) {
           startedAtRef.current = performance.now();
         } else {
@@ -282,43 +283,53 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
       }
       return !p;
     });
-  }
-  function toggleMute() {
+  }, []);
+
+  const toggleMute = useCallback(() => {
     // Run synchronously inside the click/tap handler so iOS treats it as a user gesture.
     const v = videoRef.current;
-    const next = !muted;
-    if (v) {
-      // Re-assert playsinline so iOS Safari/iPad doesn't switch to fullscreen on unmute.
-      (v as HTMLVideoElement & { playsInline?: boolean }).playsInline = true;
-      v.setAttribute('playsinline', '');
-      v.setAttribute('webkit-playsinline', 'true');
-      v.muted = next;
-      v.volume = 1;
-      if (!next) {
-        const p = v.play();
-        if (p && typeof p.then === 'function') {
-          p.catch(() => {
-            v.muted = true;
-            setMuted(true);
-          });
+    setMuted((prev) => {
+      const next = !prev;
+      if (v) {
+        (v as HTMLVideoElement & { playsInline?: boolean }).playsInline = true;
+        v.setAttribute('playsinline', '');
+        v.setAttribute('webkit-playsinline', 'true');
+        v.muted = next;
+        v.volume = 1;
+        if (!next) {
+          const p = v.play();
+          if (p && typeof p.then === 'function') {
+            p.catch(() => {
+              v.muted = true;
+              setMuted(true);
+            });
+          }
         }
       }
-    }
-    setMuted(next);
-  }
+      return next;
+    });
+  }, []);
 
-  function toggleLike() {
-    setLiked((prev) => ({ ...prev, [idx]: !prev[idx] }));
-    if (!isLiked) {
-      setLikeBurst(true);
-      window.setTimeout(() => setLikeBurst(false), 600);
-    }
-  }
+  const toggleLike = useCallback(() => {
+    setLiked((prev) => {
+      const wasLiked = !!prev[idxRef.current];
+      if (!wasLiked) {
+        setLikeBurst(true);
+        window.setTimeout(() => setLikeBurst(false), 600);
+      }
+      return { ...prev, [idxRef.current]: !wasLiked };
+    });
+  }, []);
 
-  async function handleShare() {
+  const openComments = useCallback(() => setCommentsOpen(true), []);
+  const closeComments = useCallback(() => setCommentsOpen(false), []);
+  const closeShare = useCallback(() => setShareOpen(false), []);
+
+  const handleShare = useCallback(async () => {
+    const cur = DEMO_STORIES[idxRef.current];
     const shareData = {
-      title: current.product.title,
-      text: `Confira: ${current.product.title}`,
+      title: cur.product.title,
+      text: `Confira: ${cur.product.title}`,
       url: typeof window !== 'undefined' ? window.location.href : '',
     };
     const nav = typeof navigator !== 'undefined' ? (navigator as Navigator & { share?: (d: ShareData) => Promise<void> }) : undefined;
@@ -326,15 +337,22 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
       try { await nav.share(shareData); return; } catch { /* user cancelled — fall through */ }
     }
     setShareOpen(true);
-  }
+  }, []);
 
-  async function copyLink() {
+  const copyLink = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1500);
     } catch { /* ignore */ }
-  }
+  }, []);
+
+  // Limpa o cache de preloads ao desmontar para não vazar entre sessões.
+  useEffect(() => () => {
+    DEMO_STORIES.forEach((s) => storyMetrics.clearPreload(s.src));
+  }, []);
+
+
 
   return (
     <div
