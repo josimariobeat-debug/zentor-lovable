@@ -8,10 +8,12 @@ import { toast } from '@/components/ui/toaster';
 import { Switch } from '@/components/ui/switch';
 import previewVideoAsset from '@/assets/widget-preview.mp4.asset.json';
 import storyIosAsset from '@/assets/story-ios.mp4.asset.json';
+import storyDemo2Asset from '@/assets/story-demo-2.mp4.asset.json';
 import { getMediaProfile, getNetworkTier, rewriteImageForProfile, subscribeNetworkChange, type MediaProfile, type NetworkTier } from '@/lib/networkProfile';
 
 const PREVIEW_VIDEO_URL = previewVideoAsset.url;
 const STORY_IOS_URL = storyIosAsset.url;
+const STORY_DEMO_2_URL = storyDemo2Asset.url;
 
 interface DemoStory {
   type: 'video' | 'image';
