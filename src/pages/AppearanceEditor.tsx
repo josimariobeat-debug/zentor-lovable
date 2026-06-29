@@ -105,17 +105,22 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
     }
   };
 
-  const goNext = () => {
+  const goNext = useCallback(() => {
     setIdx((i) => {
       const n = i + 1 < DEMO_STORIES.length ? i + 1 : 0;
       // Pinta a barra anterior como cheia imediatamente (sem esperar rAF).
       setBar(i, 1);
+      // Métrica: marca o "end" antes da próxima mídia montar para medir o
+      // gap real percebido (end → ready → firstFrame).
+      const next = DEMO_STORIES[n];
+      storyMetrics.markEnd(i, n, next.type, next.src);
       return n;
     });
-  };
-  const goPrev = () => {
+  }, []);
+  const goPrev = useCallback(() => {
     setIdx((i) => (i - 1 >= 0 ? i - 1 : DEMO_STORIES.length - 1));
-  };
+  }, []);
+
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
