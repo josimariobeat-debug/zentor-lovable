@@ -345,23 +345,22 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* progress bars (one segment per story) */}
+        {/* progress bars (one segment per story) — mutadas via ref, sem re-render. */}
         <div className="absolute top-3 left-3 right-3 flex gap-1 z-30">
-          {DEMO_STORIES.map((_, i) => {
-            const fill = i < idx ? 1 : i === idx ? progress : 0;
-            return (
-              <div key={i} className="flex-1 h-[3px] bg-white/30 rounded-full overflow-hidden">
-                <div
-                  className="h-full w-full bg-white rounded-full origin-left"
-                  style={{
-                    transform: `scaleX(${fill})`,
-                    willChange: 'transform',
-                  }}
-                />
-              </div>
-            );
-          })}
+          {DEMO_STORIES.map((_, i) => (
+            <div key={i} className="flex-1 h-[3px] bg-white/30 rounded-full overflow-hidden">
+              <div
+                ref={(el) => { barRefs.current[i] = el; }}
+                className="h-full w-full bg-white rounded-full origin-left"
+                style={{
+                  transform: `scaleX(${i < idx ? 1 : 0})`,
+                  willChange: 'transform',
+                }}
+              />
+            </div>
+          ))}
         </div>
+
         {/* top controls */}
         <div className="absolute top-7 right-3 z-30 flex items-center gap-2">
           <button onClick={togglePlay} aria-label={paused ? 'Reproduzir' : 'Pausar'} className="w-9 h-9 rounded-full bg-black/40 hover:bg-black/60 text-white grid place-items-center transition-colors">
