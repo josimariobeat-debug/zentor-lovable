@@ -416,22 +416,25 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
 
 
           {/* Instagram-style tap zones for prev/next.
-              Right zone stops before the action column so taps on icons aren't hijacked.
-              The reserved gutter mirrors the action column's right offset + icon width. */}
+              A coluna de ações fica em z-30 (acima da tap zone z-10), então os
+              botões capturam os próprios cliques. Por isso a zona "Próximo"
+              pode ir até a borda direita sem hijack — só recuamos uma faixa
+              estreita atrás dos ícones para evitar tap acidental ao mirar neles. */}
           <button
             aria-label="Anterior"
             onClick={goPrev}
-            className="absolute left-0 top-12 bottom-24 w-1/3 z-10 cursor-default"
+            className="absolute left-0 top-12 bottom-24 w-[30%] z-10 cursor-default"
           />
           <button
             aria-label="Próximo"
             onClick={goNext}
             className="absolute top-12 bottom-24 z-10 cursor-default"
             style={{
-              left: '33.333%',
-              right: 'calc(env(safe-area-inset-right, 0px) + clamp(48px, 12vw, 60px))',
+              left: '30%',
+              right: 'env(safe-area-inset-right, 0px)',
             }}
           />
+
 
           {/* TikTok-style right action column.
               - `right` uses safe-area-inset-right (iOS notch landscape + Android gesture nav) plus
