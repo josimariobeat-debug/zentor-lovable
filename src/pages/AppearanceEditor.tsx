@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { ArrowLeft, ChevronLeft, ChevronRight, Heart, Loader2, MessageCircle, Monitor, Pause, Play, Send, Smartphone, Volume2, VolumeX, X } from 'lucide-react';
 import TopBar from '@/components/layout/TopBar';
@@ -10,6 +10,8 @@ import previewVideoAsset from '@/assets/widget-preview.mp4.asset.json';
 import storyDemo2Asset from '@/assets/story-demo-2.mp4.asset.json';
 import storyDemo2Poster from '@/assets/story-demo-2-poster.jpg.asset.json';
 import { getMediaProfile, getNetworkTier, rewriteImageForProfile, subscribeNetworkChange, type MediaProfile, type NetworkTier } from '@/lib/networkProfile';
+import { storyMetrics } from '@/lib/storyMetrics';
+
 
 const PREVIEW_VIDEO_URL = previewVideoAsset.url;
 const STORY_DEMO_2_URL = storyDemo2Asset.url;
@@ -103,17 +105,22 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
     }
   };
 
-  const goNext = () => {
+  const goNext = useCallback(() => {
     setIdx((i) => {
       const n = i + 1 < DEMO_STORIES.length ? i + 1 : 0;
       // Pinta a barra anterior como cheia imediatamente (sem esperar rAF).
       setBar(i, 1);
+      // Métrica: marca o "end" antes da próxima mídia montar para medir o
+      // gap real percebido (end → ready → firstFrame).
+      const next = DEMO_STORIES[n];
+      storyMetrics.markEnd(i, n, next.type, next.src);
       return n;
     });
-  };
-  const goPrev = () => {
+  }, []);
+  const goPrev = useCallback(() => {
     setIdx((i) => (i - 1 >= 0 ? i - 1 : DEMO_STORIES.length - 1));
-  };
+  }, []);
+
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -264,9 +271,10 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
 
 
 
-  function togglePlay() {
+  const togglePlay = useCallback(() => {
+
     setPaused((p) => {
-      if (!isVideo) {
+      if (!isVideoRef.current) {
         if (p) {
           startedAtRef.current = performance.now();
         } else {
@@ -275,43 +283,53 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
       }
       return !p;
     });
-  }
-  function toggleMute() {
+  }, []);
+
+  const toggleMute = useCallback(() => {
     // Run synchronously inside the click/tap handler so iOS treats it as a user gesture.
     const v = videoRef.current;
-    const next = !muted;
-    if (v) {
-      // Re-assert playsinline so iOS Safari/iPad doesn't switch to fullscreen on unmute.
-      (v as HTMLVideoElement & { playsInline?: boolean }).playsInline = true;
-      v.setAttribute('playsinline', '');
-      v.setAttribute('webkit-playsinline', 'true');
-      v.muted = next;
-      v.volume = 1;
-      if (!next) {
-        const p = v.play();
-        if (p && typeof p.then === 'function') {
-          p.catch(() => {
-            v.muted = true;
-            setMuted(true);
-          });
+    setMuted((prev) => {
+      const next = !prev;
+      if (v) {
+        (v as HTMLVideoElement & { playsInline?: boolean }).playsInline = true;
+        v.setAttribute('playsinline', '');
+        v.setAttribute('webkit-playsinline', 'true');
+        v.muted = next;
+        v.volume = 1;
+        if (!next) {
+          const p = v.play();
+          if (p && typeof p.then === 'function') {
+            p.catch(() => {
+              v.muted = true;
+              setMuted(true);
+            });
+          }
         }
       }
-    }
-    setMuted(next);
-  }
+      return next;
+    });
+  }, []);
 
-  function toggleLike() {
-    setLiked((prev) => ({ ...prev, [idx]: !prev[idx] }));
-    if (!isLiked) {
-      setLikeBurst(true);
-      window.setTimeout(() => setLikeBurst(false), 600);
-    }
-  }
+  const toggleLike = useCallback(() => {
+    setLiked((prev) => {
+      const wasLiked = !!prev[idxRef.current];
+      if (!wasLiked) {
+        setLikeBurst(true);
+        window.setTimeout(() => setLikeBurst(false), 600);
+      }
+      return { ...prev, [idxRef.current]: !wasLiked };
+    });
+  }, []);
 
-  async function handleShare() {
+  const openComments = useCallback(() => setCommentsOpen(true), []);
+  const closeComments = useCallback(() => setCommentsOpen(false), []);
+  const closeShare = useCallback(() => setShareOpen(false), []);
+
+  const handleShare = useCallback(async () => {
+    const cur = DEMO_STORIES[idxRef.current];
     const shareData = {
-      title: current.product.title,
-      text: `Confira: ${current.product.title}`,
+      title: cur.product.title,
+      text: `Confira: ${cur.product.title}`,
       url: typeof window !== 'undefined' ? window.location.href : '',
     };
     const nav = typeof navigator !== 'undefined' ? (navigator as Navigator & { share?: (d: ShareData) => Promise<void> }) : undefined;
@@ -319,15 +337,22 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
       try { await nav.share(shareData); return; } catch { /* user cancelled — fall through */ }
     }
     setShareOpen(true);
-  }
+  }, []);
 
-  async function copyLink() {
+  const copyLink = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1500);
     } catch { /* ignore */ }
-  }
+  }, []);
+
+  // Limpa o cache de preloads ao desmontar para não vazar entre sessões.
+  useEffect(() => () => {
+    DEMO_STORIES.forEach((s) => storyMetrics.clearPreload(s.src));
+  }, []);
+
+
 
   return (
     <div
@@ -387,6 +412,10 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
               preload="auto"
               disableRemotePlayback
               className="absolute inset-0 w-full h-full object-cover"
+              // Métrica: loadeddata = bytes suficientes para começar.
+              onLoadedData={() => storyMetrics.markReady(current.src)}
+              // playing = decoder enviou primeiro frame ao compositor (paint iminente).
+              onPlaying={() => storyMetrics.markFirstFrame(current.src)}
             />
           ) : (
             <img
@@ -395,9 +424,13 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
               alt=""
               className="absolute inset-0 w-full h-full object-cover"
               draggable={false}
-              onLoad={() => { imgLoadedRef.current = true; }}
-              onError={() => { imgLoadedRef.current = true; }}
+              onLoad={() => {
+                imgLoadedRef.current = true;
+                storyMetrics.markReady(current.src);
+                requestAnimationFrame(() => storyMetrics.markFirstFrame(current.src));
+              }}
 
+              onError={() => { imgLoadedRef.current = true; }}
             />
           )}
 
@@ -405,7 +438,9 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
               Elementos persistem entre trocas de story → bytes ficam quentes em
               cache do browser + decoder de mídia, eliminando "tela preta" na
               transição. Em 2G/Save-Data, profile.videoPreload="none" só baixa
-              os headers, então ainda economizamos dados. */}
+              os headers, então ainda economizamos dados.
+              Cada elemento chama storyMetrics.markPreloaded ao terminar,
+              permitindo medir se a próxima mídia estava quente antes do "end". */}
           <div aria-hidden className="hidden">
             {DEMO_STORIES.map((s, i) =>
               i === idx ? null : s.type === 'video' ? (
@@ -416,6 +451,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
                   preload={profile.videoPreload}
                   muted
                   playsInline
+                  onLoadedData={() => storyMetrics.markPreloaded(s.src)}
                 />
               ) : (
                 <img
@@ -424,10 +460,12 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
                   alt=""
                   decoding="async"
                   loading="eager"
+                  onLoad={() => storyMetrics.markPreloaded(s.src)}
                 />
               ),
             )}
           </div>
+
 
 
 
@@ -483,7 +521,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
               </span>
             </button>
             <button
-              onClick={() => setCommentsOpen(true)}
+              onClick={openComments}
               aria-label="Comentar"
               className="group flex flex-col items-center gap-1 min-w-[44px] min-h-[44px] justify-center text-white transition-transform active:scale-90 hover:scale-110"
             >
@@ -526,7 +564,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
           {commentsOpen && (
             <div
               className="absolute inset-0 z-40 flex flex-col justify-end"
-              onClick={() => setCommentsOpen(false)}
+              onClick={closeComments}
             >
               <div className="absolute inset-0 bg-black/40" />
               <div
@@ -536,7 +574,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
                 <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-neutral-100">
                   <div className="w-10 h-1 rounded-full bg-neutral-300 mx-auto absolute left-1/2 -translate-x-1/2 top-1.5" />
                   <h3 className="text-sm font-semibold text-neutral-900 mt-2">Comentários</h3>
-                  <button onClick={() => setCommentsOpen(false)} aria-label="Fechar comentários" className="w-8 h-8 rounded-full hover:bg-neutral-100 grid place-items-center text-neutral-600 mt-1">
+                  <button onClick={closeComments} aria-label="Fechar comentários" className="w-8 h-8 rounded-full hover:bg-neutral-100 grid place-items-center text-neutral-600 mt-1">
                     <X className="w-4 h-4" />
                   </button>
                 </div>
@@ -559,7 +597,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
           {shareOpen && (
             <div
               className="absolute inset-0 z-40 grid place-items-end sm:place-items-center"
-              onClick={() => setShareOpen(false)}
+              onClick={closeShare}
             >
               <div className="absolute inset-0 bg-black/50" />
               <div
@@ -568,7 +606,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
               >
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-sm font-semibold text-neutral-900">Compartilhar</h3>
-                  <button onClick={() => setShareOpen(false)} aria-label="Fechar" className="w-8 h-8 rounded-full hover:bg-neutral-100 grid place-items-center text-neutral-600">
+                  <button onClick={closeShare} aria-label="Fechar" className="w-8 h-8 rounded-full hover:bg-neutral-100 grid place-items-center text-neutral-600">
                     <X className="w-4 h-4" />
                   </button>
                 </div>
