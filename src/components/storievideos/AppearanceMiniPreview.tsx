@@ -33,6 +33,24 @@ const BASE_W = 300; // mesma base do editor (mobile phone width)
 const BASE_H = 600;
 
 export default function AppearanceMiniPreview({ config, kind = 'floating', width = 64, firstMedia }: Props) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v || firstMedia?.type !== 'video') return;
+    v.muted = true;
+    v.defaultMuted = true;
+    const onTime = () => { if (v.currentTime >= 3) v.currentTime = 0; };
+    const onLoaded = () => { try { v.currentTime = 0; } catch {} v.play().catch(() => {}); };
+    v.addEventListener('timeupdate', onTime);
+    v.addEventListener('loadedmetadata', onLoaded);
+    v.play().catch(() => {});
+    return () => {
+      v.removeEventListener('timeupdate', onTime);
+      v.removeEventListener('loadedmetadata', onLoaded);
+    };
+  }, [firstMedia?.url, firstMedia?.type]);
+
   const cfg = {
     shape: 'circular' as Shape,
     width: 100,
