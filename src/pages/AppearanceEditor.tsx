@@ -72,6 +72,11 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
   const startedAtRef = useRef<number>(0);
   const accumRef = useRef<number>(0);
 
+  // Perfil adaptativo (rede + dispositivo). Reage a mudanças Wi-Fi ⇄ 4G.
+  const [tier, setTier] = useState<NetworkTier>(() => (typeof navigator === 'undefined' ? 'high' : getNetworkTier()));
+  useEffect(() => subscribeNetworkChange(() => setTier(getNetworkTier())), []);
+  const profile: MediaProfile = useMemo(() => getMediaProfile(tier), [tier]);
+
   // TikTok-style action column state
   const [liked, setLiked] = useState<Record<number, boolean>>({});
   const [likeBurst, setLikeBurst] = useState(false);
