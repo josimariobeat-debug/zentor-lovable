@@ -519,7 +519,7 @@
         v.addEventListener('playing', function () { logTimerStarted('video', Number.isFinite(v.duration) ? Math.round(v.duration*1000) : undefined); });
         v.addEventListener('ended', function () { track('completed', story.id); nextOnce('video-ended-event'); });
         mediaWrap.appendChild(v); currentEl = v;
-        v.play().catch(function () { v.muted = true; muted = true; btnSound.innerHTML = ''; btnSound.appendChild(svgIcon(ICO_MUTE)); pauseSoundBtn.innerHTML = ''; pauseSoundBtn.appendChild(svgIcon(ICO_MUTE)); v.play().catch(function(){}); });
+        v.play().catch(function () { v.muted = true; muted = true; pauseSoundBtn.innerHTML = ''; pauseSoundBtn.appendChild(svgIcon(ICO_MUTE)); v.play().catch(function(){}); });
       } else {
         var im = document.createElement('img'); im.src = item.url; mediaWrap.appendChild(im); currentEl = im;
         var bar2 = progress.children[mediaIdx] && progress.children[mediaIdx].firstChild;
