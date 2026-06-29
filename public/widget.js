@@ -205,7 +205,7 @@
             bar.style.width = (fill * 100) + '%';
             logProgress(fill);
             if (!v.paused && fill > 0) logTimerStarted('video', Math.round(v.duration * 1000));
-            if (v.paused && v.currentTime <= 0.1 && now - mountedAt > VIDEO_START_TIMEOUT_MS) {
+            if (v.currentTime <= 0.1 && now - mountedAt > VIDEO_START_TIMEOUT_MS) {
               bar.style.width = '100%';
               nextOnce('video-start-timeout');
               return;
