@@ -183,10 +183,11 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products 
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
+      className="fixed inset-0 bg-black/90 flex items-center justify-center p-0 sm:p-4"
+      style={{ zIndex: 2147483600 }}
       onClick={(e) => { if (e.target === e.currentTarget) onOpenChange(false); }}
     >
-      <div className="w-full max-w-[420px] h-[92vh] max-h-[780px] bg-black rounded-2xl overflow-hidden flex flex-col relative max-sm:w-screen max-sm:h-screen max-sm:max-w-none max-sm:max-h-none max-sm:rounded-none">
+      <div className="w-full max-w-[420px] bg-black overflow-hidden flex flex-col relative rounded-2xl max-sm:rounded-none max-sm:max-w-none" style={{ height: 'min(92dvh, 780px)', maxHeight: '100dvh' }}>
         {/* Zone 1 — progress bars */}
         <div className="absolute top-2.5 left-2 right-2 flex gap-1 z-10">
           <div className="flex-1 h-[2.5px] bg-white/30 rounded-full overflow-hidden">
