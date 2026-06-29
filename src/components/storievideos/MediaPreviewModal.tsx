@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Pause, Play, Volume2, VolumeX, X, Heart, MessageCircle, Send } from 'lucide-react';
 
 interface Product {
@@ -9,11 +9,25 @@ interface Product {
   url?: string | null;
 }
 
+interface MediaInput {
+  url?: string | null;
+  type?: string | null;
+  name?: string | null;
+}
+
+export interface PlaylistItem {
+  media: MediaInput;
+  products?: Product[];
+}
+
 interface MediaPreviewModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  media: { url?: string | null; type?: string | null; name?: string | null } | null;
+  media?: MediaInput | null;
   products?: Product[];
+  /** Quando informado, ignora `media`/`products` e exibe múltiplos stories
+   *  com barras de progresso por segmento, auto-advance e tap zones. */
+  playlist?: PlaylistItem[];
 }
 
 interface Comment {
@@ -32,20 +46,28 @@ function formatPrice(price: string): string {
   return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
-export default function MediaPreviewModal({ open, onOpenChange, media, products }: MediaPreviewModalProps) {
-  const isVideo = media?.type === 'video' || (media?.type ?? '').includes('video');
-  const url = media?.url ?? '';
+export default function MediaPreviewModal({ open, onOpenChange, media, products, playlist }: MediaPreviewModalProps) {
+  const hasPlaylist = !!playlist && playlist.length > 0;
+  const segmentCount = hasPlaylist ? playlist!.length : 1;
+
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const currentItem: PlaylistItem | null = hasPlaylist ? playlist![currentIdx] ?? null : null;
+
+  const effectiveMedia: MediaInput | null = hasPlaylist ? currentItem?.media ?? null : media ?? null;
+  const effectiveProducts: Product[] = hasPlaylist ? currentItem?.products ?? [] : products ?? [];
+
+  const isVideo = effectiveMedia?.type === 'video' || (effectiveMedia?.type ?? '').includes('video');
+  const url = effectiveMedia?.url ?? '';
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const progressRef = useRef<HTMLDivElement | null>(null);
+  const segmentRefs = useRef<Array<HTMLDivElement | null>>([]);
   const rafRef = useRef<number | null>(null);
-  const imgStartRef = useRef<number>(0);
   const imgElapsedRef = useRef<number>(0);
 
   const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(false);
   const [liked, setLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(0);
+  const [, setLikeCount] = useState(0);
   const [comments, setComments] = useState<Comment[]>([]);
   const [progressStarted, setProgressStarted] = useState(false);
 
@@ -63,12 +85,12 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products 
   // Reset state on open
   useEffect(() => {
     if (!open) return;
+    setCurrentIdx(0);
     setPaused(false);
     setMuted(false);
     setLiked(false);
     setLikeCount(0);
     setComments([]);
-    setProgressStarted(false);
     setShowCommentForm(false);
     setShowCommentList(false);
     setShowShare(false);
@@ -76,53 +98,98 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products 
     setFormEmail('');
     setFormPhone('');
     setFormText('');
-    imgElapsedRef.current = 0;
-  }, [open, url]);
+  }, [open]);
 
-  // Image progress animation via rAF (so we can pause)
+  // Reset per-segment progress quando troca de mídia
+  useEffect(() => {
+    setProgressStarted(false);
+    imgElapsedRef.current = 0;
+    // segmentos passados → 100%; futuros → 0%; atual será controlado pelo loop
+    segmentRefs.current.forEach((el, i) => {
+      if (!el) return;
+      if (i < currentIdx) el.style.width = '100%';
+      else if (i > currentIdx) el.style.width = '0%';
+      else el.style.width = '0%';
+    });
+  }, [currentIdx, url]);
+
+  const advance = () => {
+    if (hasPlaylist) {
+      setCurrentIdx((i) => {
+        if (i + 1 < segmentCount) return i + 1;
+        // fim da playlist → fecha
+        onOpenChange(false);
+        return i;
+      });
+    } else {
+      onOpenChange(false);
+    }
+  };
+
+  const goPrev = () => {
+    if (!hasPlaylist) return;
+    setCurrentIdx((i) => Math.max(0, i - 1));
+  };
+
+  const goNext = () => {
+    if (!hasPlaylist) return;
+    setCurrentIdx((i) => Math.min(segmentCount - 1, i + 1));
+  };
+
+  // Image progress animation via rAF
   useEffect(() => {
     if (!open || isVideo) return;
     if (!progressStarted) return;
+    const seg = segmentRefs.current[currentIdx];
+    if (!seg) return;
     let last = performance.now();
-    imgStartRef.current = last;
 
     const tick = (now: number) => {
-      if (!progressRef.current) return;
+      const cur = segmentRefs.current[currentIdx];
+      if (!cur) return;
       const delta = now - last;
       last = now;
       if (!paused && !anyDrawerOpen) {
         imgElapsedRef.current += delta;
       }
       const pct = Math.min(100, (imgElapsedRef.current / PROGRESS_MS) * 100);
-      progressRef.current.style.width = pct + '%';
+      cur.style.width = pct + '%';
       if (pct < 100) {
         rafRef.current = requestAnimationFrame(tick);
+      } else {
+        advance();
       }
     };
     rafRef.current = requestAnimationFrame(tick);
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [open, isVideo, progressStarted, paused, anyDrawerOpen]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, isVideo, progressStarted, paused, anyDrawerOpen, currentIdx]);
 
-  // Video: drive progress via timeupdate; control pause based on drawers/paused state
+  // Video: drive progress via timeupdate; auto-advance on ended
   useEffect(() => {
     if (!open || !isVideo) return;
     const v = videoRef.current;
     if (!v) return;
     const onLoaded = () => setProgressStarted(true);
     const onTime = () => {
-      if (!progressRef.current || !v.duration) return;
+      const cur = segmentRefs.current[currentIdx];
+      if (!cur || !v.duration) return;
       const pct = Math.min(100, (v.currentTime / v.duration) * 100);
-      progressRef.current.style.width = pct + '%';
+      cur.style.width = pct + '%';
     };
+    const onEnded = () => advance();
     v.addEventListener('loadeddata', onLoaded);
     v.addEventListener('timeupdate', onTime);
+    v.addEventListener('ended', onEnded);
     return () => {
       v.removeEventListener('loadeddata', onLoaded);
       v.removeEventListener('timeupdate', onTime);
+      v.removeEventListener('ended', onEnded);
     };
-  }, [open, isVideo, url]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, isVideo, url, currentIdx]);
 
   // Apply pause/mute and drawer pausing to video
   useEffect(() => {
@@ -130,19 +197,20 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products 
     if (!v || !isVideo) return;
     v.muted = muted;
     if (paused || anyDrawerOpen) {
-      try { v.pause(); } catch {}
+      try { v.pause(); } catch { /* ignore */ }
     } else {
       const p = v.play();
       if (p && typeof p.catch === 'function') p.catch(() => {});
     }
-  }, [paused, muted, anyDrawerOpen, isVideo, open]);
+  }, [paused, muted, anyDrawerOpen, isVideo, open, url]);
 
-  // For images, set progressStarted on mount of img (via onLoad below). Also start immediately if no video & has url.
+  // Image: marcar progressStarted assim que houver URL (cache cobre)
   useEffect(() => {
     if (!open || isVideo) return;
-    // If image already loaded from cache, kick off immediately
     if (url) setProgressStarted(true);
   }, [open, isVideo, url]);
+
+  const productList = useMemo(() => effectiveProducts.slice(0, 3), [effectiveProducts]);
 
   if (!open) return null;
 
@@ -171,15 +239,13 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products 
     window.open(shareUrl, '_blank', 'noopener');
   };
   const copyLink = async () => {
-    try { await navigator.clipboard.writeText(shareUrl); } catch {}
+    try { await navigator.clipboard.writeText(shareUrl); } catch { /* ignore */ }
   };
   const shareMore = async () => {
     if (navigator.share) {
-      try { await navigator.share({ url: shareUrl }); } catch {}
+      try { await navigator.share({ url: shareUrl }); } catch { /* ignore */ }
     }
   };
-
-  const productList = (products ?? []).slice(0, 3);
 
   return (
     <div
@@ -188,11 +254,17 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products 
       onClick={(e) => { if (e.target === e.currentTarget) onOpenChange(false); }}
     >
       <div className="bg-black overflow-hidden flex flex-col relative rounded-2xl max-sm:rounded-none max-sm:!w-screen max-sm:!h-[100dvh] max-sm:!max-w-none max-sm:!max-h-none" style={{ aspectRatio: '9 / 16', height: 'min(92dvh, 780px)', maxWidth: '100%' }}>
-        {/* Zone 1 — progress bars */}
+        {/* Zone 1 — progress bars (1 segmento por mídia) */}
         <div className="absolute left-2 right-2 flex gap-1 z-10" style={{ top: 'max(10px, env(safe-area-inset-top))' }}>
-          <div className="flex-1 h-[2.5px] bg-white/30 rounded-full overflow-hidden">
-            <div ref={progressRef} className="h-full bg-white rounded-full" style={{ width: '0%' }} />
-          </div>
+          {Array.from({ length: segmentCount }).map((_, i) => (
+            <div key={i} className="flex-1 h-[2.5px] bg-white/30 rounded-full overflow-hidden">
+              <div
+                ref={(el) => { segmentRefs.current[i] = el; }}
+                className="h-full bg-white rounded-full"
+                style={{ width: i < currentIdx ? '100%' : '0%' }}
+              />
+            </div>
+          ))}
         </div>
 
         {/* Zone 2 — top controls */}
@@ -229,6 +301,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products 
             isVideo ? (
               <video
                 ref={videoRef}
+                key={`v-${currentIdx}-${url}`}
                 src={url}
                 autoPlay
                 playsInline
@@ -236,17 +309,32 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products 
               />
             ) : (
               <img
+                key={`i-${currentIdx}-${url}`}
                 src={url}
-                alt={media?.name ?? ''}
+                alt={effectiveMedia?.name ?? ''}
                 onLoad={() => setProgressStarted(true)}
                 className="absolute inset-0 w-full h-full object-cover"
               />
             )
           ) : null}
 
-          {/* Invisible nav zones */}
-          <div className="absolute left-0 top-0 bottom-0 w-[38%] z-[5] cursor-pointer" />
-          <div className="absolute right-0 top-0 bottom-0 w-[38%] z-[5] cursor-pointer" />
+          {/* Invisible nav zones — só ativas em playlist */}
+          {hasPlaylist && (
+            <>
+              <button
+                type="button"
+                aria-label="Anterior"
+                onClick={goPrev}
+                className="absolute left-0 top-0 bottom-0 w-[30%] z-[5] cursor-default bg-transparent border-0"
+              />
+              <button
+                type="button"
+                aria-label="Próximo"
+                onClick={goNext}
+                className="absolute right-0 top-0 bottom-0 w-[30%] z-[5] cursor-default bg-transparent border-0"
+              />
+            </>
+          )}
         </div>
 
         {/* Zone 4 — product cards (bottom-right, narrow stack) */}
@@ -289,7 +377,6 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products 
           </button>
 
           <div className="flex items-center gap-3">
-            {/* Like */}
             <button
               type="button"
               onClick={() => {
@@ -304,7 +391,6 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products 
               <Heart className={`w-5 h-5 ${liked ? 'fill-red-500 stroke-red-500' : ''}`} />
             </button>
 
-            {/* Comments */}
             <button
               type="button"
               onClick={() => setShowCommentList(true)}
@@ -319,7 +405,6 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products 
               )}
             </button>
 
-            {/* Share */}
             <button
               type="button"
               onClick={() => setShowShare(true)}
