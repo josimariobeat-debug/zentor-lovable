@@ -800,7 +800,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
           </div>
           <div
             className="absolute right-2 text-[10px] font-bold text-white/70 tracking-wider z-30 pointer-events-none"
-            style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 60px)' }}
+            style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 190px)' }}
           >PLANWEB</div>
 
           {/* Comments panel — bottom sheet inside the player frame */}
