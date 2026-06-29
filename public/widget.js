@@ -562,7 +562,7 @@
     }
     document.addEventListener('keydown', onKey);
 
-    btnSound.addEventListener('click', function (e) { e.stopPropagation(); toggleMute(); });
+    
     btnClose.addEventListener('click', function (e) { e.stopPropagation(); destroy(); });
     overlay.addEventListener('click', function (e) { if (e.target === overlay) destroy(); });
     navL.addEventListener('click', prev);
