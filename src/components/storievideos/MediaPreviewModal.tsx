@@ -341,27 +341,53 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
         {productList.length > 0 && (
           <div className={`absolute z-10 flex flex-col gap-2 pointer-events-none ${hasPlaylist ? 'left-0 right-0 w-full' : 'right-3 w-[74%] max-w-[300px]'}`} style={{ bottom: hasPlaylist ? 'calc(56px + env(safe-area-inset-bottom))' : 'calc(80px + env(safe-area-inset-bottom))' }}>
             {productList.map((p) => (
-              <div
-                key={p.id}
-                className={`pointer-events-auto bg-white flex items-center shadow-[0_6px_18px_rgba(0,0,0,0.22)] ${hasPlaylist ? 'h-12 px-2 gap-2 rounded-none' : 'p-2 gap-2.5 rounded-2xl'}`}
-              >
-                {p.image ? (
-                  <img src={p.image} alt={p.name} className={`object-cover bg-neutral-100 shrink-0 ${hasPlaylist ? 'w-8 h-8 rounded-md' : 'w-11 h-11 rounded-xl'}`} />
-                ) : (
-                  <div className={`bg-neutral-100 shrink-0 ${hasPlaylist ? 'w-8 h-8 rounded-md' : 'w-11 h-11 rounded-xl'}`} />
-                )}
-                <div className="flex-1 min-w-0">
-                  <div className={`font-semibold text-neutral-900 truncate leading-tight ${hasPlaylist ? 'text-[11px]' : 'text-[13px]'}`}>{p.name}</div>
-                  <div className={`text-neutral-500 leading-tight mt-0.5 ${hasPlaylist ? 'text-[9px]' : 'text-[11px]'}`}>{formatPrice(p.price)}</div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => openProduct(p)}
-                  className={`bg-neutral-900 text-white font-bold rounded-md shrink-0 hover:bg-neutral-700 transition-colors tracking-wider ${hasPlaylist ? 'text-[8px] px-1.5 py-1' : 'text-[10px] px-2.5 py-2'}`}
+              hasPlaylist ? (
+                <div
+                  key={p.id}
+                  className="pointer-events-auto bg-black/55 backdrop-blur-md overflow-hidden flex flex-col shadow-[0_6px_18px_rgba(0,0,0,0.35)]"
                 >
-                  COMPRAR
-                </button>
-              </div>
+                  <div className="flex items-center gap-2.5 px-2.5 py-2">
+                    {p.image ? (
+                      <img src={p.image} alt={p.name} className="w-10 h-10 rounded-md object-cover bg-neutral-800 shrink-0" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-md bg-neutral-800 shrink-0" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-white truncate leading-tight text-[12px]">{p.name}</div>
+                      <div className="text-white/80 leading-tight mt-0.5 text-[11px] font-semibold">{formatPrice(p.price)}</div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => openProduct(p)}
+                    className="w-full bg-black/70 hover:bg-black/85 transition-colors text-white font-semibold text-[13px] py-2 border-t border-white/10"
+                  >
+                    Comprar
+                  </button>
+                </div>
+              ) : (
+                <div
+                  key={p.id}
+                  className="pointer-events-auto bg-white flex items-center shadow-[0_6px_18px_rgba(0,0,0,0.22)] p-2 gap-2.5 rounded-2xl"
+                >
+                  {p.image ? (
+                    <img src={p.image} alt={p.name} className="object-cover bg-neutral-100 shrink-0 w-11 h-11 rounded-xl" />
+                  ) : (
+                    <div className="bg-neutral-100 shrink-0 w-11 h-11 rounded-xl" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-neutral-900 truncate leading-tight text-[13px]">{p.name}</div>
+                    <div className="text-neutral-500 leading-tight mt-0.5 text-[11px]">{formatPrice(p.price)}</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => openProduct(p)}
+                    className="bg-neutral-900 text-white font-bold rounded-md shrink-0 hover:bg-neutral-700 transition-colors tracking-wider text-[10px] px-2.5 py-2"
+                  >
+                    COMPRAR
+                  </button>
+                </div>
+              )
             ))}
           </div>
         )}
