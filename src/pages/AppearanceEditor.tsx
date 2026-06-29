@@ -1601,7 +1601,12 @@ export default function AppearanceEditor() {
           </div>
         </div>
       </main>
-      {/* Modal de preview removido a pedido — clique no widget é no-op aqui. */}
+      <MediaPreviewModal
+        open={viewerOpen}
+        onOpenChange={setViewerOpen}
+        playlist={previewPlaylist}
+      />
+
     </>
   );
 }
