@@ -566,13 +566,13 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
       onClick={onClose}
     >
       <div
-        className="relative"
+        className="relative max-sm:!w-screen max-sm:!h-[100dvh] max-sm:!max-w-none max-sm:!max-h-none"
         style={{
           aspectRatio: '9 / 16',
-          height: 'min(92dvh, calc((100vw - 24px) * 16 / 9))',
+          // Derive width from height to keep 9:16 across tablet/desktop without overflow.
+          height: 'min(92dvh, calc((100vw - 24px) * 16 / 9), calc(420px * 16 / 9))',
+          width: 'min(calc(92dvh * 9 / 16), 100vw - 24px, 420px)',
           maxHeight: '92dvh',
-          width: 'auto',
-          maxWidth: 'min(92vw, 420px)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
