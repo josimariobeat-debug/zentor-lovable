@@ -85,10 +85,13 @@
     '.zt-nav{position:absolute;top:0;bottom:80px;width:30%;z-index:5;cursor:pointer}',
     '.zt-nav-l{left:0}.zt-nav-r{right:0}',
     '.zt-tap-pause{position:absolute;top:0;bottom:80px;left:30%;right:30%;z-index:5;cursor:pointer;background:transparent}',
-    '.zt-pause-indicator{position:absolute;top:0;bottom:80px;left:0;right:0;z-index:6;display:none;align-items:center;justify-content:center;pointer-events:none}',
+    '.zt-pause-indicator{position:absolute;top:0;bottom:80px;left:0;right:0;z-index:6;display:none;align-items:center;justify-content:center;gap:12px;pointer-events:none}',
     '.zt-pause-indicator.show{display:flex}',
-    '.zt-pause-indicator-inner{width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center}',
-    '.zt-pause-indicator-inner svg{width:16px;height:16px;fill:#fff;margin-left:2px}',
+    '.zt-pause-indicator-inner{width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;border:0;color:#fff;cursor:default;padding:0}',
+    '.zt-pause-indicator-inner.zt-pi-sound{pointer-events:auto;cursor:pointer}',
+    '.zt-pause-indicator-inner.zt-pi-sound:hover{background:rgba(0,0,0,.6)}',
+    '.zt-pause-indicator-inner svg{width:16px;height:16px;fill:#fff;margin-left:0}',
+    '.zt-pause-indicator-inner.zt-pi-play svg{margin-left:2px}',
     '.zt-products{position:absolute;bottom:80px;left:12px;right:12px;z-index:8;display:flex;flex-direction:column;gap:8px;pointer-events:none}',
     '.zt-product-card{display:flex;align-items:center;gap:10px;background:#fff;border-radius:12px;padding:8px 10px;pointer-events:all;box-shadow:0 2px 12px rgba(0,0,0,.18)}',
     '.zt-product-img{width:44px;height:44px;border-radius:8px;object-fit:cover;background:#eee;flex-shrink:0}',
@@ -268,9 +271,13 @@
     var navR = el('div', 'zt-nav zt-nav-r');
     var tapPause = el('div', 'zt-tap-pause');
     var pauseIndicator = el('div', 'zt-pause-indicator');
-    var pauseIndicatorInner = el('div', 'zt-pause-indicator-inner');
+    var pauseIndicatorInner = el('div', 'zt-pause-indicator-inner zt-pi-play');
     pauseIndicatorInner.appendChild(svgIcon(ICO_PLAY));
+    var pauseSoundBtn = el('button', 'zt-pause-indicator-inner zt-pi-sound');
+    pauseSoundBtn.appendChild(svgIcon(ICO_SOUND));
+    pauseSoundBtn.title = 'Som';
     pauseIndicator.appendChild(pauseIndicatorInner);
+    pauseIndicator.appendChild(pauseSoundBtn);
     var productsWrap = el('div', 'zt-products');
 
     var bottomBar       = el('div', 'zt-bottom-bar');
@@ -382,8 +389,10 @@
     function toggleMute() {
       muted = !muted;
       btnSound.innerHTML = ''; btnSound.appendChild(svgIcon(muted ? ICO_MUTE : ICO_SOUND));
+      pauseSoundBtn.innerHTML = ''; pauseSoundBtn.appendChild(svgIcon(muted ? ICO_MUTE : ICO_SOUND));
       if (currentEl && currentEl.tagName === 'VIDEO') currentEl.muted = muted;
     }
+    pauseSoundBtn.addEventListener('click', function (e) { e.stopPropagation(); toggleMute(); });
 
     function updateLike() {
       if (liked) btnLike.classList.add('liked'); else btnLike.classList.remove('liked');
@@ -507,7 +516,7 @@
         v.addEventListener('playing', function () { logTimerStarted('video', Number.isFinite(v.duration) ? Math.round(v.duration*1000) : undefined); });
         v.addEventListener('ended', function () { track('completed', story.id); nextOnce('video-ended-event'); });
         mediaWrap.appendChild(v); currentEl = v;
-        v.play().catch(function () { v.muted = true; muted = true; btnSound.innerHTML = ''; btnSound.appendChild(svgIcon(ICO_MUTE)); v.play().catch(function(){}); });
+        v.play().catch(function () { v.muted = true; muted = true; btnSound.innerHTML = ''; btnSound.appendChild(svgIcon(ICO_MUTE)); pauseSoundBtn.innerHTML = ''; pauseSoundBtn.appendChild(svgIcon(ICO_MUTE)); v.play().catch(function(){}); });
       } else {
         var im = document.createElement('img'); im.src = item.url; mediaWrap.appendChild(im); currentEl = im;
         var bar2 = progress.children[mediaIdx] && progress.children[mediaIdx].firstChild;
