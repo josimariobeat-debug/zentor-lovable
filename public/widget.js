@@ -371,6 +371,8 @@
 
     function togglePause() {
       paused = !paused;
+      if (paused) pauseIndicator.classList.add('show');
+      else pauseIndicator.classList.remove('show');
       if (currentEl && currentEl.tagName === 'VIDEO') {
         if (paused) { try { currentEl.pause(); } catch(_){} }
         else { try { var p = currentEl.play(); if (p && p.catch) p.catch(function(){}); } catch(_){} }
