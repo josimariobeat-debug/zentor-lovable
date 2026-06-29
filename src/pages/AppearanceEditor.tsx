@@ -44,13 +44,21 @@ const DEMO_STORIES: DemoStory[] = [
     type: 'video',
     src: STORY_DEMO_2_URL,
     poster: STORY_DEMO_2_POSTER,
-    product: { title: 'Coleção em destaque', price: 'R$ 259,90', thumb: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=120&h=120&fit=crop' },
+    product: { title: 'Cropped last', price: 'R$ 109,99', thumb: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=120&h=120&fit=crop' },
+    products: [
+      { title: 'Cropped last', price: 'R$ 109,99', thumb: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=120&h=120&fit=crop' },
+      { title: 'Saia Ariella', price: 'R$ 109,99', thumb: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=120&h=120&fit=crop' },
+    ],
   },
   {
     type: 'video',
     src: STORY_DEMO_3_URL,
     poster: STORY_DEMO_3_POSTER,
     product: { title: 'TV em destaque', price: 'R$ 2.499,00', thumb: STORY_DEMO_3_POSTER },
+    products: [
+      { title: 'TV 55" 4K', price: 'R$ 2.499,00', thumb: STORY_DEMO_3_POSTER },
+      { title: 'Soundbar Pro', price: 'R$ 899,00', thumb: STORY_DEMO_3_POSTER },
+    ],
   },
 ];
 
