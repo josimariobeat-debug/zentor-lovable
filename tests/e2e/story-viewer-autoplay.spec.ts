@@ -13,9 +13,11 @@ test.use({
   // Permite autoplay com som em headless Chromium e simula gesto do usuário,
   // para que os <video> dos stories iniciem sem interação.
   launchOptions: {
+    executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || '/chromium-1194/chrome-linux/chrome',
     args: [
       '--autoplay-policy=no-user-gesture-required',
       '--use-fake-ui-for-media-stream',
+      '--no-sandbox',
     ],
   },
 });
