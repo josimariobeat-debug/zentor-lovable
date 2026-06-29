@@ -183,6 +183,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
   const mountedAtRef = useRef<number>(performance.now());
   const IMAGE_LOAD_TIMEOUT_MS = 3500; // assume carregada e começa a contar
   const VIDEO_READY_TIMEOUT_MS = 6000; // sem duration → pula
+  const VIDEO_START_TIMEOUT_MS = 4500; // duration existe, mas play ficou preso no início
   // Marca o instante em que a barra do vídeo bateu ~100%. Alguns clipes têm
   // um trecho final estático (ex.: card de encerramento com marca d'água) em
   // que o navegador já reporta currentTime≈duration, mas o evento nativo
@@ -244,6 +245,15 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
 
           if (!pausedRef.current && !v.paused && fill > 0) {
             logTimerStarted(i, 'video', Math.round(v.duration * 1000));
+          }
+
+          if (!pausedRef.current && v.paused && v.currentTime <= 0.1 && sinceMount > VIDEO_START_TIMEOUT_MS) {
+            mountedAtRef.current = now;
+            storyMetrics.markStuck(i, 'video-timeout');
+            setBar(i, 1);
+            goNext('video-start-timeout');
+            raf = requestAnimationFrame(tick);
+            return;
           }
 
           if (v.ended || fill >= 1 || v.currentTime >= v.duration - 0.05) {
