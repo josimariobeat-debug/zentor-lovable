@@ -19,10 +19,6 @@ const PAGE_SIZE_OPTIONS = [8, 16, 32, 64];
 const presetsCache = new Map<string, Preset[]>();
 const cacheKey = (userId: string, kind: Kind) => `${userId}::${kind}`;
 
-// Module-level cache for the "first story" thumbnail per app — keeps the
-// mini preview thumbnail stable and avoids re-fetching across tab switches.
-const firstStoryCache = new Map<string, { url: string; type: 'image' | 'video' } | null>();
-
 export default function AppearancePresets() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -35,36 +31,6 @@ export default function AppearancePresets() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(16);
   const [toDelete, setToDelete] = useState<Preset | null>(null);
-  const [firstMedia, setFirstMedia] = useState<{ url: string; type: 'image' | 'video' } | null>(
-    appId ? firstStoryCache.get(appId) ?? null : null,
-  );
-
-  useEffect(() => {
-    let cancelled = false;
-    async function loadFirstStory() {
-      if (!appId) return;
-      if (firstStoryCache.has(appId)) {
-        setFirstMedia(firstStoryCache.get(appId) ?? null);
-        return;
-      }
-      const { data } = await supabase
-        .from('stories')
-        .select('id, created_at, story_media(url, type, is_cover, order_index)')
-        .eq('app_id', appId)
-        .order('created_at', { ascending: true })
-        .limit(1);
-      const story = data?.[0];
-      const media = story?.story_media as Array<{ url: string; type: string; is_cover?: boolean; order_index?: number }> | undefined;
-      const cover = media?.find((m) => m.is_cover) ?? media?.[0];
-      const next = cover?.url
-        ? { url: cover.url, type: (String(cover.type).includes('video') ? 'video' : 'image') as 'image' | 'video' }
-        : null;
-      firstStoryCache.set(appId, next);
-      if (!cancelled) setFirstMedia(next);
-    }
-    loadFirstStory();
-    return () => { cancelled = true; };
-  }, [appId]);
 
   async function load() {
     if (!user) return;
@@ -167,7 +133,6 @@ export default function AppearancePresets() {
                     config={(p.config as unknown as MiniConfig) ?? null}
                     kind={p.kind as 'floating' | 'carousel'}
                     width={48}
-                    firstMedia={firstMedia}
                   />
                 </span>
                 <span className="inline-block xs:hidden">
@@ -175,7 +140,6 @@ export default function AppearancePresets() {
                     config={(p.config as unknown as MiniConfig) ?? null}
                     kind={p.kind as 'floating' | 'carousel'}
                     width={40}
-                    firstMedia={firstMedia}
                   />
                 </span>
               </div>
