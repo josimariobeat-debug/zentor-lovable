@@ -251,7 +251,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products 
 
         {/* Zone 4 — product cards (bottom-right, narrow stack) */}
         {productList.length > 0 && (
-          <div className="absolute bottom-[76px] right-2.5 z-10 flex flex-col gap-1.5 pointer-events-none w-[58%] max-w-[200px]">
+          <div className="absolute right-2.5 z-10 flex flex-col gap-1.5 pointer-events-none w-[58%] max-w-[200px]" style={{ bottom: 'calc(76px + env(safe-area-inset-bottom))' }}>
             {productList.map((p) => (
               <div
                 key={p.id}
