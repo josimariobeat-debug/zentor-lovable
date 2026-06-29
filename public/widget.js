@@ -362,7 +362,6 @@
 
     function togglePause() {
       paused = !paused;
-      btnPause.innerHTML = ''; btnPause.appendChild(svgIcon(paused ? ICO_PLAY : ICO_PAUSE));
       if (currentEl && currentEl.tagName === 'VIDEO') {
         if (paused) { try { currentEl.pause(); } catch(_){} }
         else { try { var p = currentEl.play(); if (p && p.catch) p.catch(function(){}); } catch(_){} }
