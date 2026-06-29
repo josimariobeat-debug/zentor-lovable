@@ -6,7 +6,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/components/ui/toaster';
 import { Switch } from '@/components/ui/switch';
-import previewVideoAsset from '@/assets/widget-preview.mp4.asset.json';
 import storyDemo2Asset from '@/assets/story-demo-2.mp4.asset.json';
 import storyDemo2Poster from '@/assets/story-demo-2-poster.jpg.asset.json';
 import storyDemo3Asset from '@/assets/story-demo-3.mp4.asset.json';
@@ -15,7 +14,6 @@ import { getMediaProfile, getNetworkTier, rewriteImageForProfile, subscribeNetwo
 import { storyMetrics } from '@/lib/storyMetrics';
 
 
-const PREVIEW_VIDEO_URL = previewVideoAsset.url;
 const STORY_DEMO_2_URL = storyDemo2Asset.url;
 const STORY_DEMO_2_POSTER = storyDemo2Poster.url;
 const STORY_DEMO_3_URL = storyDemo3Asset.url;
@@ -854,24 +852,56 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
   );
 }
 
+/**
+ * Capa do widget: usa o PRIMEIRO story (DEMO_STORIES[0]). Quando é vídeo,
+ * reproduz em loop apenas os 3 primeiros segundos — espelha o comportamento
+ * aplicado no bubble do widget público da loja.
+ */
+const BUBBLE_LOOP_SECONDS = 3;
+
 function PreviewMedia({ fit }: { fit: MediaFit }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const first = DEMO_STORIES[0];
+  const isVideo = first?.type === 'video';
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v || !isVideo) return;
+    const onTime = () => {
+      if (v.currentTime >= BUBBLE_LOOP_SECONDS) {
+        try { v.currentTime = 0; } catch { /* ignore */ }
+        v.play().catch(() => {});
+      }
+    };
+    v.addEventListener('timeupdate', onTime);
+    return () => v.removeEventListener('timeupdate', onTime);
+  }, [isVideo]);
+
+  const commonStyle: React.CSSProperties = {
+    position: 'absolute',
+    inset: 0,
+    width: '100%',
+    height: '100%',
+    objectFit: fit,
+    borderRadius: 'inherit',
+    pointerEvents: 'none',
+  };
+
+  if (!first) return null;
+  if (!isVideo) {
+    return <img src={first.src} alt="" style={commonStyle} />;
+  }
   return (
     <video
-      src={PREVIEW_VIDEO_URL}
+      ref={videoRef}
+      src={first.src}
+      poster={first.poster}
       autoPlay
       muted
       loop
       playsInline
       preload="auto"
-      style={{
-        position: 'absolute',
-        inset: 0,
-        width: '100%',
-        height: '100%',
-        objectFit: fit,
-        borderRadius: 'inherit',
-        pointerEvents: 'none',
-      }}
+      style={commonStyle}
     />
   );
 }
