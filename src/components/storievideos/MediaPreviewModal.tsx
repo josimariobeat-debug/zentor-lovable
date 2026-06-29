@@ -248,27 +248,27 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products 
           <div className="absolute right-0 top-0 bottom-0 w-[38%] z-[5] cursor-pointer" />
         </div>
 
-        {/* Zone 4 — product cards */}
+        {/* Zone 4 — product cards (bottom-right, narrow stack) */}
         {productList.length > 0 && (
-          <div className="absolute bottom-[72px] left-3 right-3 z-10 flex flex-col gap-2 pointer-events-none">
+          <div className="absolute bottom-[76px] right-2.5 z-10 flex flex-col gap-1.5 pointer-events-none w-[58%] max-w-[200px]">
             {productList.map((p) => (
               <div
                 key={p.id}
-                className="pointer-events-auto bg-white rounded-xl p-2.5 flex items-center gap-3 shadow-lg"
+                className="pointer-events-auto bg-white rounded-lg p-1.5 flex items-center gap-1.5 shadow-[0_4px_12px_rgba(0,0,0,0.18)]"
               >
                 {p.image ? (
-                  <img src={p.image} alt={p.name} className="w-11 h-11 rounded-lg object-cover bg-neutral-100 shrink-0" />
+                  <img src={p.image} alt={p.name} className="w-8 h-8 rounded-md object-cover bg-neutral-100 shrink-0" />
                 ) : (
-                  <div className="w-11 h-11 rounded-lg bg-neutral-100 shrink-0" />
+                  <div className="w-8 h-8 rounded-md bg-neutral-100 shrink-0" />
                 )}
                 <div className="flex-1 min-w-0">
-                  <div className="text-[13px] font-semibold text-neutral-900 truncate">{p.name}</div>
-                  <div className="text-[12px] text-neutral-500 mt-0.5">{formatPrice(p.price)}</div>
+                  <div className="text-[11px] font-semibold text-neutral-900 truncate leading-tight">{p.name}</div>
+                  <div className="text-[10px] text-neutral-500 leading-tight">{formatPrice(p.price)}</div>
                 </div>
                 <button
                   type="button"
                   onClick={() => openProduct(p)}
-                  className="bg-neutral-900 text-white text-[12px] font-bold rounded-lg px-3.5 py-2 shrink-0 hover:bg-neutral-700 transition-colors"
+                  className="bg-neutral-900 text-white text-[9px] font-bold rounded-md px-2 py-1 shrink-0 hover:bg-neutral-700 transition-colors tracking-wide"
                 >
                   COMPRAR
                 </button>
