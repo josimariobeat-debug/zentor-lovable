@@ -271,9 +271,13 @@
     var navR = el('div', 'zt-nav zt-nav-r');
     var tapPause = el('div', 'zt-tap-pause');
     var pauseIndicator = el('div', 'zt-pause-indicator');
-    var pauseIndicatorInner = el('div', 'zt-pause-indicator-inner');
+    var pauseIndicatorInner = el('div', 'zt-pause-indicator-inner zt-pi-play');
     pauseIndicatorInner.appendChild(svgIcon(ICO_PLAY));
+    var pauseSoundBtn = el('button', 'zt-pause-indicator-inner zt-pi-sound');
+    pauseSoundBtn.appendChild(svgIcon(ICO_SOUND));
+    pauseSoundBtn.title = 'Som';
     pauseIndicator.appendChild(pauseIndicatorInner);
+    pauseIndicator.appendChild(pauseSoundBtn);
     var productsWrap = el('div', 'zt-products');
 
     var bottomBar       = el('div', 'zt-bottom-bar');
