@@ -27,11 +27,6 @@ const DEMO_STORIES: DemoStory[] = [
     product: { title: 'Novidade da loja', price: 'R$ 189,90', thumb: 'https://images.unsplash.com/photo-1520975916090-3105956dac38?w=120&h=120&fit=crop' },
   },
   {
-    type: 'video',
-    src: PREVIEW_VIDEO_URL,
-    product: { title: 'Vestido floral verão', price: 'R$ 159,90', thumb: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=120&h=120&fit=crop' },
-  },
-  {
     type: 'image',
     src: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=720&h=1280&fit=crop',
     product: { title: 'Promoção relâmpago -30%', price: 'R$ 79,90', thumb: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=120&h=120&fit=crop' },
@@ -48,17 +43,6 @@ const DEMO_STORIES: DemoStory[] = [
     src: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=720&h=1280&fit=crop',
     product: { title: 'Tênis casual branco', price: 'R$ 349,90', thumb: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=120&h=120&fit=crop' },
     duration: 5,
-  },
-  {
-    type: 'image',
-    src: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=720&h=1280&fit=crop',
-    product: { title: 'Camiseta básica algodão', price: 'R$ 59,90', thumb: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=120&h=120&fit=crop' },
-    duration: 5,
-  },
-  {
-    type: 'video',
-    src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-    product: { title: 'Coleção Big Bunny', price: 'R$ 199,90', thumb: 'https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=120&h=120&fit=crop' },
   },
 ];
 
