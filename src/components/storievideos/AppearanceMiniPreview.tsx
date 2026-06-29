@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 type Shape = 'circular' | 'quadrado' | 'personalizado';
 type Position = 'bottom-left' | 'bottom-right' | 'top-left' | 'top-right';
@@ -33,6 +33,24 @@ const BASE_W = 300; // mesma base do editor (mobile phone width)
 const BASE_H = 600;
 
 export default function AppearanceMiniPreview({ config, kind = 'floating', width = 64, firstMedia }: Props) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v || firstMedia?.type !== 'video') return;
+    v.muted = true;
+    v.defaultMuted = true;
+    const onTime = () => { if (v.currentTime >= 3) v.currentTime = 0; };
+    const onLoaded = () => { try { v.currentTime = 0; } catch {} v.play().catch(() => {}); };
+    v.addEventListener('timeupdate', onTime);
+    v.addEventListener('loadedmetadata', onLoaded);
+    v.play().catch(() => {});
+    return () => {
+      v.removeEventListener('timeupdate', onTime);
+      v.removeEventListener('loadedmetadata', onLoaded);
+    };
+  }, [firstMedia?.url, firstMedia?.type]);
+
   const cfg = {
     shape: 'circular' as Shape,
     width: 100,
@@ -151,15 +169,18 @@ export default function AppearanceMiniPreview({ config, kind = 'floating', width
               <div style={bubbleStyle}>
                 {firstMedia?.type === 'video' ? (
                   <video
-                    // Toca apenas o trecho 0–3s usando media fragments
-                    src={`${firstMedia.url}#t=0,3`}
+                    ref={videoRef}
+                    src={firstMedia.url}
                     autoPlay
                     muted
                     loop
                     playsInline
-                    preload="metadata"
+                    {...({ 'webkit-playsinline': 'true' } as Record<string, string>)}
+
+                    preload="auto"
                     style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                   />
+
                 ) : firstMedia?.url ? (
                   <img
                     src={firstMedia.url}
