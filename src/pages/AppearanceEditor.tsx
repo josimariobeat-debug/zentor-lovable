@@ -625,7 +625,8 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
               playsInline
               preload="auto"
               disableRemotePlayback
-              className="absolute inset-0 w-full h-full object-cover"
+              className={`absolute inset-0 w-full h-full ${fit === 'cover' ? 'object-cover' : 'object-contain'}`}
+              onLoadedMetadata={(e) => autoFit(e.currentTarget.videoWidth, e.currentTarget.videoHeight)}
               // Métrica: loadeddata = bytes suficientes para começar.
               onLoadedData={() => storyMetrics.markReady(current.src)}
               // playing = decoder enviou primeiro frame ao compositor (paint iminente).
@@ -641,6 +642,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
                 // Detectamos via .complete no ref callback (roda no commit).
                 if (el && el.complete && el.naturalHeight > 0) {
                   imgLoadedRef.current = true;
+                  autoFit(el.naturalWidth, el.naturalHeight);
                   storyFlowLog('Imagem carregada', { idx, cached: true });
                   storyFlowLog('Story seguinte carregado', { idx, type: 'image' });
                   storyMetrics.markReady(current.src);
@@ -649,10 +651,11 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
               }}
               src={rewriteImageForProfile(current.src, profile)}
               alt=""
-              className="absolute inset-0 w-full h-full object-cover"
+              className={`absolute inset-0 w-full h-full ${fit === 'cover' ? 'object-cover' : 'object-contain'}`}
               draggable={false}
-              onLoad={() => {
+              onLoad={(e) => {
                 imgLoadedRef.current = true;
+                autoFit(e.currentTarget.naturalWidth, e.currentTarget.naturalHeight);
                 storyFlowLog('Imagem carregada', { idx, cached: false });
                 storyFlowLog('Story seguinte carregado', { idx, type: 'image' });
                 storyMetrics.markReady(current.src);
