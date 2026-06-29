@@ -481,22 +481,28 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
               Cada elemento chama storyMetrics.markPreloaded ao terminar,
               permitindo medir se a próxima mídia estava quente antes do "end". */}
           {(() => {
-            // Próximo story (wrap-around) recebe tratamento prioritário:
-            // preload="auto" e fetchpriority="high" mesmo em tier baixo, porque
-            // ele é o que vai aparecer no próximo tap/auto-advance. Os demais
-            // seguem o perfil de rede para não desperdiçar dados móveis.
-            const nextIdx = (idx + 1) % DEMO_STORIES.length;
+            // Janela de prioridade: idx+1 (próximo) e idx+2 (subsequente) recebem
+            // preload="auto" / fetchpriority="high" mesmo em rede baixa — é a
+            // janela em que o usuário tende a avançar antes do auto-advance.
+            // idx+1 ganha prioridade máxima ("high"), idx+2 fica em "auto"
+            // (download em paralelo sem competir com a mídia em tela).
+            // Demais stories seguem o perfil adaptativo para poupar dados.
+            const total = DEMO_STORIES.length;
+            const nextIdx = (idx + 1) % total;
+            const next2Idx = (idx + 2) % total;
             return (
               <div aria-hidden className="hidden">
                 {DEMO_STORIES.map((s, i) => {
                   if (i === idx) return null;
                   const isNext = i === nextIdx;
+                  const isNext2 = i === next2Idx && next2Idx !== nextIdx;
+                  const priority = isNext || isNext2;
                   return s.type === 'video' ? (
                     <video
                       key={`pre-${s.src}`}
                       src={s.src}
                       poster={s.poster}
-                      preload={isNext ? 'auto' : profile.videoPreload}
+                      preload={priority ? 'auto' : profile.videoPreload}
                       muted
                       playsInline
                       onLoadedData={() => storyMetrics.markPreloaded(s.src)}
@@ -508,7 +514,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
                       alt=""
                       decoding="async"
                       loading="eager"
-                      {...(isNext ? { fetchPriority: 'high' as const } : {})}
+                      {...(isNext ? { fetchPriority: 'high' as const } : isNext2 ? { fetchPriority: 'auto' as const } : {})}
                       onLoad={() => storyMetrics.markPreloaded(s.src)}
                     />
                   );
