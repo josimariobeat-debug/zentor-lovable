@@ -879,12 +879,13 @@ function PreviewMedia({ fit }: { fit: MediaFit }) {
 
   const commonStyle: React.CSSProperties = {
     position: 'absolute',
-    inset: 0,
-    width: '100%',
-    height: '100%',
+    inset: -1,
+    width: 'calc(100% + 2px)',
+    height: 'calc(100% + 2px)',
     objectFit: fit,
     borderRadius: 'inherit',
     pointerEvents: 'none',
+    display: 'block',
   };
 
   if (!first) return null;
@@ -1097,7 +1098,7 @@ export default function AppearanceEditor() {
       h = cfg.height;
     }
     const borderCss =
-      cfg.borderStyle === 'nenhum'
+      cfg.borderStyle === 'nenhum' || cfg.borderStyle === 'pulsar'
         ? 'none'
         : `3px ${cfg.borderStyle === 'tracejado' ? 'dashed' : 'solid'} ${cfg.color}`;
     return {
