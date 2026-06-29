@@ -8,6 +8,7 @@ import { toast } from '@/components/ui/toaster';
 import { Switch } from '@/components/ui/switch';
 import previewVideoAsset from '@/assets/widget-preview.mp4.asset.json';
 import storyIosAsset from '@/assets/story-ios.mp4.asset.json';
+import { getMediaProfile, getNetworkTier, rewriteImageForProfile, subscribeNetworkChange, type MediaProfile, type NetworkTier } from '@/lib/networkProfile';
 
 const PREVIEW_VIDEO_URL = previewVideoAsset.url;
 const STORY_IOS_URL = storyIosAsset.url;
@@ -70,6 +71,11 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
   const rafRef = useRef<number | null>(null);
   const startedAtRef = useRef<number>(0);
   const accumRef = useRef<number>(0);
+
+  // Perfil adaptativo (rede + dispositivo). Reage a mudanças Wi-Fi ⇄ 4G.
+  const [tier, setTier] = useState<NetworkTier>(() => (typeof navigator === 'undefined' ? 'high' : getNetworkTier()));
+  useEffect(() => subscribeNetworkChange(() => setTier(getNetworkTier())), []);
+  const profile: MediaProfile = useMemo(() => getMediaProfile(tier), [tier]);
 
   // TikTok-style action column state
   const [liked, setLiked] = useState<Record<number, boolean>>({});
@@ -196,24 +202,61 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
     v.setAttribute('x5-playsinline', 'true');
     v.muted = muted;
     if (!muted) v.volume = 1;
+
+    // Tentativa robusta de play com retry usando o estado de mudo/volume *atual*.
+    // iOS bloqueia por: política de autoplay, mudança de página, AirPlay, audio session
+    // perdida e até stalls de rede. Em qualquer dessas situações, retentamos —
+    // primeiro com o som pedido, depois caindo para mudo se necessário.
+    let retryTimer = 0;
+    let retryCount = 0;
+    const tryPlay = () => {
+      const cur = videoRef.current;
+      if (!cur) return;
+      // Re-aplica estado de áudio sempre que retentamos (usuário pode ter alternado mudo).
+      cur.muted = muted;
+      if (!muted) cur.volume = 1;
+      const p = cur.play();
+      if (p && typeof p.then === 'function') {
+        p.catch(() => {
+          if (!cur.muted && retryCount < 1) {
+            // Primeira falha com som: cai para mudo e tenta de novo (gesto pendente).
+            cur.muted = true;
+            setMuted(true);
+            retryCount += 1;
+            retryTimer = window.setTimeout(tryPlay, 120);
+          } else if (retryCount < 3) {
+            // Backoff curto para stalls/interrupções (AirPlay, audio session, etc.)
+            retryCount += 1;
+            retryTimer = window.setTimeout(tryPlay, 250 * retryCount);
+          }
+        });
+      }
+    };
+
     const onEnd = () => goNext();
+    const onPauseUnexpected = () => {
+      // iOS às vezes pausa sozinho ao retomar do background; retentamos se não pedimos pause.
+      if (!interactionPaused && !paused) retryTimer = window.setTimeout(tryPlay, 60);
+    };
+    const onStalled = () => { retryTimer = window.setTimeout(tryPlay, 200); };
+    const onVisibility = () => { if (!document.hidden) tryPlay(); };
+
     v.addEventListener('ended', onEnd);
-    const p = v.play();
-    if (p && typeof p.then === 'function') {
-      p.catch(() => {
-        // Autoplay with sound is blocked on iOS/Safari until a user gesture — fall back to muted.
-        if (!v.muted) {
-          v.muted = true;
-          setMuted(true);
-          v.play().catch(() => {});
-        }
-      });
-    }
+    v.addEventListener('pause', onPauseUnexpected);
+    v.addEventListener('stalled', onStalled);
+    v.addEventListener('suspend', onStalled);
+    document.addEventListener('visibilitychange', onVisibility);
+    tryPlay();
+
     return () => {
+      window.clearTimeout(retryTimer);
       v.removeEventListener('ended', onEnd);
+      v.removeEventListener('pause', onPauseUnexpected);
+      v.removeEventListener('stalled', onStalled);
+      v.removeEventListener('suspend', onStalled);
+      document.removeEventListener('visibilitychange', onVisibility);
     };
   }, [idx, isVideo, muted]);
-
 
   // Pause/resume on toggle (including comments/share overlays)
   useEffect(() => {
@@ -221,6 +264,8 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
     const v = videoRef.current; if (!v) return;
     if (interactionPaused) v.pause(); else v.play().catch(() => {});
   }, [interactionPaused, isVideo, idx]);
+
+
 
   function togglePlay() {
     setPaused((p) => {
@@ -349,7 +394,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
           ) : (
             <img
               key={`i-${idx}`}
-              src={current.src}
+              src={rewriteImageForProfile(current.src, profile)}
               alt=""
               className="absolute inset-0 w-full h-full object-cover"
               draggable={false}
@@ -358,17 +403,33 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
             />
           )}
 
-          {/* Pré-carrega os próximos 2 stories (sem render) para troca instantânea estilo Instagram. */}
-          <div aria-hidden className="hidden">
-            {[1, 2].map((offset) => {
-              const next = DEMO_STORIES[(idx + offset) % DEMO_STORIES.length];
-              return next.type === 'video' ? (
-                <video key={`pre-v-${idx}-${offset}`} src={next.src} preload="auto" muted playsInline />
-              ) : (
-                <img key={`pre-i-${idx}-${offset}`} src={next.src} alt="" />
-              );
-            })}
-          </div>
+          {/* Pré-carrega os próximos stories conforme perfil de rede/dispositivo.
+              - Wi-Fi/desktop forte: 2 próximos com vídeo preload="auto".
+              - 3G/dispositivo médio: 1 próximo com preload="metadata" (só headers).
+              - 2G/Save-Data/baixa memória: nada — evita estourar dados móveis. */}
+          {profile.preloadCount > 0 && (
+            <div aria-hidden className="hidden">
+              {Array.from({ length: profile.preloadCount }, (_, k) => k + 1).map((offset) => {
+                const next = DEMO_STORIES[(idx + offset) % DEMO_STORIES.length];
+                return next.type === 'video' ? (
+                  <video
+                    key={`pre-v-${idx}-${offset}`}
+                    src={next.src}
+                    preload={profile.videoPreload}
+                    muted
+                    playsInline
+                  />
+                ) : (
+                  <img
+                    key={`pre-i-${idx}-${offset}`}
+                    src={rewriteImageForProfile(next.src, profile)}
+                    alt=""
+                  />
+                );
+              })}
+            </div>
+          )}
+
 
           {/* Instagram-style tap zones for prev/next.
               Right zone stops before the action column so taps on icons aren't hijacked.
