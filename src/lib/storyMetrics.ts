@@ -135,11 +135,18 @@ class StoryMetrics {
     );
   }
 
+  /** Story preso por timeout do watchdog — não houve onLoad/loadedmetadata. */
+  markStuck(idx: number, reason: 'image-timeout' | 'video-timeout') {
+    // eslint-disable-next-line no-console
+    console.warn(`[stories] watchdog idx=${idx} reason=${reason} → fallback advance`);
+  }
+
   reset() {
     this.preloads.clear();
     this.pending = null;
     this.history = [];
   }
+
 
   summary() {
     const ff = this.history.map((h) => h.endToFirstFrameMs).filter((x): x is number => x != null);
