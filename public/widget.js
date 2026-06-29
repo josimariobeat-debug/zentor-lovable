@@ -265,9 +265,9 @@
     var progress    = el('div', 'zt-progress');
 
     var topCtrl   = el('div', 'zt-top-controls');
-    var btnSound  = el('button', 'zt-ctrl-btn'); btnSound.appendChild(svgIcon(ICO_SOUND)); btnSound.title = 'Silenciar';
     var btnClose  = el('button', 'zt-ctrl-btn'); btnClose.appendChild(svgIcon(ICO_CLOSE)); btnClose.title = 'Fechar';
-    topCtrl.appendChild(btnSound); topCtrl.appendChild(btnClose);
+    topCtrl.appendChild(btnClose);
+
 
     var navL = el('div', 'zt-nav zt-nav-l');
     var navR = el('div', 'zt-nav zt-nav-r');
@@ -391,8 +391,8 @@
 
     function toggleMute() {
       muted = !muted;
-      btnSound.innerHTML = ''; btnSound.appendChild(svgIcon(muted ? ICO_MUTE : ICO_SOUND));
       pauseSoundBtn.innerHTML = ''; pauseSoundBtn.appendChild(svgIcon(muted ? ICO_MUTE : ICO_SOUND));
+
       if (currentEl && currentEl.tagName === 'VIDEO') currentEl.muted = muted;
     }
     pauseSoundBtn.addEventListener('click', function (e) { e.stopPropagation(); toggleMute(); });
@@ -519,7 +519,7 @@
         v.addEventListener('playing', function () { logTimerStarted('video', Number.isFinite(v.duration) ? Math.round(v.duration*1000) : undefined); });
         v.addEventListener('ended', function () { track('completed', story.id); nextOnce('video-ended-event'); });
         mediaWrap.appendChild(v); currentEl = v;
-        v.play().catch(function () { v.muted = true; muted = true; btnSound.innerHTML = ''; btnSound.appendChild(svgIcon(ICO_MUTE)); pauseSoundBtn.innerHTML = ''; pauseSoundBtn.appendChild(svgIcon(ICO_MUTE)); v.play().catch(function(){}); });
+        v.play().catch(function () { v.muted = true; muted = true; pauseSoundBtn.innerHTML = ''; pauseSoundBtn.appendChild(svgIcon(ICO_MUTE)); v.play().catch(function(){}); });
       } else {
         var im = document.createElement('img'); im.src = item.url; mediaWrap.appendChild(im); currentEl = im;
         var bar2 = progress.children[mediaIdx] && progress.children[mediaIdx].firstChild;
@@ -562,7 +562,7 @@
     }
     document.addEventListener('keydown', onKey);
 
-    btnSound.addEventListener('click', function (e) { e.stopPropagation(); toggleMute(); });
+    
     btnClose.addEventListener('click', function (e) { e.stopPropagation(); destroy(); });
     overlay.addEventListener('click', function (e) { if (e.target === overlay) destroy(); });
     navL.addEventListener('click', prev);
