@@ -356,10 +356,11 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                 type="button"
                 onClick={(e) => { e.stopPropagation(); setMuted((m) => !m); }}
                 aria-label={muted ? 'Ativar som' : 'Silenciar'}
-                className="pointer-events-auto w-11 h-11 rounded-full bg-black/45 backdrop-blur-sm flex items-center justify-center text-white border-0 cursor-pointer hover:bg-black/60"
+                className="pointer-events-auto w-8 h-8 rounded-full bg-black/45 backdrop-blur-sm flex items-center justify-center text-white border-0 cursor-pointer hover:bg-black/60"
               >
-                {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                {muted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
               </button>
+
               <div className="w-11 h-11 rounded-full bg-black/45 backdrop-blur-sm flex items-center justify-center">
                 <Play className="w-4 h-4 text-white fill-white ml-0.5" />
               </div>
