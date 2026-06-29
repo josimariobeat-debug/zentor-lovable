@@ -358,7 +358,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                   <button
                     type="button"
                     onClick={() => openProduct(p)}
-                    className="bg-black hover:bg-neutral-800 transition-colors text-white font-semibold text-[12px] px-3 py-1.5 rounded-md shrink-0"
+                    className="bg-white hover:bg-neutral-100 transition-colors text-neutral-900 font-semibold text-[12px] px-3 py-1.5 rounded-md shrink-0"
                   >
                     Comprar
                   </button>
