@@ -277,10 +277,10 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
           <button
             type="button"
             onClick={() => onOpenChange(false)}
-            className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm border-0 flex items-center justify-center text-white cursor-pointer hover:bg-black/70"
+            className="bg-transparent border-0 flex items-center justify-center text-white cursor-pointer p-1"
             aria-label="Fechar"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
