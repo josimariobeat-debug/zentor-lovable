@@ -279,7 +279,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products 
         )}
 
         {/* Zone 5 — bottom bar */}
-        <div className="absolute bottom-0 left-0 right-0 h-[56px] bg-[#111] flex items-center px-3.5 gap-3 z-20">
+        <div className="absolute bottom-0 left-0 right-0 bg-[#111] flex items-center px-3.5 gap-3 z-20" style={{ height: 'calc(56px + env(safe-area-inset-bottom))', paddingBottom: 'env(safe-area-inset-bottom)' }}>
           <button
             type="button"
             onClick={() => setShowCommentForm(true)}
