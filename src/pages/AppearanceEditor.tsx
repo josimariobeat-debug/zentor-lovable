@@ -9,6 +9,8 @@ import { Switch } from '@/components/ui/switch';
 import previewVideoAsset from '@/assets/widget-preview.mp4.asset.json';
 import storyDemo2Asset from '@/assets/story-demo-2.mp4.asset.json';
 import storyDemo2Poster from '@/assets/story-demo-2-poster.jpg.asset.json';
+import storyDemo3Asset from '@/assets/story-demo-3.mp4.asset.json';
+import storyDemo3Poster from '@/assets/story-demo-3-poster.jpg.asset.json';
 import { getMediaProfile, getNetworkTier, rewriteImageForProfile, subscribeNetworkChange, type MediaProfile, type NetworkTier } from '@/lib/networkProfile';
 import { storyMetrics } from '@/lib/storyMetrics';
 
@@ -16,6 +18,8 @@ import { storyMetrics } from '@/lib/storyMetrics';
 const PREVIEW_VIDEO_URL = previewVideoAsset.url;
 const STORY_DEMO_2_URL = storyDemo2Asset.url;
 const STORY_DEMO_2_POSTER = storyDemo2Poster.url;
+const STORY_DEMO_3_URL = storyDemo3Asset.url;
+const STORY_DEMO_3_POSTER = storyDemo3Poster.url;
 
 interface DemoStory {
   type: 'video' | 'image';
@@ -33,22 +37,10 @@ const DEMO_STORIES: DemoStory[] = [
     product: { title: 'Coleção em destaque', price: 'R$ 259,90', thumb: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=120&h=120&fit=crop' },
   },
   {
-    type: 'image',
-    src: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=720&h=1280&fit=crop',
-    product: { title: 'Promoção relâmpago -30%', price: 'R$ 79,90', thumb: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=120&h=120&fit=crop' },
-    duration: 5,
-  },
-  {
-    type: 'image',
-    src: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=720&h=1280&fit=crop',
-    product: { title: 'Lookbook outono', price: 'R$ 229,00', thumb: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=120&h=120&fit=crop' },
-    duration: 5,
-  },
-  {
-    type: 'image',
-    src: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=720&h=1280&fit=crop',
-    product: { title: 'Tênis casual branco', price: 'R$ 349,90', thumb: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=120&h=120&fit=crop' },
-    duration: 5,
+    type: 'video',
+    src: STORY_DEMO_3_URL,
+    poster: STORY_DEMO_3_POSTER,
+    product: { title: 'TV em destaque', price: 'R$ 2.499,00', thumb: STORY_DEMO_3_POSTER },
   },
 ];
 
