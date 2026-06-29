@@ -600,12 +600,20 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
           <button onClick={toggleMute} aria-label={muted ? 'Ativar som' : 'Silenciar'} className="w-9 h-9 rounded-full bg-black/40 hover:bg-black/60 text-white grid place-items-center transition-colors">
             {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
           </button>
+          <button
+            onClick={() => { setFitUserSet(true); setFit((f) => (f === 'cover' ? 'contain' : 'cover')); }}
+            aria-label={fit === 'cover' ? 'Ajustar à tela' : 'Preencher tela'}
+            title={fit === 'cover' ? 'Ajustar à tela (contain)' : 'Preencher tela (cover)'}
+            className="w-9 h-9 rounded-full bg-black/40 hover:bg-black/60 text-white grid place-items-center transition-colors"
+          >
+            {fit === 'cover' ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+          </button>
           <button onClick={onClose} aria-label="Fechar" className="w-9 h-9 rounded-full bg-black/40 hover:bg-black/60 text-white grid place-items-center transition-colors">
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="relative rounded-2xl overflow-hidden bg-black shadow-2xl" style={{ aspectRatio: '9 / 16' }}>
+        <div className="relative rounded-2xl overflow-hidden bg-black shadow-2xl w-full h-full max-sm:rounded-none" style={{ aspectRatio: '9 / 16' }}>
           {isVideo ? (
             <video
               ref={videoRef}
