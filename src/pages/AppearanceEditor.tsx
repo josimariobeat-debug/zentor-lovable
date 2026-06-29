@@ -139,11 +139,19 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose, commentsOpen, shareOpen]);
 
+  // Watchdog: tempo em que o story atual montou. Se eventos de mídia
+  // (onLoad de imagem ou loadedmetadata/duration de vídeo) não dispararem
+  // dentro do timeout, forçamos o avanço pra não travar a barra.
+  const mountedAtRef = useRef<number>(performance.now());
+  const IMAGE_LOAD_TIMEOUT_MS = 3500; // assume carregada e começa a contar
+  const VIDEO_READY_TIMEOUT_MS = 6000; // sem duration → pula
+
   // Reset progresso e timers ao trocar de story — direto no DOM, sem re-render.
   useEffect(() => {
     accumRef.current = 0;
     startedAtRef.current = 0;
     imgLoadedRef.current = false;
+    mountedAtRef.current = performance.now();
     resetBarsFor(idx);
   }, [idx]);
 
@@ -155,17 +163,33 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
     const tick = (now: number) => {
       if (cancelled) return;
       const i = idxRef.current;
+      const sinceMount = now - mountedAtRef.current;
       if (isVideoRef.current) {
         const v = videoRef.current;
         if (v && v.duration > 0 && !Number.isNaN(v.duration)) {
           setBar(i, Math.min(1, v.currentTime / v.duration));
+        } else if (sinceMount > VIDEO_READY_TIMEOUT_MS) {
+          // Vídeo nunca ficou pronto (sem metadata, rede caiu, codec falhou).
+          // Avança em vez de prender o usuário em tela preta.
+          storyMetrics.markStuck(i, 'video-timeout');
+          setBar(i, 1);
+          goNext();
+          raf = requestAnimationFrame(tick);
+          return;
         }
         raf = requestAnimationFrame(tick);
         return;
       }
       if (!imgLoadedRef.current) {
-        raf = requestAnimationFrame(tick);
-        return;
+        // Fallback: se onLoad/ref não dispararam no tempo esperado, assume
+        // que a imagem está pronta (cache silencioso, decoder lento, etc).
+        if (sinceMount > IMAGE_LOAD_TIMEOUT_MS) {
+          imgLoadedRef.current = true;
+          storyMetrics.markStuck(i, 'image-timeout');
+        } else {
+          raf = requestAnimationFrame(tick);
+          return;
+        }
       }
       if (pausedRef.current) {
         startedAtRef.current = 0;
@@ -184,7 +208,8 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
     };
     raf = requestAnimationFrame(tick);
     return () => { cancelled = true; if (raf) cancelAnimationFrame(raf); };
-  }, []);
+  }, [goNext]);
+
 
 
   // When pausing an image story, fold elapsed time into accum so resume continues.
