@@ -728,27 +728,27 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
 
           {/* Stacked product cards — empilhados acima da barra de ações inferior */}
           <div
-            className="absolute left-3 right-3 z-20 flex flex-col gap-2"
-            style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 76px)' }}
+            className="absolute left-3 right-3 z-20 flex flex-col gap-2.5"
+            style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 88px)' }}
           >
             {(current.products && current.products.length > 0 ? current.products : [current.product])
               .slice(0, 2)
               .map((p, i) => (
                 <div
                   key={`${idx}-prod-${i}`}
-                  className="bg-white rounded-xl shadow-lg p-2 flex items-center gap-3 ml-auto w-[78%] max-w-[280px]"
+                  className="bg-white rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.18)] p-1.5 pr-2 flex items-center gap-2.5 ml-auto w-[72%] max-w-[300px]"
                 >
-                  <div className="w-11 h-11 rounded-lg overflow-hidden bg-neutral-200 shrink-0">
+                  <div className="w-10 h-10 rounded-xl overflow-hidden bg-neutral-200 shrink-0">
                     <img src={p.thumb} alt="" className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[13px] font-semibold text-neutral-900 truncate">{p.title}</div>
-                    <div className="text-[12px] font-bold text-neutral-900">{p.price}</div>
+                    <div className="text-[13px] font-semibold text-neutral-900 truncate leading-tight">{p.title}</div>
+                    <div className="text-[12px] font-semibold text-neutral-700 leading-tight mt-0.5">{p.price}</div>
                   </div>
                   <button
                     type="button"
                     onClick={(e) => e.stopPropagation()}
-                    className="shrink-0 h-8 px-3 rounded-md bg-neutral-900 text-white text-[11px] font-bold tracking-wide hover:bg-neutral-800 transition-colors"
+                    className="shrink-0 h-9 px-3.5 rounded-xl bg-neutral-900 text-white text-[11px] font-extrabold tracking-wider hover:bg-neutral-800 transition-colors"
                   >
                     COMPRAR
                   </button>
@@ -756,15 +756,15 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
               ))}
           </div>
 
-          {/* Bottom action bar (Instagram-style): Comentar pill + Like / Comment / Share */}
+          {/* Bottom action bar — barra sólida escura ocupando toda a largura */}
           <div
-            className="absolute left-0 right-0 bottom-0 z-30 px-3 pt-3 pb-3 bg-gradient-to-t from-black/80 via-black/40 to-transparent"
-            style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)' }}
+            className="absolute left-0 right-0 bottom-0 z-30 bg-[#1f1f1f] px-4 pt-3"
+            style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 14px)' }}
           >
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-4">
               <button
                 onClick={openComments}
-                className="flex-1 h-11 px-5 rounded-full bg-black/70 backdrop-blur-md border border-white/15 text-white/90 text-sm text-left hover:bg-black/80 transition-colors"
+                className="flex-1 h-[52px] px-6 rounded-full bg-transparent border border-white/80 text-white text-[15px] font-medium text-center hover:bg-white/5 transition-colors"
               >
                 Comentar
               </button>
@@ -772,28 +772,29 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
                 onClick={toggleLike}
                 aria-label={isLiked ? 'Descurtir' : 'Curtir'}
                 aria-pressed={isLiked}
-                className="w-11 h-11 grid place-items-center text-white transition-transform active:scale-90"
+                className="w-9 h-9 grid place-items-center text-white transition-transform active:scale-90"
               >
                 <Heart
-                  className={`w-7 h-7 transition-all ${isLiked ? 'text-red-500' : 'text-white'} ${likeBurst ? 'animate-[heartPulse_.6s_ease-out]' : ''}`}
-                  fill={isLiked ? 'currentColor' : 'none'}
+                  className={`w-8 h-8 transition-all ${likeBurst ? 'animate-[heartPulse_.6s_ease-out]' : ''}`}
+                  style={{ color: '#ef2c4a' }}
+                  fill="currentColor"
                   strokeWidth={2}
                 />
               </button>
               <button
                 onClick={openComments}
                 aria-label="Comentar"
-                className="relative w-11 h-11 grid place-items-center text-white transition-transform active:scale-90"
+                className="relative w-9 h-9 grid place-items-center text-white transition-transform active:scale-90"
               >
-                <MessageCircle className="w-7 h-7" strokeWidth={2} />
-                <span className="absolute top-1 right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-white text-neutral-900 text-[10px] font-bold grid place-items-center leading-none">3</span>
+                <MessageCircle className="w-8 h-8" strokeWidth={1.75} />
+                <span className="absolute -top-0.5 right-0 text-white text-[11px] font-semibold leading-none">3</span>
               </button>
               <button
                 onClick={handleShare}
                 aria-label="Compartilhar"
-                className="w-11 h-11 grid place-items-center text-white transition-transform active:scale-90"
+                className="w-9 h-9 grid place-items-center text-white transition-transform active:scale-90"
               >
-                <Send className="w-[26px] h-[26px] -rotate-12" strokeWidth={2} />
+                <Send className="w-8 h-8 -rotate-12" strokeWidth={1.75} />
               </button>
             </div>
           </div>
