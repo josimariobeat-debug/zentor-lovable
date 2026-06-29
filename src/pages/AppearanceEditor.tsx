@@ -174,6 +174,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
     let cancelled = false;
     const tick = (now: number) => {
       if (cancelled) return;
+      try {
       const i = idxRef.current;
       const sinceMount = now - mountedAtRef.current;
       if (isVideoRef.current) {
@@ -268,7 +269,16 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
         goNext();
       }
       raf = requestAnimationFrame(tick);
+      } catch (err) {
+        // Blindagem: um erro num único frame não pode matar o loop inteiro.
+        // Sem isso, o avanço automático para silenciosamente para sempre
+        // (toques manuais continuam funcionando porque são onClick separados).
+        // eslint-disable-next-line no-console
+        console.warn('[stories] tick error, continuando loop:', err);
+        raf = requestAnimationFrame(tick);
+      }
     };
+
     raf = requestAnimationFrame(tick);
     return () => { cancelled = true; if (raf) cancelAnimationFrame(raf); };
   }, [goNext]);
