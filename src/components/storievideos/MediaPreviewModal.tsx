@@ -276,14 +276,6 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
         <div className="absolute right-3 flex items-center gap-2.5 z-20" style={{ top: 'calc(max(10px, env(safe-area-inset-top)) + 14px)' }}>
           <button
             type="button"
-            onClick={() => setMuted((m) => !m)}
-            className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm border-0 flex items-center justify-center text-white cursor-pointer hover:bg-black/70"
-            aria-label={muted ? 'Ativar som' : 'Silenciar'}
-          >
-            {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-          </button>
-          <button
-            type="button"
             onClick={() => onOpenChange(false)}
             className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm border-0 flex items-center justify-center text-white cursor-pointer hover:bg-black/70"
             aria-label="Fechar"
