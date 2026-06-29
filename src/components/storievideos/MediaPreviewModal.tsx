@@ -120,13 +120,26 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products 
       const pct = Math.min(100, (v.currentTime / v.duration) * 100);
       progressRef.current.style.width = pct + '%';
     };
+    const onMeta = () => {
+      if (fitUserSet) return;
+      const w = v.videoWidth;
+      const h = v.videoHeight;
+      if (!w || !h) return;
+      const ratio = w / h;
+      const target = 9 / 16;
+      // If not close to 9:16 (tolerance ~5%), default to 'contain' to avoid cropping.
+      setFit(Math.abs(ratio - target) / target > 0.05 ? 'contain' : 'cover');
+    };
     v.addEventListener('loadeddata', onLoaded);
     v.addEventListener('timeupdate', onTime);
+    v.addEventListener('loadedmetadata', onMeta);
+    if (v.readyState >= 1) onMeta();
     return () => {
       v.removeEventListener('loadeddata', onLoaded);
       v.removeEventListener('timeupdate', onTime);
+      v.removeEventListener('loadedmetadata', onMeta);
     };
-  }, [open, isVideo, url]);
+  }, [open, isVideo, url, fitUserSet]);
 
   // Apply pause/mute and drawer pausing to video
   useEffect(() => {
