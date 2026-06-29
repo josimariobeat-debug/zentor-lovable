@@ -343,7 +343,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
             {productList.map((p) => (
               <div
                 key={p.id}
-                className="pointer-events-auto bg-white rounded-2xl p-2 flex items-center gap-2.5 shadow-[0_6px_18px_rgba(0,0,0,0.22)]"
+                className={`pointer-events-auto bg-white rounded-2xl flex items-center shadow-[0_6px_18px_rgba(0,0,0,0.22)] ${hasPlaylist ? 'h-12 px-2 gap-2' : 'p-2 gap-2.5'}`}
               >
                 {p.image ? (
                   <img src={p.image} alt={p.name} className={`object-cover bg-neutral-100 shrink-0 ${hasPlaylist ? 'w-8 h-8 rounded-md' : 'w-11 h-11 rounded-xl'}`} />
@@ -351,8 +351,8 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                   <div className={`bg-neutral-100 shrink-0 ${hasPlaylist ? 'w-8 h-8 rounded-md' : 'w-11 h-11 rounded-xl'}`} />
                 )}
                 <div className="flex-1 min-w-0">
-                  <div className="text-[13px] font-semibold text-neutral-900 truncate leading-tight">{p.name}</div>
-                  <div className="text-[11px] text-neutral-500 leading-tight mt-0.5">{formatPrice(p.price)}</div>
+                  <div className={`font-semibold text-neutral-900 truncate leading-tight ${hasPlaylist ? 'text-[11px]' : 'text-[13px]'}`}>{p.name}</div>
+                  <div className={`text-neutral-500 leading-tight mt-0.5 ${hasPlaylist ? 'text-[9px]' : 'text-[11px]'}`}>{formatPrice(p.price)}</div>
                 </div>
                 <button
                   type="button"
