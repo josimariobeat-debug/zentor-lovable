@@ -337,34 +337,27 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
           )}
         </div>
 
-        {/* Zone 4 — product cards (bottom-right, consistent rhythm) */}
+        {/* Zone 4 — product cards (bottom-right, larger stack matching reference) */}
         {productList.length > 0 && (
-          <div
-            className="absolute right-3 z-10 flex flex-col gap-2 pointer-events-none w-[74%] max-w-[300px]"
-            style={{ bottom: 'calc(80px + env(safe-area-inset-bottom))' }}
-          >
+          <div className="absolute right-3 z-10 flex flex-col gap-2 pointer-events-none w-[74%] max-w-[300px]" style={{ bottom: 'calc(80px + env(safe-area-inset-bottom))' }}>
             {productList.map((p) => (
               <div
                 key={p.id}
-                className="pointer-events-auto bg-white rounded-2xl px-2 py-2 flex items-center gap-2.5 shadow-[0_6px_18px_rgba(0,0,0,0.22)] h-[60px]"
+                className="pointer-events-auto bg-white rounded-2xl p-2 flex items-center gap-2.5 shadow-[0_6px_18px_rgba(0,0,0,0.22)]"
               >
                 {p.image ? (
-                  <img
-                    src={p.image}
-                    alt={p.name}
-                    className="w-11 h-11 rounded-xl object-cover bg-neutral-100 shrink-0"
-                  />
+                  <img src={p.image} alt={p.name} className="w-11 h-11 rounded-xl object-cover bg-neutral-100 shrink-0" />
                 ) : (
                   <div className="w-11 h-11 rounded-xl bg-neutral-100 shrink-0" />
                 )}
-                <div className="flex-1 min-w-0 flex flex-col justify-center">
-                  <div className="text-[13px] font-semibold text-neutral-900 truncate leading-[1.15]">{p.name}</div>
-                  <div className="text-[11px] text-neutral-500 leading-[1.15] mt-0.5">{formatPrice(p.price)}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[13px] font-semibold text-neutral-900 truncate leading-tight">{p.name}</div>
+                  <div className="text-[11px] text-neutral-500 leading-tight mt-0.5">{formatPrice(p.price)}</div>
                 </div>
                 <button
                   type="button"
                   onClick={() => openProduct(p)}
-                  className="bg-neutral-900 text-white text-[10px] font-bold rounded-lg shrink-0 hover:bg-neutral-700 transition-colors tracking-[0.06em] h-8 px-3 inline-flex items-center justify-center"
+                  className="bg-neutral-900 text-white text-[10px] font-bold rounded-lg px-2.5 py-2 shrink-0 hover:bg-neutral-700 transition-colors tracking-wider"
                 >
                   COMPRAR
                 </button>
