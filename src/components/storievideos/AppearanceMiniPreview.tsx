@@ -146,8 +146,30 @@ export default function AppearanceMiniPreview({ config, kind = 'floating', width
                 ))}
               </div>
             </div>
-            {/* Widget bubble */}
-            {!cfg.hideStories && <div style={bubbleStyle} />}
+            {/* Widget bubble — preview do primeiro Stories (3s para vídeo) */}
+            {!cfg.hideStories && (
+              <div style={bubbleStyle}>
+                {firstMedia?.type === 'video' ? (
+                  <video
+                    // Toca apenas o trecho 0–3s usando media fragments
+                    src={`${firstMedia.url}#t=0,3`}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    preload="metadata"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                  />
+                ) : firstMedia?.url ? (
+                  <img
+                    src={firstMedia.url}
+                    alt=""
+                    loading="lazy"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                  />
+                ) : null}
+              </div>
+            )}
           </div>
         </div>
       </div>
