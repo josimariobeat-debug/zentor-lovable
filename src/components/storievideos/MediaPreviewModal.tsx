@@ -167,26 +167,31 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, isVideo, progressStarted, paused, anyDrawerOpen, currentIdx]);
 
-  // Video: drive progress via timeupdate; auto-advance on ended
+  // Video: drive progress via rAF (smooth); auto-advance on ended
   useEffect(() => {
     if (!open || !isVideo) return;
     const v = videoRef.current;
     if (!v) return;
     const onLoaded = () => setProgressStarted(true);
-    const onTime = () => {
-      const cur = segmentRefs.current[currentIdx];
-      if (!cur || !v.duration) return;
-      const pct = Math.min(100, (v.currentTime / v.duration) * 100);
-      cur.style.width = pct + '%';
-    };
     const onEnded = () => advance();
     v.addEventListener('loadeddata', onLoaded);
-    v.addEventListener('timeupdate', onTime);
     v.addEventListener('ended', onEnded);
+
+    let raf = 0;
+    const tick = () => {
+      const cur = segmentRefs.current[currentIdx];
+      if (cur && v.duration && Number.isFinite(v.duration)) {
+        const pct = Math.min(100, (v.currentTime / v.duration) * 100);
+        cur.style.width = pct + '%';
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+
     return () => {
       v.removeEventListener('loadeddata', onLoaded);
-      v.removeEventListener('timeupdate', onTime);
       v.removeEventListener('ended', onEnded);
+      cancelAnimationFrame(raf);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, isVideo, url, currentIdx]);
