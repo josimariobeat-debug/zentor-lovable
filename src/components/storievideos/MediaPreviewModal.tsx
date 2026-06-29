@@ -79,6 +79,8 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products 
     setFormPhone('');
     setFormText('');
     imgElapsedRef.current = 0;
+    setFit('cover');
+    setFitUserSet(false);
   }, [open, url]);
 
   // Image progress animation via rAF (so we can pause)
