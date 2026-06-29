@@ -267,14 +267,22 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products 
                 src={url}
                 autoPlay
                 playsInline
-                className="absolute inset-0 w-full h-full object-cover"
+                className={`absolute inset-0 w-full h-full ${fit === 'cover' ? 'object-cover' : 'object-contain'}`}
               />
             ) : (
               <img
                 src={url}
                 alt={media?.name ?? ''}
-                onLoad={() => setProgressStarted(true)}
-                className="absolute inset-0 w-full h-full object-cover"
+                onLoad={(e) => {
+                  setProgressStarted(true);
+                  if (!fitUserSet) {
+                    const img = e.currentTarget;
+                    const ratio = img.naturalWidth / img.naturalHeight;
+                    const target = 9 / 16;
+                    setFit(Math.abs(ratio - target) / target > 0.05 ? 'contain' : 'cover');
+                  }
+                }}
+                className={`absolute inset-0 w-full h-full ${fit === 'cover' ? 'object-cover' : 'object-contain'}`}
               />
             )
           ) : null}
