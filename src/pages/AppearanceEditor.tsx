@@ -566,10 +566,10 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* progress bars (one segment per story) — mutadas via ref, sem re-render. */}
-        <div className="absolute top-3 left-3 right-3 flex gap-1 z-30">
+        {/* Zone 1 — progress bars (padronizado com MediaPreviewModal) */}
+        <div className="absolute left-2 right-2 flex gap-1 z-30" style={{ top: 'max(10px, env(safe-area-inset-top))' }}>
           {DEMO_STORIES.map((_, i) => (
-            <div key={i} className="flex-1 h-[3px] bg-white/30 rounded-full overflow-hidden">
+            <div key={i} className="flex-1 h-[2.5px] bg-white/30 rounded-full overflow-hidden">
               <div
                 ref={(el) => { barRefs.current[i] = el; }}
                 className="h-full w-full bg-white rounded-full origin-left"
@@ -582,18 +582,19 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
           ))}
         </div>
 
-        {/* top controls */}
-        <div className="absolute top-7 right-3 z-30 flex items-center gap-2">
-          <button onClick={togglePlay} aria-label={paused ? 'Reproduzir' : 'Pausar'} className="w-9 h-9 rounded-full bg-black/40 hover:bg-black/60 text-white grid place-items-center transition-colors">
+        {/* Zone 2 — top controls (padronizado com MediaPreviewModal) */}
+        <div className="absolute right-3 z-30 flex items-center gap-2.5" style={{ top: 'calc(max(10px, env(safe-area-inset-top)) + 14px)' }}>
+          <button onClick={togglePlay} aria-label={paused ? 'Reproduzir' : 'Pausar'} className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm border-0 flex items-center justify-center text-white cursor-pointer hover:bg-black/70 transition-colors">
             {paused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
           </button>
-          <button onClick={toggleMute} aria-label={muted ? 'Ativar som' : 'Silenciar'} className="w-9 h-9 rounded-full bg-black/40 hover:bg-black/60 text-white grid place-items-center transition-colors">
+          <button onClick={toggleMute} aria-label={muted ? 'Ativar som' : 'Silenciar'} className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm border-0 flex items-center justify-center text-white cursor-pointer hover:bg-black/70 transition-colors">
             {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
           </button>
-          <button onClick={onClose} aria-label="Fechar" className="w-9 h-9 rounded-full bg-black/40 hover:bg-black/60 text-white grid place-items-center transition-colors">
+          <button onClick={onClose} aria-label="Fechar" className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm border-0 flex items-center justify-center text-white cursor-pointer hover:bg-black/70 transition-colors">
             <X className="w-4 h-4" />
           </button>
         </div>
+
 
         <div className="relative rounded-2xl overflow-hidden bg-black shadow-2xl" style={{ aspectRatio: '9 / 16' }}>
           {isVideo ? (
