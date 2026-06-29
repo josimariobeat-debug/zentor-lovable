@@ -278,56 +278,56 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products 
         )}
 
         {/* Zone 5 — bottom bar */}
-        <div className="absolute bottom-0 left-0 right-0 h-[68px] bg-[#111] flex items-center px-3.5 gap-3 z-20">
+        <div className="absolute bottom-0 left-0 right-0 h-[56px] bg-[#111] flex items-center px-3.5 gap-3 z-20">
           <button
             type="button"
             onClick={() => setShowCommentForm(true)}
-            className="flex-1 bg-transparent border border-white/30 text-white/60 rounded-full px-4 py-2.5 text-[14px] text-left cursor-pointer hover:border-white/50 transition-colors"
+            className="flex-1 bg-transparent border border-white/30 text-white/60 rounded-full px-4 py-1.5 text-[13px] text-left cursor-pointer hover:border-white/50 transition-colors"
           >
             Comentar
           </button>
 
-          {/* Like */}
-          <button
-            type="button"
-            onClick={() => {
-              setLiked((l) => {
-                setLikeCount((c) => c + (l ? -1 : 1));
-                return !l;
-              });
-            }}
-            className="flex flex-col items-center gap-1 bg-transparent border-0 cursor-pointer text-white"
-            aria-label="Curtir"
-          >
-            <Heart className={`w-6 h-6 ${liked ? 'fill-red-500 stroke-red-500' : ''}`} />
-            {likeCount > 0 && <span className="text-[10px] text-white/70">{likeCount}</span>}
-          </button>
+          <div className="flex items-center gap-3">
+            {/* Like */}
+            <button
+              type="button"
+              onClick={() => {
+                setLiked((l) => {
+                  setLikeCount((c) => c + (l ? -1 : 1));
+                  return !l;
+                });
+              }}
+              className="flex items-center justify-center bg-transparent border-0 cursor-pointer text-white p-0"
+              aria-label="Curtir"
+            >
+              <Heart className={`w-5 h-5 ${liked ? 'fill-red-500 stroke-red-500' : ''}`} />
+            </button>
 
-          {/* Comments */}
-          <button
-            type="button"
-            onClick={() => setShowCommentList(true)}
-            className="relative flex flex-col items-center gap-1 bg-transparent border-0 cursor-pointer text-white"
-            aria-label="Comentários"
-          >
-            <MessageCircle className="w-6 h-6" />
-            {comments.length > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">
-                {comments.length}
-              </span>
-            )}
-            <span className="text-[10px] text-white/70">{comments.length}</span>
-          </button>
+            {/* Comments */}
+            <button
+              type="button"
+              onClick={() => setShowCommentList(true)}
+              className="relative flex items-center justify-center bg-transparent border-0 cursor-pointer text-white p-0"
+              aria-label="Comentários"
+            >
+              <MessageCircle className="w-5 h-5" />
+              {comments.length > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[14px] h-3.5 flex items-center justify-center px-1">
+                  {comments.length}
+                </span>
+              )}
+            </button>
 
-          {/* Share */}
-          <button
-            type="button"
-            onClick={() => setShowShare(true)}
-            className="bg-transparent border-0 cursor-pointer"
-            aria-label="Compartilhar"
-          >
-            <Send className="w-6 h-6 text-white" />
-          </button>
+            {/* Share */}
+            <button
+              type="button"
+              onClick={() => setShowShare(true)}
+              className="flex items-center justify-center bg-transparent border-0 cursor-pointer p-0"
+              aria-label="Compartilhar"
+            >
+              <Send className="w-5 h-5 text-white" style={{ transform: 'rotate(3deg)' }} />
+            </button>
+          </div>
         </div>
 
         {/* Comment Form Drawer */}
