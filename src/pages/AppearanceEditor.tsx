@@ -772,10 +772,10 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
                 onClick={toggleLike}
                 aria-label={isLiked ? 'Descurtir' : 'Curtir'}
                 aria-pressed={isLiked}
-                className="w-9 h-9 grid place-items-center text-white transition-transform active:scale-90"
+                className="w-7 h-7 grid place-items-center text-white transition-transform active:scale-90"
               >
                 <Heart
-                  className={`w-8 h-8 transition-all ${likeBurst ? 'animate-[heartPulse_.6s_ease-out]' : ''}`}
+                  className={`w-6 h-6 transition-all ${likeBurst ? 'animate-[heartPulse_.6s_ease-out]' : ''}`}
                   style={{ color: '#ef2c4a' }}
                   fill="currentColor"
                   strokeWidth={2}
@@ -784,17 +784,17 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
               <button
                 onClick={openComments}
                 aria-label="Comentar"
-                className="relative w-9 h-9 grid place-items-center text-white transition-transform active:scale-90"
+                className="relative w-7 h-7 grid place-items-center text-white transition-transform active:scale-90"
               >
-                <MessageCircle className="w-8 h-8" strokeWidth={1.75} />
-                <span className="absolute -top-0.5 right-0 text-white text-[11px] font-semibold leading-none">3</span>
+                <MessageCircle className="w-6 h-6" strokeWidth={1.75} />
+                <span className="absolute -top-0.5 right-0 text-white text-[10px] font-semibold leading-none">3</span>
               </button>
               <button
                 onClick={handleShare}
                 aria-label="Compartilhar"
-                className="w-9 h-9 grid place-items-center text-white transition-transform active:scale-90"
+                className="w-7 h-7 grid place-items-center text-white transition-transform active:scale-90"
               >
-                <Send className="w-8 h-8 -rotate-12" strokeWidth={1.75} />
+                <Send className="w-6 h-6 -rotate-12" strokeWidth={1.75} />
               </button>
             </div>
           </div>
