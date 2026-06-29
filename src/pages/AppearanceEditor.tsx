@@ -394,7 +394,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
           ) : (
             <img
               key={`i-${idx}`}
-              src={current.src}
+              src={rewriteImageForProfile(current.src, profile)}
               alt=""
               className="absolute inset-0 w-full h-full object-cover"
               draggable={false}
@@ -403,17 +403,33 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
             />
           )}
 
-          {/* Pré-carrega os próximos 2 stories (sem render) para troca instantânea estilo Instagram. */}
-          <div aria-hidden className="hidden">
-            {[1, 2].map((offset) => {
-              const next = DEMO_STORIES[(idx + offset) % DEMO_STORIES.length];
-              return next.type === 'video' ? (
-                <video key={`pre-v-${idx}-${offset}`} src={next.src} preload="auto" muted playsInline />
-              ) : (
-                <img key={`pre-i-${idx}-${offset}`} src={next.src} alt="" />
-              );
-            })}
-          </div>
+          {/* Pré-carrega os próximos stories conforme perfil de rede/dispositivo.
+              - Wi-Fi/desktop forte: 2 próximos com vídeo preload="auto".
+              - 3G/dispositivo médio: 1 próximo com preload="metadata" (só headers).
+              - 2G/Save-Data/baixa memória: nada — evita estourar dados móveis. */}
+          {profile.preloadCount > 0 && (
+            <div aria-hidden className="hidden">
+              {Array.from({ length: profile.preloadCount }, (_, k) => k + 1).map((offset) => {
+                const next = DEMO_STORIES[(idx + offset) % DEMO_STORIES.length];
+                return next.type === 'video' ? (
+                  <video
+                    key={`pre-v-${idx}-${offset}`}
+                    src={next.src}
+                    preload={profile.videoPreload}
+                    muted
+                    playsInline
+                  />
+                ) : (
+                  <img
+                    key={`pre-i-${idx}-${offset}`}
+                    src={rewriteImageForProfile(next.src, profile)}
+                    alt=""
+                  />
+                );
+              })}
+            </div>
+          )}
+
 
           {/* Instagram-style tap zones for prev/next.
               Right zone stops before the action column so taps on icons aren't hijacked.
