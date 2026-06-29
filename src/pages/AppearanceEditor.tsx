@@ -27,11 +27,6 @@ const DEMO_STORIES: DemoStory[] = [
     product: { title: 'Novidade da loja', price: 'R$ 189,90', thumb: 'https://images.unsplash.com/photo-1520975916090-3105956dac38?w=120&h=120&fit=crop' },
   },
   {
-    type: 'video',
-    src: PREVIEW_VIDEO_URL,
-    product: { title: 'Vestido floral verão', price: 'R$ 159,90', thumb: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=120&h=120&fit=crop' },
-  },
-  {
     type: 'image',
     src: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=720&h=1280&fit=crop',
     product: { title: 'Promoção relâmpago -30%', price: 'R$ 79,90', thumb: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=120&h=120&fit=crop' },
@@ -48,17 +43,6 @@ const DEMO_STORIES: DemoStory[] = [
     src: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=720&h=1280&fit=crop',
     product: { title: 'Tênis casual branco', price: 'R$ 349,90', thumb: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=120&h=120&fit=crop' },
     duration: 5,
-  },
-  {
-    type: 'image',
-    src: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=720&h=1280&fit=crop',
-    product: { title: 'Camiseta básica algodão', price: 'R$ 59,90', thumb: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=120&h=120&fit=crop' },
-    duration: 5,
-  },
-  {
-    type: 'video',
-    src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-    product: { title: 'Coleção Big Bunny', price: 'R$ 199,90', thumb: 'https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=120&h=120&fit=crop' },
   },
 ];
 
@@ -432,22 +416,25 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
 
 
           {/* Instagram-style tap zones for prev/next.
-              Right zone stops before the action column so taps on icons aren't hijacked.
-              The reserved gutter mirrors the action column's right offset + icon width. */}
+              A coluna de ações fica em z-30 (acima da tap zone z-10), então os
+              botões capturam os próprios cliques. Por isso a zona "Próximo"
+              pode ir até a borda direita sem hijack — só recuamos uma faixa
+              estreita atrás dos ícones para evitar tap acidental ao mirar neles. */}
           <button
             aria-label="Anterior"
             onClick={goPrev}
-            className="absolute left-0 top-12 bottom-24 w-1/3 z-10 cursor-default"
+            className="absolute left-0 top-12 bottom-24 w-[30%] z-10 cursor-default"
           />
           <button
             aria-label="Próximo"
             onClick={goNext}
             className="absolute top-12 bottom-24 z-10 cursor-default"
             style={{
-              left: '33.333%',
-              right: 'calc(env(safe-area-inset-right, 0px) + clamp(48px, 12vw, 60px))',
+              left: '30%',
+              right: 'env(safe-area-inset-right, 0px)',
             }}
           />
+
 
           {/* TikTok-style right action column.
               - `right` uses safe-area-inset-right (iOS notch landscape + Android gesture nav) plus
@@ -714,6 +701,35 @@ export default function AppearanceEditor() {
       setLoading(false);
     })();
   }, [isNew, presetId, user]);
+
+  // Pré-aquece TODOS os stories de demo assim que a página de edição carrega.
+  // Quando o usuário abrir o preview do reprodutor, o primeiro frame já está
+  // em cache de disco/HTTP e não há travamento inicial. Respeita o perfil de
+  // rede: em 2G/Save-Data o warm-up é pulado para não consumir dados móveis.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const profile = getMediaProfile();
+    if (profile.preloadCount === 0) return;
+    const cleanups: Array<() => void> = [];
+    DEMO_STORIES.forEach((s) => {
+      if (s.type === 'image') {
+        const img = new Image();
+        img.decoding = 'async';
+        img.src = rewriteImageForProfile(s.src, profile);
+        cleanups.push(() => { img.src = ''; });
+      } else {
+        const v = document.createElement('video');
+        v.preload = profile.videoPreload;
+        v.muted = true;
+        v.playsInline = true;
+        v.src = s.src;
+        cleanups.push(() => { v.removeAttribute('src'); try { v.load(); } catch { /* ignore */ } });
+      }
+    });
+    return () => { cleanups.forEach((fn) => fn()); };
+  }, []);
+
+
 
   function backToTab() {
     if (returnTo) {
