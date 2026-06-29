@@ -339,6 +339,7 @@
     player.appendChild(navL);
     player.appendChild(navR);
     player.appendChild(tapPause);
+    player.appendChild(pauseIndicator);
     player.appendChild(productsWrap);
     player.appendChild(bottomBar);
     player.appendChild(commentDrawer);
