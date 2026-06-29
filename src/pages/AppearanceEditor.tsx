@@ -420,6 +420,17 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
           ) : (
             <img
               key={`i-${idx}`}
+              ref={(el) => {
+                activeImgRef.current = el;
+                // Imagens em cache disparam 'load' ANTES do onLoad anexar →
+                // imgLoadedRef ficaria false e a barra travaria pra sempre.
+                // Detectamos via .complete no ref callback (roda no commit).
+                if (el && el.complete && el.naturalHeight > 0) {
+                  imgLoadedRef.current = true;
+                  storyMetrics.markReady(current.src);
+                  requestAnimationFrame(() => storyMetrics.markFirstFrame(current.src));
+                }
+              }}
               src={rewriteImageForProfile(current.src, profile)}
               alt=""
               className="absolute inset-0 w-full h-full object-cover"
@@ -429,10 +440,10 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
                 storyMetrics.markReady(current.src);
                 requestAnimationFrame(() => storyMetrics.markFirstFrame(current.src));
               }}
-
               onError={() => { imgLoadedRef.current = true; }}
             />
           )}
+
 
           {/* Pré-carrega TODAS as outras mídias com chaves estáveis por URL.
               Elementos persistem entre trocas de story → bytes ficam quentes em
