@@ -12,6 +12,8 @@ import storyDemo3Asset from '@/assets/story-demo-3.mp4.asset.json';
 import storyDemo3Poster from '@/assets/story-demo-3-poster.jpg.asset.json';
 import { getMediaProfile, getNetworkTier, rewriteImageForProfile, subscribeNetworkChange, type MediaProfile, type NetworkTier } from '@/lib/networkProfile';
 import { storyMetrics } from '@/lib/storyMetrics';
+import MediaPreviewModal from '@/components/storievideos/MediaPreviewModal';
+
 
 
 const STORY_DEMO_2_URL = storyDemo2Asset.url;
@@ -1101,7 +1103,21 @@ export default function AppearanceEditor() {
     backToTab();
   }
 
-  
+  const [viewerOpen, setViewerOpen] = useState(false);
+
+  // Playlist do preview: clona o modal da lista de stories, mas com os 2 vídeos demo
+  // e os produtos do StoryViewer antigo.
+  const previewPlaylist = useMemo(() => DEMO_STORIES.map((s, i) => ({
+    media: { url: s.src, type: s.type === 'video' ? 'video/mp4' : 'image/jpeg', name: s.product.title },
+    products: (s.products && s.products.length > 0 ? s.products : [s.product]).map((p, j) => ({
+      id: `${i}-${j}`,
+      name: p.title,
+      price: p.price,
+      image: p.thumb,
+      url: null as string | null,
+    })),
+  })), []);
+
 
   const bubbleStyle = useMemo<React.CSSProperties>(() => {
     const isBottom = cfg.position.startsWith('bottom');
@@ -1292,7 +1308,8 @@ export default function AppearanceEditor() {
                           )}
                           <div
                             style={{ ...bubbleStyle, cursor: 'pointer' }}
-                            onClick={(e) => e.stopPropagation()}
+                            onClick={(e) => { e.stopPropagation(); setViewerOpen(true); }}
+
 
                           >
                             <PreviewMedia fit={cfg.mediaFit} />
@@ -1348,7 +1365,8 @@ export default function AppearanceEditor() {
                           )}
                           <div
                             style={{ ...bubbleStyle, cursor: 'pointer' }}
-                            onClick={(e) => e.stopPropagation()}
+                            onClick={(e) => { e.stopPropagation(); setViewerOpen(true); }}
+
                           >
                             <PreviewMedia fit={cfg.mediaFit} />
                             {cfg.allowClose && (
@@ -1583,7 +1601,12 @@ export default function AppearanceEditor() {
           </div>
         </div>
       </main>
-      {/* Modal de preview removido a pedido — clique no widget é no-op aqui. */}
+      <MediaPreviewModal
+        open={viewerOpen}
+        onOpenChange={setViewerOpen}
+        playlist={previewPlaylist}
+      />
+
     </>
   );
 }
