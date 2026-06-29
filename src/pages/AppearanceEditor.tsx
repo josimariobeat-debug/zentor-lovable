@@ -169,6 +169,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
         if (v && v.duration > 0 && !Number.isNaN(v.duration)) {
           setBar(i, Math.min(1, v.currentTime / v.duration));
         } else if (sinceMount > VIDEO_READY_TIMEOUT_MS) {
+          mountedAtRef.current = now;
           // Vídeo nunca ficou pronto (sem metadata, rede caiu, codec falhou).
           // Avança em vez de prender o usuário em tela preta.
           storyMetrics.markStuck(i, 'video-timeout');
