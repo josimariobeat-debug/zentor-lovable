@@ -9,17 +9,20 @@ import { Switch } from '@/components/ui/switch';
 import previewVideoAsset from '@/assets/widget-preview.mp4.asset.json';
 import storyIosAsset from '@/assets/story-ios.mp4.asset.json';
 import storyDemo2Asset from '@/assets/story-demo-2.mp4.asset.json';
+import storyDemo2Poster from '@/assets/story-demo-2-poster.jpg.asset.json';
 import { getMediaProfile, getNetworkTier, rewriteImageForProfile, subscribeNetworkChange, type MediaProfile, type NetworkTier } from '@/lib/networkProfile';
 
 const PREVIEW_VIDEO_URL = previewVideoAsset.url;
 const STORY_IOS_URL = storyIosAsset.url;
 const STORY_DEMO_2_URL = storyDemo2Asset.url;
+const STORY_DEMO_2_POSTER = storyDemo2Poster.url;
 
 interface DemoStory {
   type: 'video' | 'image';
   src: string;
   product: { title: string; price: string; thumb: string };
   duration?: number; // seconds, used for images
+  poster?: string; // JPG do primeiro frame — LCP instantâneo para vídeos
 }
 
 const DEMO_STORIES: DemoStory[] = [
@@ -31,6 +34,7 @@ const DEMO_STORIES: DemoStory[] = [
   {
     type: 'video',
     src: STORY_DEMO_2_URL,
+    poster: STORY_DEMO_2_POSTER,
     product: { title: 'Coleção em destaque', price: 'R$ 259,90', thumb: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=120&h=120&fit=crop' },
   },
   {
@@ -375,6 +379,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
               ref={videoRef}
               key={`v-${idx}`}
               src={current.src}
+              poster={current.poster}
               autoPlay
               muted={muted}
               playsInline
@@ -406,6 +411,7 @@ function StoryViewer({ onClose }: { onClose: () => void }) {
                   <video
                     key={`pre-v-${idx}-${offset}`}
                     src={next.src}
+                    poster={next.poster}
                     preload={profile.videoPreload}
                     muted
                     playsInline
@@ -725,10 +731,18 @@ export default function AppearanceEditor() {
         img.src = rewriteImageForProfile(s.src, profile);
         cleanups.push(() => { img.src = ''; });
       } else {
+        // Warm-up do poster (LCP instantâneo ao abrir o story).
+        if (s.poster) {
+          const pimg = new Image();
+          pimg.decoding = 'async';
+          pimg.src = s.poster;
+          cleanups.push(() => { pimg.src = ''; });
+        }
         const v = document.createElement('video');
         v.preload = profile.videoPreload;
         v.muted = true;
         v.playsInline = true;
+        if (s.poster) v.poster = s.poster;
         v.src = s.src;
         cleanups.push(() => { v.removeAttribute('src'); try { v.load(); } catch { /* ignore */ } });
       }
