@@ -541,10 +541,6 @@ function PlaceholderTab({ label }: {label: string;}) {
 }
 
 type ProductRow = {id: string;name: string;price: string;currency: string;url: string;image: string | null;};
-type MeasureType = 'Busto' | 'Quadril' | 'Cintura' | 'Manga' | 'Altura' | 'Dentro da Perna' | 'Bíceps';
-const MEASURE_TYPES: MeasureType[] = ['Busto', 'Quadril', 'Cintura', 'Manga', 'Altura', 'Dentro da Perna', 'Bíceps'];
-type MeasureRow = {id: string;tamanho: string;medida: MeasureType;valor: string;};
-type MeasureModel = {id: string;name: string;rows: MeasureRow[]};
 
 // Module-level caches — keep data warm across remounts so the skeleton only
 // shows on the very first load, matching the Stories tab behavior.
