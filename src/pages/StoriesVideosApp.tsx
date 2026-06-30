@@ -122,6 +122,49 @@ export default function StoriesVideosApp() {
     setStories(data as StoryWithMedia[] ?? []);
   };
 
+  // Carrega produtos vinculados e modelo de medidas para o preview do story
+  useEffect(() => {
+    let cancelled = false;
+    setPreviewProducts([]);
+    setPreviewMeasure(null);
+    if (!previewMedia || !supabase) return;
+    const m = previewMedia as StoryMedia & { product_ids?: string[] | null; measure_id?: string | null };
+    const productIds = Array.isArray(m.product_ids) ? m.product_ids : [];
+    const measureId = m.measure_id ?? null;
+
+    (async () => {
+      if (productIds.length > 0) {
+        const { data } = await (supabase as any)
+          .from('products')
+          .select('id,name,price,currency,url,image')
+          .in('id', productIds);
+        if (!cancelled && data) {
+          const order = new Map(productIds.map((id, i) => [id, i]));
+          const ordered = (data as any[]).slice().sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
+          setPreviewProducts(ordered.map((p) => ({ id: p.id, name: p.name, price: String(p.price ?? ''), image: p.image, url: p.url })));
+        }
+      }
+      if (measureId) {
+        const { data } = await (supabase as any)
+          .from('measure_models')
+          .select('id,name,measure_rows(id,size_name,measure_type,value_cm,position)')
+          .eq('id', measureId)
+          .maybeSingle();
+        if (!cancelled && data) {
+          const rows = ((data.measure_rows ?? []) as any[])
+            .slice()
+            .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+            .map((r) => ({ id: r.id, tamanho: r.size_name, medida: r.measure_type as MeasureType, valor: String(r.value_cm) }));
+          setPreviewMeasure({ id: data.id, name: data.name, rows });
+        }
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [previewMedia]);
+
+
+
 
   const loadGallery = async () => {
     if (!supabase || !user) return;
