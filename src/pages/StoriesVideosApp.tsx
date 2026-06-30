@@ -17,6 +17,13 @@ import IntegracaoTab from '@/components/storievideos/IntegracaoTab';
 import AppearancePresets from '@/components/storievideos/AppearancePresets';
 import MediaPreviewModal from '@/components/storievideos/MediaPreviewModal';
 import {
+  MeasurePreviewModal as MeasureModelPreviewModal,
+  MEASURE_TYPES,
+  type MeasureType,
+  type MeasureRow,
+  type MeasureModel,
+} from '@/components/storievideos/MeasurePreviewModal';
+import {
   Search,
   Plus,
   Settings2,
