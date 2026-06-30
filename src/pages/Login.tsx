@@ -4,7 +4,8 @@ import { Input } from '@/components/ui/input';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/components/ui/toaster';
-import loginIllustration from '@/assets/uploads/login-illustration.png';
+import loginBgAsset from '@/assets/uploads/login-bg.png.asset.json';
+const loginBg = loginBgAsset.url;
 
 export default function Login() {
   const navigate = useNavigate();
@@ -31,11 +32,15 @@ export default function Login() {
   return (
     <div data-ev-id="ev_b4de78665f" className="min-h-screen bg-white flex flex-col lg:grid lg:grid-cols-[55%_45%] animate-in fade-in duration-500">
       {/* Left Panel - Desktop only */}
-      <div data-ev-id="ev_b5cdbc16df" className="hidden lg:flex flex-col justify-between p-12 relative overflow-hidden text-white bg-[#0a0a0a]">
+      <div
+        data-ev-id="ev_b5cdbc16df"
+        className="hidden lg:flex flex-col justify-between p-12 relative overflow-hidden text-white bg-[#0a0a0a] bg-cover bg-center"
+        style={{ backgroundImage: `url(${loginBg})` }}
+      >
         {/* Logo - Maior e mais destacado */}
         <div data-ev-id="ev_6887832dbf" className="flex items-baseline gap-3 relative z-10">
           <span data-ev-id="ev_932933a862" className="text-[32px] font-bold tracking-tight">Zentor</span>
-          <span data-ev-id="ev_4426990208" className="text-[11px] font-medium tracking-[0.2em] uppercase text-neutral-500">
+          <span data-ev-id="ev_4426990208" className="text-[11px] font-medium tracking-[0.2em] uppercase text-neutral-300">
             Sites & Ferramentas
           </span>
         </div>
@@ -45,29 +50,20 @@ export default function Login() {
           <h2 data-ev-id="ev_247610dbf8" className="text-[42px] leading-[1.05] font-semibold tracking-tight max-w-[420px]">
             Workspace elegante<br data-ev-id="ev_64ee66eecd" />para sua loja.
           </h2>
-          <p data-ev-id="ev_29657b14a7" className="text-[15px] text-neutral-400 mt-6 leading-relaxed max-w-[380px]">
+          <p data-ev-id="ev_29657b14a7" className="text-[15px] text-neutral-200 mt-6 leading-relaxed max-w-[380px]">
             Ferramentas e apps que se conectam à sua loja em minutos.<br data-ev-id="ev_7646759809" />
             Stories, avaliações, pop-ups e mais.
           </p>
         </div>
 
-        {/* Illustration com animação */}
-        <div data-ev-id="ev_4d7201fa38" className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-[8%] w-[62%] pointer-events-none animate-in slide-in-from-right-8 duration-700 delay-200">
-          <img data-ev-id="ev_83a52e2c15"
-          src={loginIllustration}
-          alt="Ilustração 3D de dashboard"
-          className="w-full h-auto object-contain drop-shadow-2xl" />
+        {/* Gradient overlay para legibilidade */}
+        <div data-ev-id="ev_68beacdc67" className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/30 to-black/50 pointer-events-none" />
 
-        </div>
-
-        {/* Gradient overlay premium */}
-        <div data-ev-id="ev_68beacdc67" className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a] via-[#0a0a0a]/85 to-transparent pointer-events-none" />
-        
         {/* Linha decorativa na divisão */}
-        <div data-ev-id="ev_d4a80ad2f4" className="absolute right-0 top-0 bottom-0 w-[1px] bg-gradient-to-b from-transparent via-white/10 to-transparent" />
+        <div data-ev-id="ev_d4a80ad2f4" className="absolute right-0 top-0 bottom-0 w-[1px] bg-gradient-to-b from-transparent via-white/10 to-transparent z-10" />
 
         {/* Footer */}
-        <div data-ev-id="ev_978c03d2ea" className="text-[12px] text-neutral-600 relative z-10">© {new Date().getFullYear()} Zentor</div>
+        <div data-ev-id="ev_978c03d2ea" className="text-[12px] text-neutral-300 relative z-10">© {new Date().getFullYear()} Zentor</div>
       </div>
 
       {/* Right Panel - Form com transição elegante */}
