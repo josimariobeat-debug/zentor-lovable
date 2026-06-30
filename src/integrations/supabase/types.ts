@@ -410,8 +410,11 @@ export type Database = {
           created_at: string
           id: string
           is_cover: boolean
+          measure_id: string | null
           name: string | null
           position: number
+          product_ids: string[]
+          products_layout: string
           story_id: string
           type: string
           url: string
@@ -421,8 +424,11 @@ export type Database = {
           created_at?: string
           id?: string
           is_cover?: boolean
+          measure_id?: string | null
           name?: string | null
           position?: number
+          product_ids?: string[]
+          products_layout?: string
           story_id: string
           type: string
           url: string
@@ -432,8 +438,11 @@ export type Database = {
           created_at?: string
           id?: string
           is_cover?: boolean
+          measure_id?: string | null
           name?: string | null
           position?: number
+          product_ids?: string[]
+          products_layout?: string
           story_id?: string
           type?: string
           url?: string
