@@ -769,6 +769,7 @@ export default function AdicionarStory() {
         open={galleryOpen}
         onOpenChange={setGalleryOpen}
         onSelect={onGallerySelect}
+        prefetched={galleryPrefetch}
       />
 
       {/* Video Preview */}
@@ -792,7 +793,10 @@ export default function AdicionarStory() {
         refreshNonce={productRefreshNonce}
         autoSelectProductId={autoSelectProductId}
         onAutoSelectHandled={() => setAutoSelectProductId(null)}
+        prefetchedProducts={productsPrefetch}
+        prefetchedMeasures={measuresPrefetch}
       />
+
 
       {/* Cadastro rápido de produto a partir do modal da sacola */}
       <AddProductModal
