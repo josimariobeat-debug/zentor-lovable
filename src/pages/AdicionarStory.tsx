@@ -434,17 +434,25 @@ export default function AdicionarStory() {
         storyIdToUse = newStory?.id;
       }
 
-      // Insert media
+      // Insert media (preservando vínculos de produtos/medidas por mídia)
       if (storyIdToUse && uploadedMedia.length > 0) {
-        const mediaInserts = uploadedMedia.map((m, idx) => ({
-          story_id: storyIdToUse!,
-          user_id: user.id,
-          url: m.url,
-          type: m.type,
-          name: m.name,
-          is_cover: m.cover,
-          position: idx
-        }));
+        const mediaInserts = uploadedMedia.map((m, idx) => {
+          const original = media[idx];
+          const linkKey = original?.id ?? original?.url ?? String(idx);
+          const link = productLinks[linkKey];
+          return {
+            story_id: storyIdToUse!,
+            user_id: user.id,
+            url: m.url,
+            type: m.type,
+            name: m.name,
+            is_cover: m.cover,
+            position: idx,
+            product_ids: link?.productIds ?? [],
+            measure_id: link?.measureId ?? null,
+            products_layout: link?.layout ?? 'lista',
+          };
+        });
         await supabase.from('story_media').insert(mediaInserts);
       }
 
