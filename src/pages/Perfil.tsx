@@ -1,18 +1,15 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import TopBar from '@/components/layout/TopBar';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/toaster';
-import { useIsVisible } from '@/hooks/useIsVisible';
 
 export default function Perfil() {
   const { user, profile, refresh } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [saving, setSaving] = useState(false);
-  const bottomSaveRef = useRef<HTMLButtonElement>(null);
-  const bottomSaveVisible = useIsVisible(bottomSaveRef);
 
   useEffect(() => {
     if (profile) {
