@@ -113,10 +113,25 @@ export default function StoriesVideosApp() {
   useEffect(() => {
     loadStories();
     loadGallery();
+    loadProductsCache();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appId]);
 
+  const loadProductsCache = async () => {
+    if (!supabase || !appId || !UUID_RE.test(appId)) return;
+    const { data } = await (supabase as any)
+      .from('products')
+      .select('id,name,price,currency,url,image')
+      .eq('app_id', appId);
+    const map = new Map<string, any>();
+    (data ?? []).forEach((p: any) => {
+      map.set(p.id, { id: p.id, name: p.name, price: String(p.price ?? ''), image: p.image, url: p.url });
+    });
+    productsCacheRef.current = map;
+  };
+
   const loadStories = async () => {
+
     if (!supabase || !appId || !UUID_RE.test(appId)) return;
     const { data } = await supabase.
     from('stories').
