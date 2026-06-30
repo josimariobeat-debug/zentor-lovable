@@ -705,17 +705,6 @@ export default function AdicionarStory() {
           </div>
         </section>
 
-        <div className="flex justify-end pt-2">
-          <button
-            ref={bottomSaveRef}
-            type="button"
-            onClick={handleSave}
-            disabled={saving}
-            className="btn-save text-[14px] font-medium px-5 py-2.5 rounded-xl"
-          >
-            {saving ? 'Salvando…' : 'Salvar'}
-          </button>
-        </div>
       </main>
 
 
