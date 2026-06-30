@@ -79,6 +79,28 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
   const segmentRefs = useRef<Array<HTMLDivElement | null>>([]);
   const rafRef = useRef<number | null>(null);
   const imgElapsedRef = useRef<number>(0);
+  const carouselRef = useRef<HTMLDivElement | null>(null);
+  const dragRef = useRef<{ down: boolean; moved: boolean; startX: number; scrollLeft: number }>({ down: false, moved: false, startX: 0, scrollLeft: 0 });
+
+  const onCarouselMouseDown = (e: ReactMouseEvent<HTMLDivElement>) => {
+    const el = carouselRef.current;
+    if (!el) return;
+    dragRef.current = { down: true, moved: false, startX: e.pageX, scrollLeft: el.scrollLeft };
+    el.style.cursor = 'grabbing';
+  };
+  const onCarouselMouseMove = (e: ReactMouseEvent<HTMLDivElement>) => {
+    const el = carouselRef.current;
+    if (!el || !dragRef.current.down) return;
+    const dx = e.pageX - dragRef.current.startX;
+    if (Math.abs(dx) > 3) dragRef.current.moved = true;
+    el.scrollLeft = dragRef.current.scrollLeft - dx;
+  };
+  const onCarouselMouseUp = () => {
+    const el = carouselRef.current;
+    if (!el) return;
+    dragRef.current.down = false;
+    el.style.cursor = '';
+  };
 
   const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(false);
