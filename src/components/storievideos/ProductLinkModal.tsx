@@ -166,6 +166,8 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
 
   const toggleProduct = (id: string) => {
     setSelProductIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+    setOpenList(false);
+    setSearch('');
   };
 
   const removeProduct = (id: string) => {
