@@ -58,6 +58,7 @@ function TopBar({ title, backTo, breadcrumb, rightSlot, hideProfile = false }: T
       </div>
       <div data-ev-id="ev_6051211abc" className="flex items-center gap-4">
         {rightSlot}
+        {!hideProfile && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button data-ev-id="ev_8771892fd0" className="flex items-center gap-3 outline-none min-w-[190px] justify-end">
@@ -81,6 +82,7 @@ function TopBar({ title, backTo, breadcrumb, rightSlot, hideProfile = false }: T
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        )}
       </div>
     </header>);
 
