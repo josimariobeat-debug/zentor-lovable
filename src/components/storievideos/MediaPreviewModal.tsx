@@ -485,7 +485,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                   <div className="flex-1 min-w-0 flex flex-col py-1 pl-2 pr-2">
                     <div className="flex-1 min-w-0 overflow-hidden">
                       <div
-                        className="font-medium text-white leading-[1.1] text-[10px] overflow-hidden"
+                        className="font-medium text-white leading-[1.1] text-[20px] overflow-hidden"
                         style={{
                           display: '-webkit-box',
                           WebkitLineClamp: 2,
@@ -497,7 +497,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                       </div>
                     </div>
                     <div className="flex items-center justify-between gap-2 mt-auto">
-                      <div className="text-white/90 leading-none text-[9px] font-semibold truncate">
+                      <div className="text-white/90 leading-none text-[13px] font-semibold truncate">
                         {p.price ? formatPrice(p.price) : '\u00A0'}
                       </div>
                       <button
