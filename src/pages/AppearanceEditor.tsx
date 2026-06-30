@@ -1164,10 +1164,12 @@ export default function AppearanceEditor() {
   const closeStyle = useMemo<React.CSSProperties>(() => {
     const { isBottom, isLeft, bubbleW, bubbleH } = bubbleGeom;
     const badge = 18;
-    const insetX = cfg.shape === 'circular' ? bubbleW * 0.15 : 2;
-    const insetY = cfg.shape === 'circular' ? bubbleH * 0.15 : 2;
-    const horiz = cfg.spacingLeft + bubbleW - badge - insetX;
-    const vert = cfg.spacingBottom + bubbleH - badge - insetY;
+    // Circular: place X fully outside the circle (top-outer corner).
+    // Other shapes: keep slight inset over the bubble corner.
+    const offsetX = cfg.shape === 'circular' ? -badge / 2 : 2;
+    const offsetY = cfg.shape === 'circular' ? -badge / 2 : 2;
+    const horiz = cfg.spacingLeft + bubbleW - badge + offsetX;
+    const vert = cfg.spacingBottom + bubbleH - badge + offsetY;
     return {
       position: 'absolute',
       width: badge,
