@@ -1123,27 +1123,33 @@ export default function AppearanceEditor() {
   }), []);
 
 
-  const bubbleStyle = useMemo<React.CSSProperties>(() => {
+  const bubbleGeom = useMemo(() => {
     const isBottom = cfg.position.startsWith('bottom');
     const isLeft = cfg.position.endsWith('left');
+    const bubbleW =
+      cfg.shape === 'personalizado'
+        ? cfg.widthUnit === 'px'
+          ? cfg.width
+          : 100
+        : cfg.width;
+    const bubbleH = cfg.shape === 'personalizado' ? cfg.height : cfg.width;
+    return { isBottom, isLeft, bubbleW, bubbleH };
+  }, [cfg]);
+
+  const bubbleStyle = useMemo<React.CSSProperties>(() => {
+    const { isBottom, isLeft, bubbleW, bubbleH } = bubbleGeom;
     let radius: string | number = 0;
-    let w: string | number = cfg.width;
-    let h: string | number = cfg.width;
     if (cfg.shape === 'circular') radius = '50%';
     else if (cfg.shape === 'quadrado') radius = 16;
-    else {
-      radius = cfg.borderRadius;
-      w = cfg.widthUnit === '%' ? `${cfg.width}%` : cfg.width;
-      h = cfg.height;
-    }
+    else radius = cfg.borderRadius;
     const borderCss =
       cfg.borderStyle === 'nenhum'
         ? 'none'
         : `3px ${cfg.borderStyle === 'tracejado' ? 'dashed' : 'solid'} ${cfg.color}`;
     return {
       position: 'absolute',
-      width: w,
-      height: h,
+      width: bubbleW,
+      height: bubbleH,
       borderRadius: radius,
       border: borderCss,
       overflow: 'hidden',
@@ -1152,21 +1158,36 @@ export default function AppearanceEditor() {
       [isLeft ? 'left' : 'right']: cfg.spacingLeft,
       zIndex: 2,
     } as React.CSSProperties;
-  }, [cfg]);
+  }, [cfg, bubbleGeom]);
 
+  // Close badge rendered OUTSIDE the bubble so the circular shape doesn't clip it.
+  const closeStyle = useMemo<React.CSSProperties>(() => {
+    const { isBottom, isLeft, bubbleW, bubbleH } = bubbleGeom;
+    const badge = 18;
+    const insetX = cfg.shape === 'circular' ? bubbleW * 0.15 : 2;
+    const insetY = cfg.shape === 'circular' ? bubbleH * 0.15 : 2;
+    const horiz = cfg.spacingLeft + bubbleW - badge - insetX;
+    const vert = cfg.spacingBottom + bubbleH - badge - insetY;
+    return {
+      position: 'absolute',
+      width: badge,
+      height: badge,
+      borderRadius: '50%',
+      background: 'rgba(0,0,0,.72)',
+      color: '#fff',
+      display: 'grid',
+      placeItems: 'center',
+      zIndex: 4,
+      pointerEvents: 'none',
+      [isBottom ? 'bottom' : 'top']: vert,
+      [isLeft ? 'left' : 'right']: horiz,
+    } as React.CSSProperties;
+  }, [cfg, bubbleGeom]);
 
   const ctaBase = useMemo<React.CSSProperties>(() => {
-    const isBottom = cfg.position.startsWith('bottom');
-    const isLeft = cfg.position.endsWith('left');
-    const bubbleW =
-      cfg.shape === 'personalizado' && cfg.widthUnit === 'px'
-        ? cfg.width
-        : cfg.shape === 'personalizado'
-        ? 100
-        : cfg.width;
-    const bubbleH = cfg.shape === 'personalizado' ? cfg.height : cfg.width;
+    const { isBottom, isLeft, bubbleW, bubbleH } = bubbleGeom;
     const verticalCenter = cfg.spacingBottom + bubbleH / 2;
-    const horizontalAfter = cfg.spacingLeft + bubbleW + 10;
+    const horizontalAfter = cfg.spacingLeft + bubbleW + 12;
     return {
       position: 'absolute',
       [isBottom ? 'bottom' : 'top']: verticalCenter,
@@ -1175,21 +1196,29 @@ export default function AppearanceEditor() {
       color: '#fff',
       fontSize: cfg.ctaSize,
       lineHeight: 1,
-      padding: '6px 12px',
+      padding: '8px 14px',
       borderRadius: 999,
-      fontWeight: 700,
-      letterSpacing: 0.3,
+      fontWeight: 600,
+      letterSpacing: 0.4,
       whiteSpace: 'nowrap',
-      boxShadow: '0 6px 18px rgba(0,0,0,.18)',
+      boxShadow: '0 10px 28px -10px rgba(0,0,0,.35), 0 2px 6px rgba(0,0,0,.08)',
       willChange: 'transform, opacity',
-      transition: 'opacity 380ms cubic-bezier(.22,.61,.36,1), transform 380ms cubic-bezier(.22,.61,.36,1)',
-      transformOrigin: 'center',
+      transition:
+        'opacity 520ms cubic-bezier(.22,.61,.36,1), transform 560ms cubic-bezier(.22,.61,.36,1)',
+      transformOrigin: isLeft ? 'left center' : 'right center',
+      zIndex: 1, // behind the bubble (z=2) so it appears to slide from under it
     } as React.CSSProperties;
-  }, [cfg]);
+  }, [cfg, bubbleGeom]);
 
-  // Translate Y baseline keeps pill vertically aligned with bubble center.
-  const ctaShown: React.CSSProperties = { opacity: 1, transform: 'translateY(50%) scale(1)' };
-  const ctaHidden: React.CSSProperties = { opacity: 0, transform: 'translateY(calc(50% + 8px)) scale(0.9)', pointerEvents: 'none' };
+  const ctaShown: React.CSSProperties = {
+    opacity: 1,
+    transform: 'translateY(50%) translateX(0) scale(1)',
+  };
+  const ctaHidden: React.CSSProperties = {
+    opacity: 0,
+    transform: `translateY(50%) translateX(${bubbleGeom.isLeft ? '-' : ''}${bubbleGeom.bubbleW + 16}px) scale(.96)`,
+    pointerEvents: 'none',
+  };
 
   // CTA visibility timer: shows on mount, hides after ctaDuration seconds, loops every (duration+2)s.
   const [ctaVisible, setCtaVisible] = useState(true);
@@ -1313,16 +1342,14 @@ export default function AppearanceEditor() {
                           <div
                             style={{ ...bubbleStyle, cursor: 'pointer' }}
                             onClick={(e) => { e.stopPropagation(); setViewerOpen(true); }}
-
-
                           >
                             <PreviewMedia fit={cfg.mediaFit} />
-                            {cfg.allowClose && (
-                              <div className="absolute top-1 right-1 w-5 h-5 grid place-items-center rounded-full bg-black/60 text-white">
-                                <X className="w-3 h-3" />
-                              </div>
-                            )}
                           </div>
+                          {cfg.allowClose && (
+                            <div style={closeStyle}>
+                              <X className="w-2.5 h-2.5" />
+                            </div>
+                          )}
                           {cfg.cta && (
                             <div style={{ ...ctaBase, ...(ctaVisible ? ctaShown : ctaHidden) }}>
                               {cfg.cta.toUpperCase()}
@@ -1370,15 +1397,14 @@ export default function AppearanceEditor() {
                           <div
                             style={{ ...bubbleStyle, cursor: 'pointer' }}
                             onClick={(e) => { e.stopPropagation(); setViewerOpen(true); }}
-
                           >
                             <PreviewMedia fit={cfg.mediaFit} />
-                            {cfg.allowClose && (
-                              <div className="absolute top-1 right-1 w-5 h-5 grid place-items-center rounded-full bg-black/60 text-white">
-                                <X className="w-3 h-3" />
-                              </div>
-                            )}
                           </div>
+                          {cfg.allowClose && (
+                            <div style={closeStyle}>
+                              <X className="w-2.5 h-2.5" />
+                            </div>
+                          )}
                           {cfg.cta && (
                             <div style={{ ...ctaBase, ...(ctaVisible ? ctaShown : ctaHidden) }}>
                               {cfg.cta.toUpperCase()}
