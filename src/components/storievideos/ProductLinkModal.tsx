@@ -124,9 +124,11 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
       const target = e.target as Node;
       if (openList && productWrapRef.current && !productWrapRef.current.contains(target)) {
         setOpenList(false);
+        prodTriggerRef.current?.focus();
       }
       if (openMedList && measureWrapRef.current && !measureWrapRef.current.contains(target)) {
         setOpenMedList(false);
+        medTriggerRef.current?.focus();
       }
     };
     document.addEventListener('mousedown', handler);
