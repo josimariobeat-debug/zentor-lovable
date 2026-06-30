@@ -1232,23 +1232,18 @@ export default function AppearanceEditor() {
 
 
 
-  // CTA visibility timer: shows on mount, hides after ctaDuration seconds, loops every (duration+2)s.
-  const [ctaVisible, setCtaVisible] = useState(true);
+  // CTA: shows on mount, hides after ctaDuration seconds, then only reappears
+  // while the user hovers the widget bubble.
+  const [ctaAutoVisible, setCtaAutoVisible] = useState(true);
+  const [ctaHovered, setCtaHovered] = useState(false);
+  const ctaVisible = ctaAutoVisible || ctaHovered;
   useEffect(() => {
-    setCtaVisible(true);
+    setCtaAutoVisible(true);
     if (!cfg.cta || cfg.ctaDuration <= 0) return;
-    let hideTimer: ReturnType<typeof setTimeout>;
-    let showTimer: ReturnType<typeof setTimeout>;
-    const loop = () => {
-      setCtaVisible(true);
-      hideTimer = setTimeout(() => {
-        setCtaVisible(false);
-        showTimer = setTimeout(loop, 1500);
-      }, cfg.ctaDuration * 1000);
-    };
-    loop();
-    return () => { clearTimeout(hideTimer); clearTimeout(showTimer); };
+    const t = setTimeout(() => setCtaAutoVisible(false), cfg.ctaDuration * 1000);
+    return () => clearTimeout(t);
   }, [cfg.cta, cfg.ctaDuration]);
+
 
   if (loading) {
     return (
