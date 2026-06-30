@@ -267,7 +267,7 @@
     var progress    = el('div', 'zt-progress');
 
     var topCtrl   = el('div', 'zt-top-controls');
-    var btnClose  = el('button', 'zt-ctrl-btn'); btnClose.appendChild(svgIcon(ICO_CLOSE)); btnClose.title = 'Fechar';
+    var btnClose  = el('button', 'zt-ctrl-btn zt-ctrl-close'); btnClose.appendChild(svgIcon(ICO_CLOSE)); btnClose.title = 'Fechar';
     topCtrl.appendChild(btnClose);
 
 
