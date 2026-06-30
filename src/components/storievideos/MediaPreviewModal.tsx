@@ -418,47 +418,59 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
           )}
         </div>
 
-        {/* Zone 4 — product cards (bottom-right, larger stack matching reference) */}
+        {/* Zone 4 — product cards (carrossel: 1 = full width; 2+ = peek ~40% do próximo) */}
         {productList.length > 0 && (
           <div
-            className="absolute z-10 flex flex-col gap-2 pointer-events-none left-0 right-0 w-full"
+            className="absolute z-10 left-0 right-0 w-full pointer-events-none"
             style={{ bottom: 'calc(56px + env(safe-area-inset-bottom))' }}
           >
-            {productList.map((p) => (
-              <div
-                key={p.id}
-                className="pointer-events-auto bg-black/55 backdrop-blur-md overflow-hidden flex items-center gap-2.5 px-2.5 py-2 shadow-[0_6px_18px_rgba(0,0,0,0.35)] rounded-t-[4px]"
-              >
-                {p.image ? (
-                  <img
-                    src={p.image}
-                    alt={p.name}
-                    loading="eager"
-                    decoding="sync"
-                    // @ts-expect-error fetchpriority is a valid HTML attribute
-                    fetchpriority="high"
-                    className="w-10 h-10 rounded-md object-cover bg-neutral-800 shrink-0"
-                  />
-                ) : (
-                  <div className="w-10 h-10 rounded-md bg-neutral-800 shrink-0" />
-                )}
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium text-white truncate leading-tight text-[12px]">{p.name}</div>
-                  <div className="text-white/80 leading-tight mt-0.5 text-[11px] font-semibold min-h-[13px]">
-                    {p.price ? formatPrice(p.price) : '\u00A0'}
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => openProduct(p)}
-                  disabled={!p.url}
-                  className="bg-white hover:bg-neutral-100 transition-colors text-neutral-900 font-semibold text-[12px] px-3 py-1.5 rounded-md shrink-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-white"
+            <div
+              className={
+                productList.length > 1
+                  ? 'flex gap-2 overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar pl-3 pr-3 pointer-events-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'
+                  : 'flex px-3 pointer-events-auto'
+              }
+            >
+              {productList.map((p) => (
+                <div
+                  key={p.id}
+                  className={
+                    'bg-black/55 backdrop-blur-md overflow-hidden flex items-center gap-2.5 px-2.5 py-2 shadow-[0_6px_18px_rgba(0,0,0,0.35)] rounded-[4px] ' +
+                    (productList.length > 1
+                      ? 'shrink-0 snap-start basis-[72%]'
+                      : 'w-full')
+                  }
                 >
-                  Comprar
-                </button>
-
-              </div>
-            ))}
+                  {p.image ? (
+                    <img
+                      src={p.image}
+                      alt={p.name}
+                      loading="eager"
+                      decoding="sync"
+                      // @ts-expect-error fetchpriority is a valid HTML attribute
+                      fetchpriority="high"
+                      className="w-10 h-10 rounded-md object-cover bg-neutral-800 shrink-0"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-md bg-neutral-800 shrink-0" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-white truncate leading-tight text-[12px]">{p.name}</div>
+                    <div className="text-white/80 leading-tight mt-0.5 text-[11px] font-semibold min-h-[13px]">
+                      {p.price ? formatPrice(p.price) : '\u00A0'}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => openProduct(p)}
+                    disabled={!p.url}
+                    className="bg-white hover:bg-neutral-100 transition-colors text-neutral-900 font-semibold text-[12px] px-3 py-1.5 rounded-md shrink-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-white"
+                  >
+                    Comprar
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
