@@ -374,6 +374,8 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
                         placeholder="Buscar..."
                         className="h-9 rounded-lg"
                         aria-label="Buscar produto"
+                        aria-controls="prod-listbox"
+                        aria-activedescendant={filteredProducts[prodActiveIdx] ? `prod-opt-${prodActiveIdx}` : undefined}
                       />
                     </div>
                     {loading ? (
