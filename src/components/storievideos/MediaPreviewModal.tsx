@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Play, Volume2, VolumeX, X, Heart, MessageCircle, Send } from 'lucide-react';
+import { Play, Ruler, Volume2, VolumeX, X, Heart, MessageCircle, Send } from 'lucide-react';
 
 interface Product {
   id: string;
