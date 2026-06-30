@@ -1664,15 +1664,6 @@ export default function AppearanceEditor() {
                 >
                   Voltar
                 </button>
-                <button
-                  ref={bottomSaveRef}
-                  onClick={save}
-                  disabled={saving}
-                  className="btn-save h-10 px-4 rounded-lg text-sm font-semibold inline-flex items-center gap-2 shrink-0"
-                >
-                  {saving && <Loader2 className="w-4 h-4 animate-spin" />} Salvar
-                </button>
-
               </div>
 
             </div>
