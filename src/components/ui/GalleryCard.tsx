@@ -11,6 +11,8 @@ interface GalleryCardProps {
   isSelectionMode?: boolean;
   showDelete?: boolean;
   showName?: boolean;
+  /** Em touch: 1º toque ativa o card, 2º toque executa onClick (preview). Default false. */
+  twoTapPreview?: boolean;
   onSelect?: (id: string) => void;
   onDelete?: (id: string) => void;
   onClick?: (id: string) => void;
