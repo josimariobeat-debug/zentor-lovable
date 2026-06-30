@@ -83,6 +83,10 @@ export default function StoriesVideosApp() {
   const [selectedMedia, setSelectedMedia] = useState<Set<string>>(new Set());
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const galleryFileInputRef = useRef<HTMLInputElement>(null);
+  // Cache de produtos do app — usado para renderizar o card instantaneamente
+  // no modal de preview, sem esperar o fetch por id.
+  const productsCacheRef = useRef<Map<string, { id: string; name: string; price: string; image?: string | null; url?: string | null }>>(new Map());
+
 
   // Fallback: if URL uses app_key (text slug) instead of UUID, resolve to UUID and redirect.
   useEffect(() => {
