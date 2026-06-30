@@ -134,6 +134,17 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 input[type="number"] { -moz-appearance: textfield; }
 
+/* Botão padrão "Salvar" — lilás #7431CC */
+@utility btn-save {
+  background-color: #7431CC;
+  color: #ffffff;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.05s ease;
+  &:hover { background-color: #6528B8; }
+  &:active { background-color: #561F9C; transform: translateY(0.5px); }
+  &:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(116, 49, 204, 0.35); }
+  &:disabled { background-color: #7431CC; opacity: 0.6; cursor: not-allowed; }
+}
+
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
   -webkit-appearance: none !important;
