@@ -727,6 +727,20 @@ export default function AdicionarStory() {
         onOpenChange={() => setPreviewMedia(null)}
         media={previewMedia}
       />
+
+      {/* Product link modal */}
+      <ProductLinkModal
+        open={!!productLinkOpenFor}
+        onOpenChange={(o) => { if (!o) setProductLinkOpenFor(null); }}
+        initial={productLinkOpenFor ? productLinks[productLinkOpenFor] ?? null : null}
+        onSave={(sel) => {
+          if (!productLinkOpenFor) return;
+          setProductLinks((prev) => ({ ...prev, [productLinkOpenFor]: sel }));
+          toast.success('Vínculo salvo');
+        }}
+        onAddManual={() => toast.info('Cadastre o produto na aba Produtos para depois vinculá-lo aqui.')}
+      />
+
     </>);
 
 }
