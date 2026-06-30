@@ -380,8 +380,8 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="carrossel">Carrossel</SelectItem>
                     <SelectItem value="lista">Lista</SelectItem>
-                    <SelectItem value="cartoes">Cartões</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
