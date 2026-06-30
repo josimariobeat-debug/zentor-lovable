@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import GalleryModal from '@/components/storievideos/GalleryModal';
 import MobileUploadModal from '@/components/storievideos/MobileUploadModal';
+import ProductLinkModal, { type ProductLinkSelection } from '@/components/storievideos/ProductLinkModal';
 import { MediaThumbnail } from '@/components/ui/MediaThumbnail';
 import type { Tables } from '@/integrations/supabase/helpers';
 import {
@@ -77,6 +78,8 @@ export default function AdicionarStory() {
   const [helpOpen, setHelpOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [previewMedia, setPreviewMedia] = useState<Media | null>(null);
+  const [productLinkOpenFor, setProductLinkOpenFor] = useState<string | null>(null);
+  const [productLinks, setProductLinks] = useState<Record<string, ProductLinkSelection>>({});
   const [galleryOpen, setGalleryOpen] = useState(false);
 
   useEffect(() => {
@@ -595,16 +598,21 @@ export default function AdicionarStory() {
 
           {media.length > 0 &&
           <div data-ev-id="ev_c7b9fad983" className="grid grid-cols-3 md:grid-cols-4 gap-3">
-              {media.map((m, idx) =>
-                <MediaSourceCard
-                  key={idx}
-                  media={m}
-                  onPreview={() => setPreviewMedia(m)}
-                  onRemove={() => removeMedia(idx)}
-                  onSetCover={() => setCover(idx)}
-                  onCopyLink={() => copyLink(m)}
-                />
-              )}
+              {media.map((m, idx) => {
+                const key = m.id ?? m.url ?? String(idx);
+                return (
+                  <MediaSourceCard
+                    key={idx}
+                    media={m}
+                    hasLink={!!productLinks[key] && (productLinks[key].productIds.length > 0 || !!productLinks[key].measureId)}
+                    onPreview={() => setPreviewMedia(m)}
+                    onRemove={() => removeMedia(idx)}
+                    onSetCover={() => setCover(idx)}
+                    onCopyLink={() => copyLink(m)}
+                    onOpenProduct={() => setProductLinkOpenFor(key)}
+                  />
+                );
+              })}
             </div>
           }
         </section>
@@ -719,6 +727,20 @@ export default function AdicionarStory() {
         onOpenChange={() => setPreviewMedia(null)}
         media={previewMedia}
       />
+
+      {/* Product link modal */}
+      <ProductLinkModal
+        open={!!productLinkOpenFor}
+        onOpenChange={(o) => { if (!o) setProductLinkOpenFor(null); }}
+        initial={productLinkOpenFor ? productLinks[productLinkOpenFor] ?? null : null}
+        onSave={(sel) => {
+          if (!productLinkOpenFor) return;
+          setProductLinks((prev) => ({ ...prev, [productLinkOpenFor]: sel }));
+          toast.success('Vínculo salvo');
+        }}
+        onAddManual={() => toast.info('Cadastre o produto na aba Produtos para depois vinculá-lo aqui.')}
+      />
+
     </>);
 
 }
@@ -744,16 +766,20 @@ function SourceBtn({ icon: Icon, label, onClick, disabled }: {icon: React.Compon
  */
 function MediaSourceCard({
   media: m,
+  hasLink,
   onPreview,
   onRemove,
   onSetCover,
   onCopyLink,
+  onOpenProduct,
 }: {
   media: Media;
+  hasLink?: boolean;
   onPreview: () => void;
   onRemove: () => void;
   onSetCover: () => void;
   onCopyLink: () => void;
+  onOpenProduct: () => void;
 }) {
   const [isActive, setIsActive] = useState(false);
   const [isTouch, setIsTouch] = useState(false);
@@ -829,10 +855,10 @@ function MediaSourceCard({
 
         <button
           data-ev-id="ev_product_tag"
-          onClick={(e) => e.stopPropagation()}
-          onTouchEnd={(e) => e.stopPropagation()}
+          onClick={(e) => { e.stopPropagation(); onOpenProduct(); }}
+          onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); onOpenProduct(); }}
           title="Vincular produto"
-          className="w-7 h-7 rounded-full bg-white/95 text-neutral-900 hover:bg-white flex items-center justify-center"
+          className={`w-7 h-7 rounded-full flex items-center justify-center ${hasLink ? 'bg-violet-600 text-white hover:bg-violet-700' : 'bg-white/95 text-neutral-900 hover:bg-white'}`}
         >
           <ShoppingBag className="w-3.5 h-3.5" />
         </button>
