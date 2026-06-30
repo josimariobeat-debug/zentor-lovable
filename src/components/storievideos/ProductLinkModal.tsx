@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -111,6 +111,27 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
   const [selMeasure, setSelMeasure] = useState<string | null>(initial?.measureId ?? null);
   const [openList, setOpenList] = useState(false);
   const [openMedList, setOpenMedList] = useState(false);
+  const productWrapRef = useRef<HTMLDivElement | null>(null);
+  const measureWrapRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!openList && !openMedList) return;
+    const handler = (e: MouseEvent | TouchEvent) => {
+      const target = e.target as Node;
+      if (openList && productWrapRef.current && !productWrapRef.current.contains(target)) {
+        setOpenList(false);
+      }
+      if (openMedList && measureWrapRef.current && !measureWrapRef.current.contains(target)) {
+        setOpenMedList(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    document.addEventListener('touchstart', handler);
+    return () => {
+      document.removeEventListener('mousedown', handler);
+      document.removeEventListener('touchstart', handler);
+    };
+  }, [openList, openMedList]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -233,7 +254,7 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
                 </Select>
               </div>
 
-              <div className="relative">
+              <div className="relative" ref={productWrapRef}>
                 <button
                   type="button"
                   onClick={() => setOpenList((v) => !v)}
@@ -332,7 +353,7 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
           ) : (
             <div className="space-y-4">
               <label className="text-[13px] font-semibold text-neutral-800 block">Tabela de medidas</label>
-              <div className="relative">
+              <div className="relative" ref={measureWrapRef}>
                 <button
                   type="button"
                   onClick={() => setOpenMedList((v) => !v)}
