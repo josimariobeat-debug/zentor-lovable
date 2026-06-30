@@ -26,7 +26,7 @@ import { CSS } from '@dnd-kit/utilities';
 
 type ProductRow = { id: string; name: string; price: string; currency: string; url: string; image: string | null };
 type MeasureRow = { id: string; name: string };
-type Layout = 'lista' | 'cartoes';
+type Layout = 'carrossel' | 'lista';
 
 export interface ProductLinkSelection {
   layout: Layout;
