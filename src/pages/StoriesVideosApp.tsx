@@ -138,12 +138,19 @@ export default function StoriesVideosApp() {
           .from('products')
           .select('id,name,price,currency,url,image')
           .in('id', productIds);
-        if (!cancelled && data) {
-          const order = new Map(productIds.map((id, i) => [id, i]));
-          const ordered = (data as any[]).slice().sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
-          setPreviewProducts(ordered.map((p) => ({ id: p.id, name: p.name, price: String(p.price ?? ''), image: p.image, url: p.url })));
+        if (!cancelled) {
+          const byId = new Map<string, any>((data ?? []).map((p: any) => [p.id, p]));
+          // Fallback: para IDs sem produto correspondente (deletado / sem acesso),
+          // mantém um placeholder para preservar o layout do card.
+          const ordered = productIds.map((id) => {
+            const p = byId.get(id);
+            if (p) return { id: p.id, name: p.name, price: String(p.price ?? ''), image: p.image, url: p.url };
+            return { id, name: 'Produto indisponível', price: '', image: null, url: null };
+          });
+          setPreviewProducts(ordered);
         }
       }
+
       if (measureId) {
         const { data } = await (supabase as any)
           .from('measure_models')
