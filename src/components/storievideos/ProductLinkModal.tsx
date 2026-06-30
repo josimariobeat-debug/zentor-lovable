@@ -387,6 +387,7 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
                             key={p.id}
                             type="button"
                             role="option"
+                            data-prod-idx={idx}
                             aria-selected={sel}
                             onMouseEnter={() => setProdActiveIdx(idx)}
                             onClick={() => toggleProduct(p.id)}
