@@ -4,7 +4,8 @@ import { Input } from '@/components/ui/input';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/components/ui/toaster';
-import loginIllustration from '@/assets/uploads/login-illustration.png';
+import loginBgAsset from '@/assets/uploads/login-bg.png.asset.json';
+const loginBg = loginBgAsset.url;
 
 export default function Login() {
   const navigate = useNavigate();
