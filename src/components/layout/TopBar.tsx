@@ -16,9 +16,15 @@ interface TopBarProps {
   backTo?: string;
   breadcrumb?: string;
   rightSlot?: ReactNode;
+  /**
+   * When true, hides the profile dropdown so `rightSlot` takes its visual
+   * position in the header. Used by edit/create pages to swap the user chip
+   * for a "Salvar" CTA without changing the surrounding layout.
+   */
+  hideProfile?: boolean;
 }
 
-function TopBar({ title, backTo, breadcrumb, rightSlot }: TopBarProps) {
+function TopBar({ title, backTo, breadcrumb, rightSlot, hideProfile = false }: TopBarProps) {
   const navigate = useNavigate();
   const { profile, logout } = useAuth();
 
@@ -52,6 +58,7 @@ function TopBar({ title, backTo, breadcrumb, rightSlot }: TopBarProps) {
       </div>
       <div data-ev-id="ev_6051211abc" className="flex items-center gap-4">
         {rightSlot}
+        {!hideProfile && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button data-ev-id="ev_8771892fd0" className="flex items-center gap-3 outline-none min-w-[190px] justify-end">
@@ -75,6 +82,7 @@ function TopBar({ title, backTo, breadcrumb, rightSlot }: TopBarProps) {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        )}
       </div>
     </header>);
 

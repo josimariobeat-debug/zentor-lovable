@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import TopBar from '@/components/layout/TopBar';
+import { useIsVisible } from '@/hooks/useIsVisible';
 import MediaPreviewModal from '@/components/storievideos/MediaPreviewModal';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -58,6 +59,9 @@ export default function AdicionarStory() {
   const mediaRef = useRef<HTMLDivElement>(null);
   const urlRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const bottomSaveRef = useRef<HTMLButtonElement>(null);
+  const bottomSaveVisible = useIsVisible(bottomSaveRef);
+
 
   const stateKey = `story_form:${appId}:${storyId || 'novo'}`;
 
@@ -492,7 +496,7 @@ export default function AdicionarStory() {
   if (loading) {
     return (
       <>
-        <TopBar title={isEdit ? 'Editar story vídeo' : 'Adicionar story vídeo'} breadcrumb="Stories Vídeos" backTo={`/app/${appId}`} />
+        <TopBar title={isEdit ? 'Editar story vídeo' : 'Adicionar story vídeo'} breadcrumb="Stories Vídeos" backTo={`/app/${appId}`} hideProfile />
         <main data-ev-id="ev_740a9eb6ea" className="px-10 py-8 max-w-3xl">
           <div data-ev-id="ev_c6785f02b2" className="text-neutral-500 text-sm">Carregando…</div>
         </main>
@@ -506,7 +510,9 @@ export default function AdicionarStory() {
         title={isEdit ? 'Editar story vídeo' : 'Adicionar story vídeo'}
         breadcrumb="Stories Vídeos"
         backTo={`/app/${appId}`}
+        hideProfile
         rightSlot={
+        !bottomSaveVisible &&
         <button data-ev-id="ev_a2555c56e3"
         onClick={handleSave}
         disabled={saving}
@@ -515,6 +521,7 @@ export default function AdicionarStory() {
             {saving ? 'Salvando…' : 'Salvar'}
           </button>
         } />
+
 
       <main data-ev-id="ev_c3223a2163" className="px-10 py-8 fade-in max-w-3xl flex flex-col gap-6">
         {/* Title */}
@@ -701,7 +708,20 @@ export default function AdicionarStory() {
             )}
           </div>
         </section>
+
+        <div className="flex justify-end pt-2">
+          <button
+            ref={bottomSaveRef}
+            type="button"
+            onClick={handleSave}
+            disabled={saving}
+            className="btn-save text-[14px] font-medium px-5 py-2.5 rounded-xl"
+          >
+            {saving ? 'Salvando…' : 'Salvar'}
+          </button>
+        </div>
       </main>
+
 
       {/* Help modal */}
       <Dialog open={helpOpen} onOpenChange={setHelpOpen}>

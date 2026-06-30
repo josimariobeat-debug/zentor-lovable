@@ -1,15 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import TopBar from '@/components/layout/TopBar';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/toaster';
+import { useIsVisible } from '@/hooks/useIsVisible';
 
 export default function Perfil() {
   const { user, profile, refresh } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [saving, setSaving] = useState(false);
+  const bottomSaveRef = useRef<HTMLButtonElement>(null);
+  const bottomSaveVisible = useIsVisible(bottomSaveRef);
 
   useEffect(() => {
     if (profile) {
@@ -18,10 +21,8 @@ export default function Perfil() {
     }
   }, [profile]);
 
-  const save = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const doSave = async () => {
     if (!supabase || !user) return;
-
     setSaving(true);
     try {
       const initials = name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
@@ -39,9 +40,29 @@ export default function Perfil() {
     }
   };
 
+  const save = (e: React.FormEvent) => {
+    e.preventDefault();
+    void doSave();
+  };
+
   return (
     <>
-      <TopBar title="Perfil" />
+      <TopBar
+        title="Perfil"
+        hideProfile
+        rightSlot={
+          !bottomSaveVisible && (
+            <button
+              type="button"
+              onClick={() => void doSave()}
+              disabled={saving}
+              className="btn-save text-[14px] font-medium px-5 py-2.5 rounded-xl"
+            >
+              {saving ? 'Salvando…' : 'Salvar alterações'}
+            </button>
+          )
+        }
+      />
       <main data-ev-id="ev_6312547cc8" className="px-10 py-10 fade-in max-w-2xl">
         <div data-ev-id="ev_136d00e8b1" className="flex items-center gap-5 mb-10">
           <div data-ev-id="ev_381f4e08ad" className="w-20 h-20 rounded-full bg-neutral-900 text-white flex items-center justify-center text-2xl font-semibold">
@@ -69,6 +90,7 @@ export default function Perfil() {
           </div>
           <div data-ev-id="ev_d1f68a2881" className="flex justify-end pt-2">
             <button data-ev-id="ev_476a28056a"
+            ref={bottomSaveRef}
             type="submit"
             disabled={saving}
             className="btn-save text-[14px] font-medium px-5 py-2.5 rounded-xl">
