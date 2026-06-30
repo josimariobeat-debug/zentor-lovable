@@ -432,8 +432,12 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
               <div className="relative" ref={measureWrapRef}>
                 <button
                   type="button"
+                  ref={medTriggerRef}
                   onClick={() => setOpenMedList((v) => !v)}
-                  className="w-full h-11 px-3 rounded-xl border border-neutral-200 bg-white text-left text-[14px] text-neutral-500 hover:border-neutral-300 flex items-center justify-between"
+                  onKeyDown={handleTriggerKey('med')}
+                  aria-haspopup="listbox"
+                  aria-expanded={openMedList}
+                  className="w-full h-11 px-3 rounded-xl border border-neutral-200 bg-white text-left text-[14px] text-neutral-500 hover:border-neutral-300 focus:outline-none focus:ring-2 focus:ring-violet-500 flex items-center justify-between"
                 >
                   <span className="truncate">
                     {selMeasure ? measures.find((m) => m.id === selMeasure)?.name ?? 'Selecionada' : 'Digite para procurar a medida cadastrada'}
@@ -441,14 +445,16 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
                   <Search className="w-4 h-4 text-neutral-400" />
                 </button>
                 {openMedList && (
-                  <div className="absolute left-0 right-0 mt-1 z-30 bg-white border border-neutral-200 rounded-xl shadow-lg max-h-64 overflow-auto">
+                  <div className="absolute left-0 right-0 mt-1 z-30 bg-white border border-neutral-200 rounded-xl shadow-lg max-h-64 overflow-auto" role="listbox" aria-label="Medidas cadastradas">
                     <div className="p-2 sticky top-0 bg-white border-b border-neutral-100">
                       <Input
                         autoFocus
                         value={searchMed}
                         onChange={(e) => setSearchMed(e.target.value)}
+                        onKeyDown={handleMedKey}
                         placeholder="Buscar..."
                         className="h-9 rounded-lg"
+                        aria-label="Buscar medida"
                       />
                     </div>
                     {loading ? (
@@ -456,18 +462,24 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
                     ) : filteredMeasures.length === 0 ? (
                       <div className="p-4 text-center text-[13px] text-neutral-400">Nenhuma medida cadastrada</div>
                     ) : (
-                      filteredMeasures.map((m) => {
+                      filteredMeasures.map((m, idx) => {
                         const sel = selMeasure === m.id;
+                        const active = idx === medActiveIdx;
                         return (
                           <button
                             key={m.id}
                             type="button"
-                            onClick={() => { setSelMeasure(sel ? null : m.id); setOpenMedList(false); setSearchMed(''); }}
-                            className={`w-full flex items-center justify-between px-3 py-2 hover:bg-neutral-50 text-left ${sel ? 'bg-neutral-50' : ''}`}
+                            role="option"
+                            aria-selected={sel}
+                            disabled={sel}
+                            onMouseEnter={() => setMedActiveIdx(idx)}
+                            onClick={() => selectMeasure(m.id)}
+                            className={`w-full flex items-center justify-between px-3 py-2 text-left ${sel ? 'bg-neutral-50 cursor-not-allowed opacity-80' : active ? 'bg-neutral-100' : 'hover:bg-neutral-50'}`}
                           >
                             <span className="text-[13px] font-medium text-neutral-900 truncate">{m.name}</span>
                             {sel && <Check className="w-4 h-4 text-neutral-900" />}
                           </button>
+
                         );
                       })
                     )}
