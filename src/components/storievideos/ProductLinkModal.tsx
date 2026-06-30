@@ -22,9 +22,13 @@ interface Props {
   initial?: ProductLinkSelection | null;
   onSave: (sel: ProductLinkSelection) => void;
   onAddManual?: () => void;
+  onCreateProduct?: () => void;
+  refreshNonce?: number;
+  autoSelectProductId?: string | null;
+  onAutoSelectHandled?: () => void;
 }
 
-export default function ProductLinkModal({ open, onOpenChange, initial, onSave, onAddManual }: Props) {
+export default function ProductLinkModal({ open, onOpenChange, initial, onSave, onAddManual, onCreateProduct, refreshNonce, autoSelectProductId, onAutoSelectHandled }: Props) {
   const { user } = useAuth();
   const [tab, setTab] = useState<'produtos' | 'medida'>('produtos');
   const [layout, setLayout] = useState<Layout>(initial?.layout ?? 'lista');
@@ -60,7 +64,21 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
       setMeasures((m.data as any) ?? []);
       setLoading(false);
     })();
-  }, [open, user]);
+  }, [open, user, refreshNonce]);
+
+  // Auto-seleciona produto recém criado após o reload
+  useEffect(() => {
+    if (!open || !autoSelectProductId) return;
+    if (!products.some((p) => p.id === autoSelectProductId)) return;
+    setSelProducts((prev) => {
+      if (prev.has(autoSelectProductId)) return prev;
+      const next = new Set(prev);
+      next.add(autoSelectProductId);
+      return next;
+    });
+    setOpenList(true);
+    onAutoSelectHandled?.();
+  }, [open, autoSelectProductId, products, onAutoSelectHandled]);
 
   const filteredProducts = useMemo(
     () => products.filter((p) => !search || p.name.toLowerCase().includes(search.toLowerCase())),
