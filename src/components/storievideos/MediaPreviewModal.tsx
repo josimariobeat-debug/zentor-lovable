@@ -501,7 +501,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                         disabled={!p.url}
                         className="bg-white hover:bg-neutral-100 transition-colors text-neutral-900 font-semibold text-[9px] px-1.5 py-[2px] rounded-md shrink-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-white"
                       >
-                        Comprar
+                        Adicionar
                       </button>
 
                     </div>
