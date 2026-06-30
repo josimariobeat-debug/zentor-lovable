@@ -441,6 +441,7 @@ export default function StoriesVideosApp() {
             <div data-ev-id="ev_967dd7be70" className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {filteredGallery.map((m) =>
               <GalleryCard
+                twoTapPreview
                 key={m.id}
                 id={m.id}
                 url={m.url}
