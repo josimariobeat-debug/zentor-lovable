@@ -296,7 +296,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
               aria-label="Ver medidas"
               title="Medidas"
             >
-              <Ruler className="w-5 h-5" />
+              <RulerIcon className="w-5 h-5" />
             </button>
           )}
           <button
