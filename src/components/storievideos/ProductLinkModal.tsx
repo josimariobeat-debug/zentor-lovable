@@ -574,7 +574,7 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
           <button
             type="button"
             onClick={handleSave}
-            className="px-5 h-10 rounded-full bg-violet-600 hover:bg-violet-700 text-white text-[14px] font-semibold"
+            className="btn-save px-5 h-10 rounded-full text-[14px] font-semibold"
           >
             Salvar
           </button>
