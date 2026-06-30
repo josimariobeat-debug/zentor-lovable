@@ -162,32 +162,30 @@ export default function StoriesVideosApp() {
     setStories(data as StoryWithMedia[] ?? []);
   };
 
-  // Carrega produtos vinculados e modelo de medidas para o preview do story
+  // Abre o preview do story com hidratação SÍNCRONA a partir do cache,
+  // de modo que o modal renderize já com todos os elementos prontos
+  // (mesma experiência do modal da aba Aparência).
+  const openStoryPreview = (media: StoryMedia) => {
+    const m = media as StoryMedia & { product_ids?: string[] | null; measure_id?: string | null };
+    const productIds = Array.isArray(m.product_ids) ? m.product_ids : [];
+    const measureId = m.measure_id ?? null;
+    const cache = productsCacheRef.current;
+    const mCache = measuresCacheRef.current;
+    const products = productIds.map((id) => cache.get(id) ?? { id, name: 'Produto indisponível', price: '', image: null, url: null });
+    const measure = measureId ? (mCache.get(measureId) ?? { id: measureId, name: '', rows: [] }) : null;
+    setPreviewProducts(products);
+    setPreviewMeasure(measure);
+    setPreviewMedia(media);
+  };
+
+  // Refresh assíncrono dos produtos/medidas vinculados (sem causar pop-in,
+  // pois o estado inicial já vem do cache no clique).
   useEffect(() => {
     let cancelled = false;
-    if (!previewMedia || !supabase) {
-      setPreviewProducts([]);
-      setPreviewMeasure(null);
-      return;
-    }
+    if (!previewMedia || !supabase) return;
     const m = previewMedia as StoryMedia & { product_ids?: string[] | null; measure_id?: string | null };
     const productIds = Array.isArray(m.product_ids) ? m.product_ids : [];
     const measureId = m.measure_id ?? null;
-
-    // Hidrata imediatamente a partir do cache para evitar atraso do card
-    const cache = productsCacheRef.current;
-    if (productIds.length > 0 && cache.size > 0) {
-      setPreviewProducts(
-        productIds.map((id) => cache.get(id) ?? { id, name: 'Produto indisponível', price: '', image: null, url: null }),
-      );
-    } else {
-      setPreviewProducts([]);
-    }
-    // Hidrata o modelo de medidas a partir do cache — mesma estratégia do card
-    // de produto — para que o ícone apareça já com o conteúdo pronto.
-    const mCache = measuresCacheRef.current;
-    setPreviewMeasure(measureId ? (mCache.get(measureId) ?? { id: measureId, name: '', rows: [] }) : null);
-
 
     (async () => {
       if (productIds.length > 0) {
@@ -197,8 +195,6 @@ export default function StoriesVideosApp() {
           .in('id', productIds);
         if (!cancelled) {
           const byId = new Map<string, any>((data ?? []).map((p: any) => [p.id, p]));
-          // Fallback: para IDs sem produto correspondente (deletado / sem acesso),
-          // mantém um placeholder para preservar o layout do card.
           const ordered = productIds.map((id) => {
             const p = byId.get(id);
             if (p) return { id: p.id, name: p.name, price: String(p.price ?? ''), image: p.image, url: p.url };
@@ -226,6 +222,7 @@ export default function StoriesVideosApp() {
 
     return () => { cancelled = true; };
   }, [previewMedia]);
+
 
 
 
@@ -431,7 +428,7 @@ export default function StoriesVideosApp() {
                   className={`flex items-center gap-4 px-5 py-4 ${idx !== filtered.length - 1 ? 'border-b border-neutral-100' : ''}`}>
 
                       <button data-ev-id="ev_576596ca16"
-                    onClick={() => cover && setPreviewMedia(cover)}
+                    onClick={() => cover && openStoryPreview(cover)}
                     className="w-14 shrink-0 cursor-pointer hover:opacity-90 transition-opacity rounded-lg overflow-hidden">
                         {cover?.url ?
                       <MediaThumbnail
@@ -618,7 +615,8 @@ export default function StoriesVideosApp() {
       {/* Video Preview Dialog — Stories list (mesma lógica do modal da aba Aparência: usa playlist) */}
       <MediaPreviewModal
         open={!!previewMedia}
-        onOpenChange={() => setPreviewMedia(null)}
+        onOpenChange={() => { setPreviewMedia(null); setPreviewProducts([]); setPreviewMeasure(null); }}
+
         playlist={previewMedia ? [{ media: previewMedia, products: previewProducts }] : undefined}
         showMeasureIcon={!!previewMeasure}
         measureOpen={previewMeasureOpen}
