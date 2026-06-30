@@ -1285,17 +1285,15 @@ export default function AppearanceEditor() {
         backTo={returnTo || `/app/${appId}?tab=aparencia`}
         hideProfile
         rightSlot={
-          !bottomSaveVisible && (
-            <button
-              type="button"
-              onClick={save}
-              disabled={saving}
-              className="btn-save text-[14px] font-medium px-5 py-2.5 rounded-xl inline-flex items-center gap-2"
-            >
-              {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-              {saving ? 'Salvando…' : 'Salvar'}
-            </button>
-          )
+          <button
+            type="button"
+            onClick={save}
+            disabled={saving}
+            className="btn-save text-[14px] font-medium px-5 py-2.5 rounded-xl inline-flex items-center gap-2"
+          >
+            {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+            {saving ? 'Salvando…' : 'Salvar'}
+          </button>
         }
       />
       <main className="px-4 sm:px-6 lg:px-10 py-6 sm:py-8 fade-in">
