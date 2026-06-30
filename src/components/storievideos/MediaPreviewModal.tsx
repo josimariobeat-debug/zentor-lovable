@@ -42,6 +42,8 @@ interface MediaPreviewModalProps {
   showMeasureIcon?: boolean;
   /** Callback ao clicar no ícone de Medidas. */
   onMeasureClick?: () => void;
+  /** Quando true, pausa o vídeo (sem reset de currentTime) — usado enquanto o modal de Medidas está aberto. */
+  measureOpen?: boolean;
 }
 
 interface Comment {
