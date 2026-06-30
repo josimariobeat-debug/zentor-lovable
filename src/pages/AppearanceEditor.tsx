@@ -2,7 +2,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { ArrowLeft, ChevronLeft, ChevronRight, Heart, Loader2, MessageCircle, Monitor, Pause, Play, Send, Smartphone, Volume2, VolumeX, X } from 'lucide-react';
 import TopBar from '@/components/layout/TopBar';
-import { useIsVisible } from '@/hooks/useIsVisible';
+
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/components/ui/toaster';
