@@ -386,7 +386,6 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
                   <div id="prod-listbox" className="absolute left-0 right-0 mt-1 z-30 bg-white border border-neutral-200 rounded-xl shadow-lg max-h-64 overflow-auto" role="listbox" aria-label="Produtos cadastrados">
                     <div className="p-2 sticky top-0 bg-white border-b border-neutral-100">
                       <Input
-                        autoFocus
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         onKeyDown={handleProdKey}
