@@ -305,7 +305,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
             className="bg-transparent border-0 flex items-center justify-center text-white cursor-pointer p-1"
             aria-label="Fechar"
           >
-            <X className="w-7 h-7" />
+            <X className="w-7 h-7" strokeWidth={1.5} />
           </button>
         </div>
 
@@ -583,7 +583,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                 className="text-white/60 hover:text-white bg-transparent border-0 cursor-pointer"
                 aria-label="Fechar"
               >
-                <X className="w-7 h-7" />
+                <X className="w-7 h-7" strokeWidth={1.5} />
               </button>
             </div>
             <div className="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-3">

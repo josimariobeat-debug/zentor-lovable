@@ -83,7 +83,7 @@
     '.zt-ctrl-btn:hover{opacity:.8}',
     '.zt-ctrl-btn svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}',
     '.zt-ctrl-btn.zt-ctrl-close{width:36px;height:36px}',
-    '.zt-ctrl-btn.zt-ctrl-close svg{width:28px;height:28px}',
+    '.zt-ctrl-btn.zt-ctrl-close svg{width:28px;height:28px;stroke-width:1.5}',
     '.zt-nav{position:absolute;top:0;bottom:80px;width:30%;z-index:5;cursor:pointer}',
     '.zt-nav-l{left:0}.zt-nav-r{right:0}',
     '.zt-tap-pause{position:absolute;top:0;bottom:80px;left:30%;right:30%;z-index:5;cursor:pointer;background:transparent}',
