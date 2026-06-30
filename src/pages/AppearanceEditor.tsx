@@ -1129,16 +1129,17 @@ export default function AppearanceEditor() {
   // e os produtos do StoryViewer antigo.
   const previewPlaylist = useMemo(() => DEMO_STORIES.map((s, i) => {
     const all = (s.products && s.products.length > 0 ? s.products : [s.product]);
-    const ariella = all.find((p) => /ariella/i.test(p.title)) ?? all[0];
+    // Demonstração do carrossel: garantimos pelo menos 2 cards por item.
+    const demo = all.length >= 2 ? all.slice(0, 2) : [all[0], all[0]];
     return {
       media: { url: s.src, type: s.type === 'video' ? 'video/mp4' : 'image/jpeg', name: s.product.title },
-      products: ariella ? [{
-        id: `${i}-0`,
-        name: ariella.title,
-        price: ariella.price,
-        image: ariella.thumb,
+      products: demo.map((p, j) => ({
+        id: `${i}-${j}`,
+        name: p.title,
+        price: p.price,
+        image: p.thumb,
         url: null as string | null,
-      }] : [],
+      })),
     };
   }), []);
 
