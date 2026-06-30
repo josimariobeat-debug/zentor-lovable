@@ -12,6 +12,7 @@ import { useAuth } from '@/context/AuthContext';
 import GalleryModal from '@/components/storievideos/GalleryModal';
 import MobileUploadModal from '@/components/storievideos/MobileUploadModal';
 import ProductLinkModal, { type ProductLinkSelection } from '@/components/storievideos/ProductLinkModal';
+import { AddProductModal } from '@/pages/StoriesVideosApp';
 import { MediaThumbnail } from '@/components/ui/MediaThumbnail';
 import type { Tables } from '@/integrations/supabase/helpers';
 import {
@@ -81,6 +82,10 @@ export default function AdicionarStory() {
   const [productLinkOpenFor, setProductLinkOpenFor] = useState<string | null>(null);
   const [productLinks, setProductLinks] = useState<Record<string, ProductLinkSelection>>({});
   const [galleryOpen, setGalleryOpen] = useState(false);
+  const [addProductOpen, setAddProductOpen] = useState(false);
+  const [savingNewProduct, setSavingNewProduct] = useState(false);
+  const [productRefreshNonce, setProductRefreshNonce] = useState(0);
+  const [autoSelectProductId, setAutoSelectProductId] = useState<string | null>(null);
 
   useEffect(() => {
     // Restaura estado quando retornamos do editor de aparência
@@ -738,7 +743,40 @@ export default function AdicionarStory() {
           setProductLinks((prev) => ({ ...prev, [productLinkOpenFor]: sel }));
           toast.success('Vínculo salvo');
         }}
-        onAddManual={() => toast.info('Cadastre o produto na aba Produtos para depois vinculá-lo aqui.')}
+        onCreateProduct={() => setAddProductOpen(true)}
+        refreshNonce={productRefreshNonce}
+        autoSelectProductId={autoSelectProductId}
+        onAutoSelectHandled={() => setAutoSelectProductId(null)}
+      />
+
+      {/* Cadastro rápido de produto a partir do modal da sacola */}
+      <AddProductModal
+        open={addProductOpen}
+        saving={savingNewProduct}
+        onClose={() => { if (!savingNewProduct) setAddProductOpen(false); }}
+        onSave={async (p) => {
+          if (!user || !supabase) return;
+          setSavingNewProduct(true);
+          try {
+            const { data, error } = await supabase
+              .from('products')
+              .insert({ user_id: user.id, ...p })
+              .select('id')
+              .single();
+            if (error) throw error;
+            const newId = (data as any)?.id as string;
+            setAddProductOpen(false);
+            // Mantém o modal da sacola aberto (já estava) e dispara recarga + auto-seleção
+            setAutoSelectProductId(newId);
+            setProductRefreshNonce((n) => n + 1);
+            toast.success('Produto cadastrado e selecionado');
+          } catch (err: any) {
+            console.error(err);
+            toast.error('Erro ao salvar produto', { description: err?.message });
+          } finally {
+            setSavingNewProduct(false);
+          }
+        }}
       />
 
     </>);

@@ -22,9 +22,13 @@ interface Props {
   initial?: ProductLinkSelection | null;
   onSave: (sel: ProductLinkSelection) => void;
   onAddManual?: () => void;
+  onCreateProduct?: () => void;
+  refreshNonce?: number;
+  autoSelectProductId?: string | null;
+  onAutoSelectHandled?: () => void;
 }
 
-export default function ProductLinkModal({ open, onOpenChange, initial, onSave, onAddManual }: Props) {
+export default function ProductLinkModal({ open, onOpenChange, initial, onSave, onAddManual, onCreateProduct, refreshNonce, autoSelectProductId, onAutoSelectHandled }: Props) {
   const { user } = useAuth();
   const [tab, setTab] = useState<'produtos' | 'medida'>('produtos');
   const [layout, setLayout] = useState<Layout>(initial?.layout ?? 'lista');
@@ -60,7 +64,21 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
       setMeasures((m.data as any) ?? []);
       setLoading(false);
     })();
-  }, [open, user]);
+  }, [open, user, refreshNonce]);
+
+  // Auto-seleciona produto recém criado após o reload
+  useEffect(() => {
+    if (!open || !autoSelectProductId) return;
+    if (!products.some((p) => p.id === autoSelectProductId)) return;
+    setSelProducts((prev) => {
+      if (prev.has(autoSelectProductId)) return prev;
+      const next = new Set(prev);
+      next.add(autoSelectProductId);
+      return next;
+    });
+    setOpenList(true);
+    onAutoSelectHandled?.();
+  }, [open, autoSelectProductId, products, onAutoSelectHandled]);
 
   const filteredProducts = useMemo(
     () => products.filter((p) => !search || p.name.toLowerCase().includes(search.toLowerCase())),
@@ -180,15 +198,27 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
                 )}
               </div>
 
-              <div className="flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => onAddManual?.()}
-                  className="inline-flex items-center gap-2 h-10 px-4 rounded-full bg-white border border-neutral-200 text-[13px] font-medium text-neutral-900 hover:bg-neutral-50 shadow-sm"
-                >
-                  <Plus className="w-4 h-4" />
-                  Adicionar manualmente o produto
-                </button>
+              <div className="flex flex-wrap items-center justify-end gap-2">
+                {onCreateProduct && (
+                  <button
+                    type="button"
+                    onClick={() => onCreateProduct()}
+                    className="inline-flex items-center gap-2 h-10 px-4 rounded-full bg-neutral-900 text-white text-[13px] font-semibold hover:bg-neutral-800 shadow-sm"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Adicionar novo Produto
+                  </button>
+                )}
+                {onAddManual && (
+                  <button
+                    type="button"
+                    onClick={() => onAddManual?.()}
+                    className="inline-flex items-center gap-2 h-10 px-4 rounded-full bg-white border border-neutral-200 text-[13px] font-medium text-neutral-900 hover:bg-neutral-50 shadow-sm"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Adicionar manualmente
+                  </button>
+                )}
               </div>
             </div>
           ) : (
