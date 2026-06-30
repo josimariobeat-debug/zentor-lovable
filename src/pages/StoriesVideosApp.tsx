@@ -886,7 +886,7 @@ function ProdutosTab() {
 }
 
 
-function AddProductModal({
+export function AddProductModal({
   open,
   editing,
   onClose,
