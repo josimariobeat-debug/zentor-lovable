@@ -82,6 +82,10 @@ export default function AdicionarStory() {
   const [productLinkOpenFor, setProductLinkOpenFor] = useState<string | null>(null);
   const [productLinks, setProductLinks] = useState<Record<string, ProductLinkSelection>>({});
   const [galleryOpen, setGalleryOpen] = useState(false);
+  const [addProductOpen, setAddProductOpen] = useState(false);
+  const [savingNewProduct, setSavingNewProduct] = useState(false);
+  const [productRefreshNonce, setProductRefreshNonce] = useState(0);
+  const [autoSelectProductId, setAutoSelectProductId] = useState<string | null>(null);
 
   useEffect(() => {
     // Restaura estado quando retornamos do editor de aparência
