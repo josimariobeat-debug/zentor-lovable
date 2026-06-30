@@ -1670,7 +1670,9 @@ export default function AppearanceEditor() {
         onOpenChange={setViewerOpen}
         playlist={previewPlaylist}
         showMeasureIcon
+        measureOpen={demoMeasureOpen}
         onMeasureClick={() => setDemoMeasureOpen(true)}
+
       />
       <MeasurePreviewModal
         model={demoMeasureOpen ? demoMeasureModel : null}
