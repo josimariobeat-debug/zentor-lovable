@@ -26,7 +26,8 @@ import {
   X,
   Play,
   Pencil,
-  ShoppingBag } from
+  ShoppingBag,
+  Check } from
 'lucide-react';
 
 interface Media {
