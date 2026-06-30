@@ -71,7 +71,8 @@ export default function Perfil() {
             <button data-ev-id="ev_476a28056a"
             type="submit"
             disabled={saving}
-            className="text-[14px] font-medium text-white bg-neutral-900 hover:bg-neutral-800 disabled:opacity-60 px-5 py-2.5 rounded-xl transition-colors">
+            className="btn-save text-[14px] font-medium px-5 py-2.5 rounded-xl">
+
 
               {saving ? 'Salvando…' : 'Salvar alterações'}
             </button>
