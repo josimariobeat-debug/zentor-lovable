@@ -734,3 +734,121 @@ function SourceBtn({ icon: Icon, label, onClick, disabled }: {icon: React.Compon
     </button>);
 
 }
+
+/**
+ * Card de mídia da seção "Fontes de mídia".
+ * - Desktop: hover mostra ações; clique abre preview.
+ * - Touch: 1º toque ativa o card (mostra ações + badge), 2º toque no centro abre o preview.
+ *   Botões de ação (capa, link, produto, remover) executam ação direta no toque, sem abrir preview.
+ */
+function MediaSourceCard({
+  media: m,
+  onPreview,
+  onRemove,
+  onSetCover,
+  onCopyLink,
+}: {
+  media: Media;
+  onPreview: () => void;
+  onRemove: () => void;
+  onSetCover: () => void;
+  onCopyLink: () => void;
+}) {
+  const [isActive, setIsActive] = useState(false);
+  const [isTouch, setIsTouch] = useState(false);
+  const touchStartTime = useRef(0);
+  const hasMoved = useRef(false);
+
+  const handleTouchStart = () => {
+    setIsTouch(true);
+    touchStartTime.current = Date.now();
+    hasMoved.current = false;
+  };
+  const handleTouchMove = () => { hasMoved.current = true; };
+  const handleCenterTouchEnd = (e: React.TouchEvent) => {
+    const dur = Date.now() - touchStartTime.current;
+    if (dur >= 500 || hasMoved.current) return;
+    e.preventDefault();
+    if (!isActive) {
+      setIsActive(true);
+    } else {
+      onPreview();
+      setIsActive(false);
+    }
+  };
+  const handleCenterClick = () => {
+    if (isTouch) return; // já tratado pelo touchEnd
+    onPreview();
+  };
+
+  return (
+    <div
+      data-ev-id="ev_c9a7f5e6f2"
+      className="group relative rounded-xl overflow-hidden border border-neutral-200 bg-neutral-100 select-none"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onMouseEnter={() => !isTouch && setIsActive(true)}
+      onMouseLeave={() => !isTouch && setIsActive(false)}
+    >
+      <button
+        data-ev-id="ev_853fae407d"
+        type="button"
+        onClick={handleCenterClick}
+        onTouchEnd={handleCenterTouchEnd}
+        className="w-full"
+      >
+        <MediaThumbnail src={m.url} type={m.type} alt={m.name} isActive={isActive} />
+      </button>
+      {m.cover && (
+        <span data-ev-id="ev_0787ea46c4" className="absolute top-2 left-2 text-[10px] font-semibold tracking-wider uppercase bg-amber-300 text-neutral-900 px-2 py-0.5 rounded pointer-events-none z-10">Capa</span>
+      )}
+      <button
+        data-ev-id="ev_6336cb8a7e"
+        onClick={(e) => { e.stopPropagation(); onRemove(); }}
+        onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); onRemove(); }}
+        title="Remover"
+        className={`absolute top-2 right-2 w-7 h-7 rounded-full bg-black/50 text-white hover:bg-red-600 flex items-center justify-center transition-all z-20 ${isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+      >
+        <Trash2 className="w-3.5 h-3.5" />
+      </button>
+      <div
+        data-ev-id="ev_da978dc95b"
+        className={`absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 p-2 bg-gradient-to-t from-black/70 to-transparent transition-opacity z-20 ${isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+      >
+        <button
+          data-ev-id="ev_adbed9c64e"
+          onClick={(e) => { e.stopPropagation(); onSetCover(); }}
+          onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); onSetCover(); }}
+          title="Definir capa"
+          className={`w-7 h-7 rounded-full flex items-center justify-center ${m.cover ? 'bg-amber-400 text-white hover:bg-amber-500' : 'bg-white/95 text-neutral-900 hover:bg-white'}`}
+        >
+          <Star className="w-3.5 h-3.5" fill={m.cover ? 'currentColor' : 'none'} />
+        </button>
+        <button
+          data-ev-id="ev_94069b0704"
+          onClick={(e) => {
+            e.stopPropagation();
+            const btn = e.currentTarget;
+            btn.classList.add('animate-copy-success');
+            setTimeout(() => btn.classList.remove('animate-copy-success'), 600);
+            onCopyLink();
+          }}
+          onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); onCopyLink(); }}
+          title="Copiar link"
+          className="w-7 h-7 rounded-full bg-white/95 text-neutral-900 hover:bg-white flex items-center justify-center transition-all duration-200 [&.animate-copy-success]:scale-125 [&.animate-copy-success]:bg-green-500 [&.animate-copy-success]:text-white"
+        >
+          <LinkIcon className="w-3.5 h-3.5" />
+        </button>
+        <button
+          data-ev-id="ev_product_tag"
+          onClick={(e) => e.stopPropagation()}
+          onTouchEnd={(e) => e.stopPropagation()}
+          title="Vincular produto"
+          className="w-7 h-7 rounded-full bg-white/95 text-neutral-900 hover:bg-white flex items-center justify-center"
+        >
+          <ShoppingBag className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    </div>
+  );
+}
