@@ -855,10 +855,10 @@ function MediaSourceCard({
 
         <button
           data-ev-id="ev_product_tag"
-          onClick={(e) => e.stopPropagation()}
-          onTouchEnd={(e) => e.stopPropagation()}
+          onClick={(e) => { e.stopPropagation(); onOpenProduct(); }}
+          onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); onOpenProduct(); }}
           title="Vincular produto"
-          className="w-7 h-7 rounded-full bg-white/95 text-neutral-900 hover:bg-white flex items-center justify-center"
+          className={`w-7 h-7 rounded-full flex items-center justify-center ${hasLink ? 'bg-violet-600 text-white hover:bg-violet-700' : 'bg-white/95 text-neutral-900 hover:bg-white'}`}
         >
           <ShoppingBag className="w-3.5 h-3.5" />
         </button>
