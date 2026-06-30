@@ -1,18 +1,15 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import TopBar from '@/components/layout/TopBar';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/toaster';
-import { useIsVisible } from '@/hooks/useIsVisible';
 
 export default function Perfil() {
   const { user, profile, refresh } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [saving, setSaving] = useState(false);
-  const bottomSaveRef = useRef<HTMLButtonElement>(null);
-  const bottomSaveVisible = useIsVisible(bottomSaveRef);
 
   useEffect(() => {
     if (profile) {
@@ -51,16 +48,14 @@ export default function Perfil() {
         title="Perfil"
         hideProfile
         rightSlot={
-          !bottomSaveVisible && (
-            <button
-              type="button"
-              onClick={() => void doSave()}
-              disabled={saving}
-              className="btn-save text-[14px] font-medium px-5 py-2.5 rounded-xl"
-            >
-              {saving ? 'Salvando…' : 'Salvar alterações'}
-            </button>
-          )
+          <button
+            type="button"
+            onClick={() => void doSave()}
+            disabled={saving}
+            className="btn-save text-[14px] font-medium px-5 py-2.5 rounded-xl"
+          >
+            {saving ? 'Salvando…' : 'Salvar alterações'}
+          </button>
         }
       />
       <main data-ev-id="ev_6312547cc8" className="px-10 py-10 fade-in max-w-2xl">
@@ -88,17 +83,8 @@ export default function Perfil() {
               className="h-11 rounded-xl border-neutral-200" />
 
           </div>
-          <div data-ev-id="ev_d1f68a2881" className="flex justify-end pt-2">
-            <button data-ev-id="ev_476a28056a"
-            ref={bottomSaveRef}
-            type="submit"
-            disabled={saving}
-            className="btn-save text-[14px] font-medium px-5 py-2.5 rounded-xl">
+          <button type="submit" className="hidden" aria-hidden tabIndex={-1} />
 
-
-              {saving ? 'Salvando…' : 'Salvar alterações'}
-            </button>
-          </div>
         </form>
       </main>
     </>);

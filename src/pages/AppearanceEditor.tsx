@@ -2,7 +2,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { ArrowLeft, ChevronLeft, ChevronRight, Heart, Loader2, MessageCircle, Monitor, Pause, Play, Send, Smartphone, Volume2, VolumeX, X } from 'lucide-react';
 import TopBar from '@/components/layout/TopBar';
-import { useIsVisible } from '@/hooks/useIsVisible';
+
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/components/ui/toaster';
@@ -1012,8 +1012,6 @@ export default function AppearanceEditor() {
   const isNew = !presetId || presetId === 'new';
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
-  const bottomSaveRef = useRef<HTMLButtonElement>(null);
-  const bottomSaveVisible = useIsVisible(bottomSaveRef);
   const [name, setName] = useState('');
   const [cfg, setCfg] = useState<Config>(DEFAULT_CONFIG);
   const [device, setDevice] = useState<'mobile' | 'desktop'>('mobile');
@@ -1287,17 +1285,15 @@ export default function AppearanceEditor() {
         backTo={returnTo || `/app/${appId}?tab=aparencia`}
         hideProfile
         rightSlot={
-          !bottomSaveVisible && (
-            <button
-              type="button"
-              onClick={save}
-              disabled={saving}
-              className="btn-save text-[14px] font-medium px-5 py-2.5 rounded-xl inline-flex items-center gap-2"
-            >
-              {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-              {saving ? 'Salvando…' : 'Salvar'}
-            </button>
-          )
+          <button
+            type="button"
+            onClick={save}
+            disabled={saving}
+            className="btn-save text-[14px] font-medium px-5 py-2.5 rounded-xl inline-flex items-center gap-2"
+          >
+            {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+            {saving ? 'Salvando…' : 'Salvar'}
+          </button>
         }
       />
       <main className="px-4 sm:px-6 lg:px-10 py-6 sm:py-8 fade-in">
@@ -1668,15 +1664,6 @@ export default function AppearanceEditor() {
                 >
                   Voltar
                 </button>
-                <button
-                  ref={bottomSaveRef}
-                  onClick={save}
-                  disabled={saving}
-                  className="btn-save h-10 px-4 rounded-lg text-sm font-semibold inline-flex items-center gap-2 shrink-0"
-                >
-                  {saving && <Loader2 className="w-4 h-4 animate-spin" />} Salvar
-                </button>
-
               </div>
 
             </div>

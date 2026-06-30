@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import TopBar from '@/components/layout/TopBar';
-import { useIsVisible } from '@/hooks/useIsVisible';
+
 import MediaPreviewModal from '@/components/storievideos/MediaPreviewModal';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -59,8 +59,6 @@ export default function AdicionarStory() {
   const mediaRef = useRef<HTMLDivElement>(null);
   const urlRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const bottomSaveRef = useRef<HTMLButtonElement>(null);
-  const bottomSaveVisible = useIsVisible(bottomSaveRef);
 
 
   const stateKey = `story_form:${appId}:${storyId || 'novo'}`;
@@ -512,12 +510,10 @@ export default function AdicionarStory() {
         backTo={`/app/${appId}`}
         hideProfile
         rightSlot={
-        !bottomSaveVisible &&
-        <button data-ev-id="ev_a2555c56e3"
-        onClick={handleSave}
-        disabled={saving}
-        className="btn-save text-[14px] font-medium px-5 py-2.5 rounded-xl">
-
+          <button data-ev-id="ev_a2555c56e3"
+            onClick={handleSave}
+            disabled={saving}
+            className="btn-save text-[14px] font-medium px-5 py-2.5 rounded-xl">
             {saving ? 'Salvando…' : 'Salvar'}
           </button>
         } />
@@ -709,17 +705,6 @@ export default function AdicionarStory() {
           </div>
         </section>
 
-        <div className="flex justify-end pt-2">
-          <button
-            ref={bottomSaveRef}
-            type="button"
-            onClick={handleSave}
-            disabled={saving}
-            className="btn-save text-[14px] font-medium px-5 py-2.5 rounded-xl"
-          >
-            {saving ? 'Salvando…' : 'Salvar'}
-          </button>
-        </div>
       </main>
 
 
