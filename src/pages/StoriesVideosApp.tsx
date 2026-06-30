@@ -145,12 +145,26 @@ export default function StoriesVideosApp() {
   // Carrega produtos vinculados e modelo de medidas para o preview do story
   useEffect(() => {
     let cancelled = false;
-    setPreviewProducts([]);
-    setPreviewMeasure(null);
-    if (!previewMedia || !supabase) return;
+    if (!previewMedia || !supabase) {
+      setPreviewProducts([]);
+      setPreviewMeasure(null);
+      return;
+    }
     const m = previewMedia as StoryMedia & { product_ids?: string[] | null; measure_id?: string | null };
     const productIds = Array.isArray(m.product_ids) ? m.product_ids : [];
     const measureId = m.measure_id ?? null;
+
+    // Hidrata imediatamente a partir do cache para evitar atraso do card
+    const cache = productsCacheRef.current;
+    if (productIds.length > 0 && cache.size > 0) {
+      setPreviewProducts(
+        productIds.map((id) => cache.get(id) ?? { id, name: 'Produto indisponível', price: '', image: null, url: null }),
+      );
+    } else {
+      setPreviewProducts([]);
+    }
+    setPreviewMeasure(null);
+
 
     (async () => {
       if (productIds.length > 0) {
