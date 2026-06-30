@@ -59,8 +59,6 @@ export default function AdicionarStory() {
   const mediaRef = useRef<HTMLDivElement>(null);
   const urlRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const bottomSaveRef = useRef<HTMLButtonElement>(null);
-  const bottomSaveVisible = useIsVisible(bottomSaveRef);
 
 
   const stateKey = `story_form:${appId}:${storyId || 'novo'}`;
