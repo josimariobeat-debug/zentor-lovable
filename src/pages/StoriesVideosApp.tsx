@@ -86,6 +86,8 @@ export default function StoriesVideosApp() {
   // Cache de produtos do app — usado para renderizar o card instantaneamente
   // no modal de preview, sem esperar o fetch por id.
   const productsCacheRef = useRef<Map<string, { id: string; name: string; price: string; image?: string | null; url?: string | null }>>(new Map());
+  // Cache de modelos de medidas — mesma estratégia do cache de produtos.
+  const measuresCacheRef = useRef<Map<string, MeasureModel>>(new Map());
 
 
   // Fallback: if URL uses app_key (text slug) instead of UUID, resolve to UUID and redirect.
@@ -114,6 +116,7 @@ export default function StoriesVideosApp() {
     loadStories();
     loadGallery();
     loadProductsCache();
+    loadMeasuresCache();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appId]);
 
@@ -128,6 +131,23 @@ export default function StoriesVideosApp() {
       map.set(p.id, { id: p.id, name: p.name, price: String(p.price ?? ''), image: p.image, url: p.url });
     });
     productsCacheRef.current = map;
+  };
+
+  const loadMeasuresCache = async () => {
+    if (!supabase || !user) return;
+    const { data } = await (supabase as any)
+      .from('measure_models')
+      .select('id,name,measure_rows(id,size_name,measure_type,value_cm,position)')
+      .eq('user_id', user.id);
+    const map = new Map<string, MeasureModel>();
+    (data ?? []).forEach((m: any) => {
+      const rows = ((m.measure_rows ?? []) as any[])
+        .slice()
+        .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+        .map((r) => ({ id: r.id, tamanho: r.size_name, medida: r.measure_type as MeasureType, valor: String(r.value_cm) }));
+      map.set(m.id, { id: m.id, name: m.name, rows });
+    });
+    measuresCacheRef.current = map;
   };
 
 
@@ -163,10 +183,10 @@ export default function StoriesVideosApp() {
     } else {
       setPreviewProducts([]);
     }
-    // Hidrata imediatamente um stub do modelo quando há measure_id vinculado,
-    // para que o ícone de Medidas apareça junto com o card de produto. As linhas
-    // (rows) são preenchidas logo em seguida pela query abaixo.
-    setPreviewMeasure(measureId ? { id: measureId, name: '', rows: [] } : null);
+    // Hidrata o modelo de medidas a partir do cache — mesma estratégia do card
+    // de produto — para que o ícone apareça já com o conteúdo pronto.
+    const mCache = measuresCacheRef.current;
+    setPreviewMeasure(measureId ? (mCache.get(measureId) ?? { id: measureId, name: '', rows: [] }) : null);
 
 
     (async () => {
