@@ -485,12 +485,13 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                   <div className="flex-1 min-w-0 flex flex-col py-1 pl-2 pr-2">
                     <div className="flex-1 min-w-0 overflow-hidden">
                       <div
-                        className="font-medium text-white leading-[1.1] text-[20px] overflow-hidden"
+                        className="text-white leading-[1.1] text-[20px] overflow-hidden"
                         style={{
                           display: '-webkit-box',
                           WebkitLineClamp: 2,
                           WebkitBoxOrient: 'vertical',
                           wordBreak: 'break-word',
+                          fontWeight: 100,
                         }}
                       >
                         {p.name}
