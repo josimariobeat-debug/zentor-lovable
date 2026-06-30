@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import GalleryModal from '@/components/storievideos/GalleryModal';
 import MobileUploadModal from '@/components/storievideos/MobileUploadModal';
+import ProductLinkModal, { type ProductLinkSelection } from '@/components/storievideos/ProductLinkModal';
 import { MediaThumbnail } from '@/components/ui/MediaThumbnail';
 import type { Tables } from '@/integrations/supabase/helpers';
 import {
