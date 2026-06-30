@@ -592,15 +592,15 @@ export default function StoriesVideosApp() {
         onConfirm={handleDelete}
       />
 
-      {/* Video Preview Dialog — Stories list */}
+      {/* Video Preview Dialog — Stories list (mesma lógica do modal da aba Aparência: usa playlist) */}
       <MediaPreviewModal
         open={!!previewMedia}
         onOpenChange={() => setPreviewMedia(null)}
-        media={previewMedia}
-        products={previewProducts}
+        playlist={previewMedia ? [{ media: previewMedia, products: previewProducts }] : undefined}
         showMeasureIcon={!!previewMeasure}
         onMeasureClick={() => setPreviewMeasureOpen(true)}
       />
+
 
       <MeasureModelPreviewModal
         model={previewMeasureOpen ? previewMeasure : null}
