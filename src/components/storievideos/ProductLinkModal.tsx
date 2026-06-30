@@ -475,7 +475,7 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
                   <Search className="w-4 h-4 text-neutral-400" />
                 </button>
                 {openMedList && (
-                  <div className="absolute left-0 right-0 mt-1 z-30 bg-white border border-neutral-200 rounded-xl shadow-lg max-h-64 overflow-auto" role="listbox" aria-label="Medidas cadastradas">
+                  <div id="med-listbox" className="absolute left-0 right-0 mt-1 z-30 bg-white border border-neutral-200 rounded-xl shadow-lg max-h-64 overflow-auto" role="listbox" aria-label="Medidas cadastradas">
                     <div className="p-2 sticky top-0 bg-white border-b border-neutral-100">
                       <Input
                         autoFocus
@@ -485,6 +485,8 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
                         placeholder="Buscar..."
                         className="h-9 rounded-lg"
                         aria-label="Buscar medida"
+                        aria-controls="med-listbox"
+                        aria-activedescendant={filteredMeasures[medActiveIdx] ? `med-opt-${medActiveIdx}` : undefined}
                       />
                     </div>
                     {loading ? (
@@ -498,6 +500,7 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
                         return (
                           <button
                             key={m.id}
+                            id={`med-opt-${idx}`}
                             type="button"
                             role="option"
                             data-med-idx={idx}
