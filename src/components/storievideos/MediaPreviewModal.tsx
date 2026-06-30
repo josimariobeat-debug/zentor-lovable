@@ -498,7 +498,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                       </div>
                     </div>
                     <div className="flex items-center justify-between gap-2 mt-auto">
-                      <div className="text-white/90 leading-none text-[13px] font-semibold truncate">
+                      <div className="text-white/90 leading-none text-[13px] font-light truncate">
                         {p.price ? formatPrice(p.price) : '\u00A0'}
                       </div>
                       <button
