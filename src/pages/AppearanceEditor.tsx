@@ -1105,6 +1105,24 @@ export default function AppearanceEditor() {
   }
 
   const [viewerOpen, setViewerOpen] = useState(false);
+  const [demoMeasureOpen, setDemoMeasureOpen] = useState(false);
+
+  // Modelo de medidas demonstrativo — usado apenas no preview da aba Aparência.
+  const demoMeasureModel: MeasureModel = useMemo(() => ({
+    id: 'demo',
+    name: 'Modelo demonstrativo',
+    rows: [
+      { id: 'r1', tamanho: 'P', medida: 'Busto', valor: '86' },
+      { id: 'r2', tamanho: 'P', medida: 'Cintura', valor: '66' },
+      { id: 'r3', tamanho: 'P', medida: 'Quadril', valor: '92' },
+      { id: 'r4', tamanho: 'M', medida: 'Busto', valor: '90' },
+      { id: 'r5', tamanho: 'M', medida: 'Cintura', valor: '70' },
+      { id: 'r6', tamanho: 'M', medida: 'Quadril', valor: '96' },
+      { id: 'r7', tamanho: 'G', medida: 'Busto', valor: '94' },
+      { id: 'r8', tamanho: 'G', medida: 'Cintura', valor: '74' },
+      { id: 'r9', tamanho: 'G', medida: 'Quadril', valor: '100' },
+    ],
+  }), []);
 
   // Playlist do preview: clona o modal da lista de stories, mas com os 2 vídeos demo
   // e os produtos do StoryViewer antigo.
