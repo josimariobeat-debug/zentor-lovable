@@ -28,6 +28,10 @@ interface MediaPreviewModalProps {
   /** Quando informado, ignora `media`/`products` e exibe múltiplos stories
    *  com barras de progresso por segmento, auto-advance e tap zones. */
   playlist?: PlaylistItem[];
+  /** Mostra um ícone de Medidas ao lado do botão Fechar. */
+  showMeasureIcon?: boolean;
+  /** Callback ao clicar no ícone de Medidas. */
+  onMeasureClick?: () => void;
 }
 
 interface Comment {
