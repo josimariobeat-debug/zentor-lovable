@@ -1654,7 +1654,7 @@ export default function AppearanceEditor() {
                 <button
                   onClick={save}
                   disabled={saving}
-                  className="h-10 px-4 rounded-lg border border-neutral-900 bg-neutral-900 text-white text-sm font-semibold hover:bg-neutral-800 inline-flex items-center gap-2 shrink-0 disabled:opacity-60"
+                  className="btn-save h-10 px-4 rounded-lg text-sm font-semibold inline-flex items-center gap-2 shrink-0"
                 >
                   {saving && <Loader2 className="w-4 h-4 animate-spin" />} Salvar
                 </button>
