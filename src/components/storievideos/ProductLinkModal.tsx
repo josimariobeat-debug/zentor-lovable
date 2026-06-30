@@ -495,6 +495,7 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
                             key={m.id}
                             type="button"
                             role="option"
+                            data-med-idx={idx}
                             aria-selected={sel}
                             disabled={sel}
                             onMouseEnter={() => setMedActiveIdx(idx)}
