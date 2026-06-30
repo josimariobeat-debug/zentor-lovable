@@ -199,6 +199,67 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
     setSelProductIds((prev) => prev.filter((x) => x !== id));
   };
 
+  const selectMeasure = (id: string) => {
+    // Garante que a mesma medida não seja selecionada repetidamente
+    if (selMeasure === id) {
+      setSelMeasure(null);
+    } else {
+      setSelMeasure(id);
+    }
+    setOpenMedList(false);
+    setSearchMed('');
+    medTriggerRef.current?.focus();
+  };
+
+  // Reset highlight when filter or open state changes
+  useEffect(() => { setProdActiveIdx(0); }, [search, openList]);
+  useEffect(() => { setMedActiveIdx(0); }, [searchMed, openMedList]);
+
+  const handleProdKey = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      e.preventDefault(); e.stopPropagation();
+      setOpenList(false);
+      prodTriggerRef.current?.focus();
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setProdActiveIdx((i) => Math.min(i + 1, Math.max(filteredProducts.length - 1, 0)));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setProdActiveIdx((i) => Math.max(i - 1, 0));
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      const p = filteredProducts[prodActiveIdx];
+      if (p) toggleProduct(p.id);
+    }
+  };
+
+  const handleMedKey = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      e.preventDefault(); e.stopPropagation();
+      setOpenMedList(false);
+      medTriggerRef.current?.focus();
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setMedActiveIdx((i) => Math.min(i + 1, Math.max(filteredMeasures.length - 1, 0)));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setMedActiveIdx((i) => Math.max(i - 1, 0));
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      const m = filteredMeasures[medActiveIdx];
+      if (m) selectMeasure(m.id);
+    }
+  };
+
+  const handleTriggerKey = (which: 'prod' | 'med') => (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      if (which === 'prod') setOpenList(true); else setOpenMedList(true);
+    } else if (e.key === 'Escape') {
+      if (which === 'prod') setOpenList(false); else setOpenMedList(false);
+    }
+  };
+
   const handleDragEnd = (e: DragEndEvent) => {
     const { active, over } = e;
     if (!over || active.id === over.id) return;
