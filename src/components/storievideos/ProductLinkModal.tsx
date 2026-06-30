@@ -26,7 +26,7 @@ import { CSS } from '@dnd-kit/utilities';
 
 type ProductRow = { id: string; name: string; price: string; currency: string; url: string; image: string | null };
 type MeasureRow = { id: string; name: string };
-type Layout = 'lista' | 'cartoes';
+type Layout = 'carrossel' | 'lista';
 
 export interface ProductLinkSelection {
   layout: Layout;
@@ -108,7 +108,7 @@ function SortableProductItem({
 export default function ProductLinkModal({ open, onOpenChange, initial, onSave, onAddManual, onCreateProduct, refreshNonce, autoSelectProductId, onAutoSelectHandled, prefetchedProducts, prefetchedMeasures }: Props) {
   const { user } = useAuth();
   const [tab, setTab] = useState<'produtos' | 'medida'>('produtos');
-  const [layout, setLayout] = useState<Layout>(initial?.layout ?? 'lista');
+  const [layout, setLayout] = useState<Layout>(initial?.layout ?? 'carrossel');
   // Hidratação síncrona a partir do prefetch — evita o estado vazio + skeleton
   // e o consequente flash visual quando o modal abre.
   const [products, setProducts] = useState<ProductRow[]>(prefetchedProducts ?? []);
@@ -157,7 +157,7 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
   useEffect(() => {
     if (!open) return;
     setTab('produtos');
-    setLayout(initial?.layout ?? 'lista');
+    setLayout(initial?.layout ?? 'carrossel');
     setSelProductIds(initial?.productIds ?? []);
     setSelMeasure(initial?.measureId ?? null);
     setSearch(''); setSearchMed('');
@@ -380,8 +380,8 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="carrossel">Carrossel</SelectItem>
                     <SelectItem value="lista">Lista</SelectItem>
-                    <SelectItem value="cartoes">Cartões</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

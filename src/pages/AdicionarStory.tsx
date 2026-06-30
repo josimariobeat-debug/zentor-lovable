@@ -251,7 +251,7 @@ export default function AdicionarStory() {
         const mid = m.measure_id ?? null;
         if (pids.length > 0 || mid) {
           links[m.id] = {
-            layout: (m.products_layout === 'cartoes' ? 'cartoes' : 'lista') as ProductLinkSelection['layout'],
+            layout: (m.products_layout === 'lista' ? 'lista' : 'carrossel') as ProductLinkSelection['layout'],
             productIds: pids,
             measureId: mid,
           };
@@ -475,7 +475,7 @@ export default function AdicionarStory() {
             position: idx,
             product_ids: link?.productIds ?? [],
             measure_id: link?.measureId ?? null,
-            products_layout: link?.layout ?? 'lista',
+            products_layout: link?.layout ?? 'carrossel',
           };
         });
         await supabase.from('story_media').insert(mediaInserts);
