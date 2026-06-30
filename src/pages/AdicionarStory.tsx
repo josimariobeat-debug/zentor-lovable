@@ -211,7 +211,7 @@ export default function AdicionarStory() {
       setCta(story.cta || '');
       setUrls((story.urls as unknown as UrlEntry[])?.length ? (story.urls as unknown as UrlEntry[]) : [{ value: '', type: 'contem', ignore_params: false }]);
 
-      const storyMedia = (story as { story_media?: Array<{ id: string; url: string; type: string; name?: string; is_cover?: boolean }> }).story_media || [];
+      const storyMedia = (story as { story_media?: Array<{ id: string; url: string; type: string; name?: string; is_cover?: boolean; product_ids?: string[]; measure_id?: string | null; products_layout?: string }> }).story_media || [];
       setMedia(storyMedia.map((m) => ({
         id: m.id,
         url: m.url,
@@ -219,6 +219,20 @@ export default function AdicionarStory() {
         name: m.name || '',
         cover: m.is_cover
       })));
+      // Hidrata productLinks usando o id da mídia como chave (mesma chave usada na UI quando m.id existe)
+      const links: Record<string, ProductLinkSelection> = {};
+      for (const m of storyMedia) {
+        const pids = m.product_ids ?? [];
+        const mid = m.measure_id ?? null;
+        if (pids.length > 0 || mid) {
+          links[m.id] = {
+            layout: (m.products_layout === 'cartoes' ? 'cartoes' : 'lista') as ProductLinkSelection['layout'],
+            productIds: pids,
+            measureId: mid,
+          };
+        }
+      }
+      setProductLinks(links);
     }
     setLoading(false);
   };
