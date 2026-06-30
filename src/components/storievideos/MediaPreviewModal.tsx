@@ -96,7 +96,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
   const [formPhone, setFormPhone] = useState('');
   const [formText, setFormText] = useState('');
 
-  const anyDrawerOpen = showCommentForm || showCommentList || showShare;
+  const anyDrawerOpen = showCommentForm || showCommentList || showShare || !!measureOpen;
 
   // Reset state on open
   useEffect(() => {
