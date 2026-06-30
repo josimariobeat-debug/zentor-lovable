@@ -1211,25 +1211,37 @@ export default function AppearanceEditor() {
       letterSpacing: 0.3,
       whiteSpace: 'nowrap',
       boxShadow: '0 6px 18px -8px rgba(0,0,0,.28)',
-      willChange: 'opacity, transform',
+      willChange: 'mask-position, -webkit-mask-position, opacity',
       transition:
-        'opacity 480ms cubic-bezier(.4,0,.2,1), transform 480ms cubic-bezier(.4,0,.2,1)',
-      transformOrigin: isLeft ? 'left center' : 'right center',
+        'mask-position 620ms cubic-bezier(.4,0,.2,1), -webkit-mask-position 620ms cubic-bezier(.4,0,.2,1), opacity 320ms ease-out',
+      // Mask reveals from the widget-side edge outward; opacity gradient
+      // along the CTA length is baked into the mask itself.
+      WebkitMaskImage: `linear-gradient(${isLeft ? 'to right' : 'to left'}, #000 0%, #000 35%, transparent 100%)`,
+      maskImage: `linear-gradient(${isLeft ? 'to right' : 'to left'}, #000 0%, #000 35%, transparent 100%)`,
+      WebkitMaskRepeat: 'no-repeat',
+      maskRepeat: 'no-repeat',
+      WebkitMaskSize: '300% 100%',
+      maskSize: '300% 100%',
       zIndex: 1, // behind the bubble (z=2) so it appears to slide from under it
     } as React.CSSProperties;
   }, [cfg, bubbleGeom]);
 
-  // Smooth fade + subtle slide from behind the widget — no stretching.
-  const hiddenShift = bubbleGeom.isLeft ? -8 : 8;
+  // Mask sweeps from the widget edge outward, producing a soft opacity
+  // gradient that travels along the CTA's length as it appears/disappears.
   const ctaShown: React.CSSProperties = {
     opacity: 1,
-    transform: 'translateY(50%) translateX(0)',
+    transform: 'translateY(50%)',
+    WebkitMaskPosition: bubbleGeom.isLeft ? '100% 0%' : '0% 0%',
+    maskPosition: bubbleGeom.isLeft ? '100% 0%' : '0% 0%',
   };
   const ctaHidden: React.CSSProperties = {
     opacity: 0,
-    transform: `translateY(50%) translateX(${hiddenShift}px)`,
+    transform: 'translateY(50%)',
+    WebkitMaskPosition: bubbleGeom.isLeft ? '0% 0%' : '100% 0%',
+    maskPosition: bubbleGeom.isLeft ? '0% 0%' : '100% 0%',
     pointerEvents: 'none',
   };
+
 
   // CTA visibility timer: shows on mount, hides after ctaDuration seconds, loops every (duration+2)s.
   const [ctaVisible, setCtaVisible] = useState(true);
