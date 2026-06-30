@@ -278,6 +278,17 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
 
         {/* Zone 2 — top controls */}
         <div className="absolute right-3 flex items-center gap-2.5 z-20" style={{ top: 'calc(max(10px, env(safe-area-inset-top)) + 14px)' }}>
+          {showMeasureIcon && (
+            <button
+              type="button"
+              onClick={() => onMeasureClick?.()}
+              className="bg-transparent border-0 flex items-center justify-center text-white cursor-pointer p-1"
+              aria-label="Ver medidas"
+              title="Medidas"
+            >
+              <Ruler className="w-5 h-5" />
+            </button>
+          )}
           <button
             type="button"
             onClick={() => onOpenChange(false)}
