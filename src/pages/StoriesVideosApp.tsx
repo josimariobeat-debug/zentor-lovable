@@ -853,7 +853,7 @@ function ProdutosTab() {
         onClose={() => { setMeasureOpen(false); setEditingMeasure(null); }}
         onSave={saveMeasureModel} />
 
-      <MeasurePreviewModal
+      <MeasureModelPreviewModal
         model={previewMeasure}
         onClose={() => setPreviewMeasure(null)} />
 
