@@ -365,7 +365,7 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
                           <button
                             key={m.id}
                             type="button"
-                            onClick={() => { setSelMeasure(sel ? null : m.id); setOpenMedList(false); }}
+                            onClick={() => { setSelMeasure(sel ? null : m.id); setOpenMedList(false); setSearchMed(''); }}
                             className={`w-full flex items-center justify-between px-3 py-2 hover:bg-neutral-50 text-left ${sel ? 'bg-neutral-50' : ''}`}
                           >
                             <span className="text-[13px] font-medium text-neutral-900 truncate">{m.name}</span>
