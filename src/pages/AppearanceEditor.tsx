@@ -1187,7 +1187,7 @@ export default function AppearanceEditor() {
   const ctaBase = useMemo<React.CSSProperties>(() => {
     const { isBottom, isLeft, bubbleW, bubbleH } = bubbleGeom;
     const verticalCenter = cfg.spacingBottom + bubbleH / 2;
-    const horizontalAfter = cfg.spacingLeft + bubbleW + 12;
+    const horizontalAfter = cfg.spacingLeft + bubbleW;
     return {
       position: 'absolute',
       [isBottom ? 'bottom' : 'top']: verticalCenter,
@@ -1204,7 +1204,7 @@ export default function AppearanceEditor() {
       boxShadow: '0 10px 28px -10px rgba(0,0,0,.35), 0 2px 6px rgba(0,0,0,.08)',
       willChange: 'transform, opacity',
       transition:
-        'opacity 320ms cubic-bezier(.22,.61,.36,1), transform 460ms cubic-bezier(.34,1.32,.5,1)',
+        'opacity 520ms cubic-bezier(.22,.61,.36,1), transform 720ms cubic-bezier(.22,.61,.36,1)',
       transformOrigin: isLeft ? 'left center' : 'right center',
       zIndex: 1, // behind the bubble (z=2) so it appears to slide from under it
     } as React.CSSProperties;
