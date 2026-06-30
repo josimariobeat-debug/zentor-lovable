@@ -496,7 +496,7 @@ export default function AdicionarStory() {
   if (loading) {
     return (
       <>
-        <TopBar title={isEdit ? 'Editar story vídeo' : 'Adicionar story vídeo'} breadcrumb="Stories Vídeos" backTo={`/app/${appId}`} />
+        <TopBar title={isEdit ? 'Editar story vídeo' : 'Adicionar story vídeo'} breadcrumb="Stories Vídeos" backTo={`/app/${appId}`} hideProfile />
         <main data-ev-id="ev_740a9eb6ea" className="px-10 py-8 max-w-3xl">
           <div data-ev-id="ev_c6785f02b2" className="text-neutral-500 text-sm">Carregando…</div>
         </main>
@@ -708,7 +708,20 @@ export default function AdicionarStory() {
             )}
           </div>
         </section>
+
+        <div className="flex justify-end pt-2">
+          <button
+            ref={bottomSaveRef}
+            type="button"
+            onClick={handleSave}
+            disabled={saving}
+            className="btn-save text-[14px] font-medium px-5 py-2.5 rounded-xl"
+          >
+            {saving ? 'Salvando…' : 'Salvar'}
+          </button>
+        </div>
       </main>
+
 
       {/* Help modal */}
       <Dialog open={helpOpen} onOpenChange={setHelpOpen}>
