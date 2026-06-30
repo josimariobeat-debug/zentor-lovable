@@ -254,7 +254,7 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
                 </Select>
               </div>
 
-              <div className="relative">
+              <div className="relative" ref={productWrapRef}>
                 <button
                   type="button"
                   onClick={() => setOpenList((v) => !v)}
