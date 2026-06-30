@@ -62,7 +62,7 @@ function formatPrice(price: string): string {
   return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
-export default function MediaPreviewModal({ open, onOpenChange, media, products, playlist, showMeasureIcon, onMeasureClick }: MediaPreviewModalProps) {
+export default function MediaPreviewModal({ open, onOpenChange, media, products, playlist, showMeasureIcon, onMeasureClick, measureOpen }: MediaPreviewModalProps) {
   const hasPlaylist = !!playlist && playlist.length > 0;
   const segmentCount = hasPlaylist ? playlist!.length : 1;
 
