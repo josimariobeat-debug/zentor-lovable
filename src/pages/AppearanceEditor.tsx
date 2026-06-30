@@ -1188,20 +1188,29 @@ export default function AppearanceEditor() {
     const { isBottom, isLeft, bubbleW, bubbleH } = bubbleGeom;
     const verticalCenter = cfg.spacingBottom + bubbleH / 2;
     const horizontalAfter = cfg.spacingLeft + bubbleW;
+    // Outer-side radius mirrors the widget shape; widget-side corners are
+    // square (0) so the CTA fuses with the bubble edge.
+    let outerRadius = 0;
+    if (cfg.shape === 'circular') outerRadius = 999;
+    else if (cfg.shape === 'quadrado') outerRadius = 12;
+    else outerRadius = cfg.borderRadius;
+    const borderRadius = isLeft
+      ? `0 ${outerRadius}px ${outerRadius}px 0`
+      : `${outerRadius}px 0 0 ${outerRadius}px`;
     return {
       position: 'absolute',
       [isBottom ? 'bottom' : 'top']: verticalCenter,
       [isLeft ? 'left' : 'right']: horizontalAfter,
       background: cfg.color,
       color: '#fff',
-      fontSize: cfg.ctaSize,
+      fontSize: Math.max(10, cfg.ctaSize - 3),
       lineHeight: 1,
-      padding: '8px 14px',
-      borderRadius: 999,
-      fontWeight: 600,
-      letterSpacing: 0.4,
+      padding: '5px 10px',
+      borderRadius,
+      fontWeight: 500,
+      letterSpacing: 0.3,
       whiteSpace: 'nowrap',
-      boxShadow: '0 10px 28px -10px rgba(0,0,0,.35), 0 2px 6px rgba(0,0,0,.08)',
+      boxShadow: '0 6px 18px -8px rgba(0,0,0,.28)',
       willChange: 'transform, opacity',
       transition:
         'opacity 520ms cubic-bezier(.22,.61,.36,1), transform 720ms cubic-bezier(.22,.61,.36,1)',
