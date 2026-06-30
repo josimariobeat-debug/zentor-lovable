@@ -111,8 +111,12 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
   const [selMeasure, setSelMeasure] = useState<string | null>(initial?.measureId ?? null);
   const [openList, setOpenList] = useState(false);
   const [openMedList, setOpenMedList] = useState(false);
+  const [prodActiveIdx, setProdActiveIdx] = useState(0);
+  const [medActiveIdx, setMedActiveIdx] = useState(0);
   const productWrapRef = useRef<HTMLDivElement | null>(null);
   const measureWrapRef = useRef<HTMLDivElement | null>(null);
+  const prodTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const medTriggerRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     if (!openList && !openMedList) return;
@@ -195,6 +199,67 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
     setSelProductIds((prev) => prev.filter((x) => x !== id));
   };
 
+  const selectMeasure = (id: string) => {
+    // Garante que a mesma medida não seja selecionada repetidamente
+    if (selMeasure === id) {
+      setSelMeasure(null);
+    } else {
+      setSelMeasure(id);
+    }
+    setOpenMedList(false);
+    setSearchMed('');
+    medTriggerRef.current?.focus();
+  };
+
+  // Reset highlight when filter or open state changes
+  useEffect(() => { setProdActiveIdx(0); }, [search, openList]);
+  useEffect(() => { setMedActiveIdx(0); }, [searchMed, openMedList]);
+
+  const handleProdKey = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      e.preventDefault(); e.stopPropagation();
+      setOpenList(false);
+      prodTriggerRef.current?.focus();
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setProdActiveIdx((i) => Math.min(i + 1, Math.max(filteredProducts.length - 1, 0)));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setProdActiveIdx((i) => Math.max(i - 1, 0));
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      const p = filteredProducts[prodActiveIdx];
+      if (p) toggleProduct(p.id);
+    }
+  };
+
+  const handleMedKey = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      e.preventDefault(); e.stopPropagation();
+      setOpenMedList(false);
+      medTriggerRef.current?.focus();
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setMedActiveIdx((i) => Math.min(i + 1, Math.max(filteredMeasures.length - 1, 0)));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setMedActiveIdx((i) => Math.max(i - 1, 0));
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      const m = filteredMeasures[medActiveIdx];
+      if (m) selectMeasure(m.id);
+    }
+  };
+
+  const handleTriggerKey = (which: 'prod' | 'med') => (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      if (which === 'prod') setOpenList(true); else setOpenMedList(true);
+    } else if (e.key === 'Escape') {
+      if (which === 'prod') setOpenList(false); else setOpenMedList(false);
+    }
+  };
+
   const handleDragEnd = (e: DragEndEvent) => {
     const { active, over } = e;
     if (!over || active.id === over.id) return;
@@ -257,8 +322,12 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
               <div className="relative" ref={productWrapRef}>
                 <button
                   type="button"
+                  ref={prodTriggerRef}
                   onClick={() => setOpenList((v) => !v)}
-                  className="w-full h-11 px-3 rounded-xl border border-neutral-200 bg-white text-left text-[14px] text-neutral-500 hover:border-neutral-300 flex items-center justify-between"
+                  onKeyDown={handleTriggerKey('prod')}
+                  aria-haspopup="listbox"
+                  aria-expanded={openList}
+                  className="w-full h-11 px-3 rounded-xl border border-neutral-200 bg-white text-left text-[14px] text-neutral-500 hover:border-neutral-300 focus:outline-none focus:ring-2 focus:ring-violet-500 flex items-center justify-between"
                 >
                   <span className="truncate">
                     {selProductIds.length > 0
@@ -269,14 +338,16 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
                 </button>
 
                 {openList && (
-                  <div className="absolute left-0 right-0 mt-1 z-30 bg-white border border-neutral-200 rounded-xl shadow-lg max-h-64 overflow-auto">
+                  <div className="absolute left-0 right-0 mt-1 z-30 bg-white border border-neutral-200 rounded-xl shadow-lg max-h-64 overflow-auto" role="listbox" aria-label="Produtos cadastrados">
                     <div className="p-2 sticky top-0 bg-white border-b border-neutral-100">
                       <Input
                         autoFocus
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
+                        onKeyDown={handleProdKey}
                         placeholder="Buscar..."
                         className="h-9 rounded-lg"
+                        aria-label="Buscar produto"
                       />
                     </div>
                     {loading ? (
@@ -284,14 +355,18 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
                     ) : filteredProducts.length === 0 ? (
                       <div className="p-4 text-center text-[13px] text-neutral-400">Nenhum produto cadastrado</div>
                     ) : (
-                      filteredProducts.map((p) => {
+                      filteredProducts.map((p, idx) => {
                         const sel = selProductIds.includes(p.id);
+                        const active = idx === prodActiveIdx;
                         return (
                           <button
                             key={p.id}
                             type="button"
+                            role="option"
+                            aria-selected={sel}
+                            onMouseEnter={() => setProdActiveIdx(idx)}
                             onClick={() => toggleProduct(p.id)}
-                            className={`w-full flex items-center gap-3 px-3 py-2 hover:bg-neutral-50 text-left ${sel ? 'bg-neutral-50' : ''}`}
+                            className={`w-full flex items-center gap-3 px-3 py-2 text-left ${active ? 'bg-neutral-100' : sel ? 'bg-neutral-50' : 'hover:bg-neutral-50'}`}
                           >
                             <div className="w-8 h-8 rounded-md bg-neutral-100 overflow-hidden shrink-0 flex items-center justify-center">
                               {p.image ? <img src={p.image} alt="" className="w-full h-full object-cover" /> : <ShoppingBag className="w-3.5 h-3.5 text-neutral-400" />}
@@ -308,6 +383,7 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
                   </div>
                 )}
               </div>
+
 
               {selectedProducts.length > 0 && (
                 <div className="space-y-2">
@@ -356,8 +432,12 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
               <div className="relative" ref={measureWrapRef}>
                 <button
                   type="button"
+                  ref={medTriggerRef}
                   onClick={() => setOpenMedList((v) => !v)}
-                  className="w-full h-11 px-3 rounded-xl border border-neutral-200 bg-white text-left text-[14px] text-neutral-500 hover:border-neutral-300 flex items-center justify-between"
+                  onKeyDown={handleTriggerKey('med')}
+                  aria-haspopup="listbox"
+                  aria-expanded={openMedList}
+                  className="w-full h-11 px-3 rounded-xl border border-neutral-200 bg-white text-left text-[14px] text-neutral-500 hover:border-neutral-300 focus:outline-none focus:ring-2 focus:ring-violet-500 flex items-center justify-between"
                 >
                   <span className="truncate">
                     {selMeasure ? measures.find((m) => m.id === selMeasure)?.name ?? 'Selecionada' : 'Digite para procurar a medida cadastrada'}
@@ -365,14 +445,16 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
                   <Search className="w-4 h-4 text-neutral-400" />
                 </button>
                 {openMedList && (
-                  <div className="absolute left-0 right-0 mt-1 z-30 bg-white border border-neutral-200 rounded-xl shadow-lg max-h-64 overflow-auto">
+                  <div className="absolute left-0 right-0 mt-1 z-30 bg-white border border-neutral-200 rounded-xl shadow-lg max-h-64 overflow-auto" role="listbox" aria-label="Medidas cadastradas">
                     <div className="p-2 sticky top-0 bg-white border-b border-neutral-100">
                       <Input
                         autoFocus
                         value={searchMed}
                         onChange={(e) => setSearchMed(e.target.value)}
+                        onKeyDown={handleMedKey}
                         placeholder="Buscar..."
                         className="h-9 rounded-lg"
+                        aria-label="Buscar medida"
                       />
                     </div>
                     {loading ? (
@@ -380,18 +462,24 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
                     ) : filteredMeasures.length === 0 ? (
                       <div className="p-4 text-center text-[13px] text-neutral-400">Nenhuma medida cadastrada</div>
                     ) : (
-                      filteredMeasures.map((m) => {
+                      filteredMeasures.map((m, idx) => {
                         const sel = selMeasure === m.id;
+                        const active = idx === medActiveIdx;
                         return (
                           <button
                             key={m.id}
                             type="button"
-                            onClick={() => { setSelMeasure(sel ? null : m.id); setOpenMedList(false); setSearchMed(''); }}
-                            className={`w-full flex items-center justify-between px-3 py-2 hover:bg-neutral-50 text-left ${sel ? 'bg-neutral-50' : ''}`}
+                            role="option"
+                            aria-selected={sel}
+                            disabled={sel}
+                            onMouseEnter={() => setMedActiveIdx(idx)}
+                            onClick={() => selectMeasure(m.id)}
+                            className={`w-full flex items-center justify-between px-3 py-2 text-left ${sel ? 'bg-neutral-50 cursor-not-allowed opacity-80' : active ? 'bg-neutral-100' : 'hover:bg-neutral-50'}`}
                           >
                             <span className="text-[13px] font-medium text-neutral-900 truncate">{m.name}</span>
                             {sel && <Check className="w-4 h-4 text-neutral-900" />}
                           </button>
+
                         );
                       })
                     )}
