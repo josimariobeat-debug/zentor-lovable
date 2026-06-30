@@ -163,7 +163,10 @@ export default function StoriesVideosApp() {
     } else {
       setPreviewProducts([]);
     }
-    setPreviewMeasure(null);
+    // Hidrata imediatamente um stub do modelo quando há measure_id vinculado,
+    // para que o ícone de Medidas apareça junto com o card de produto. As linhas
+    // (rows) são preenchidas logo em seguida pela query abaixo.
+    setPreviewMeasure(measureId ? { id: measureId, name: '', rows: [] } : null);
 
 
     (async () => {
