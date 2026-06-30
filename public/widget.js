@@ -82,6 +82,8 @@
     '.zt-ctrl-btn{background:transparent;border:0;color:#fff;width:28px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}',
     '.zt-ctrl-btn:hover{opacity:.8}',
     '.zt-ctrl-btn svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}',
+    '.zt-ctrl-btn.zt-ctrl-close{width:32px;height:32px}',
+    '.zt-ctrl-btn.zt-ctrl-close svg{width:24px;height:24px}',
     '.zt-nav{position:absolute;top:0;bottom:80px;width:30%;z-index:5;cursor:pointer}',
     '.zt-nav-l{left:0}.zt-nav-r{right:0}',
     '.zt-tap-pause{position:absolute;top:0;bottom:80px;left:30%;right:30%;z-index:5;cursor:pointer;background:transparent}',
@@ -265,7 +267,7 @@
     var progress    = el('div', 'zt-progress');
 
     var topCtrl   = el('div', 'zt-top-controls');
-    var btnClose  = el('button', 'zt-ctrl-btn'); btnClose.appendChild(svgIcon(ICO_CLOSE)); btnClose.title = 'Fechar';
+    var btnClose  = el('button', 'zt-ctrl-btn zt-ctrl-close'); btnClose.appendChild(svgIcon(ICO_CLOSE)); btnClose.title = 'Fechar';
     topCtrl.appendChild(btnClose);
 
 

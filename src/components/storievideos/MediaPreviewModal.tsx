@@ -305,7 +305,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
             className="bg-transparent border-0 flex items-center justify-center text-white cursor-pointer p-1"
             aria-label="Fechar"
           >
-            <X className="w-5 h-5" />
+            <X className="w-6 h-6" />
           </button>
         </div>
 
