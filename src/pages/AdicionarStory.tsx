@@ -26,7 +26,8 @@ import {
   X,
   Play,
   Pencil,
-  ShoppingBag } from
+  ShoppingBag,
+  Check } from
 'lucide-react';
 
 interface Media {
@@ -824,21 +825,8 @@ function MediaSourceCard({
         >
           <Star className="w-3.5 h-3.5" fill={m.cover ? 'currentColor' : 'none'} />
         </button>
-        <button
-          data-ev-id="ev_94069b0704"
-          onClick={(e) => {
-            e.stopPropagation();
-            const btn = e.currentTarget;
-            btn.classList.add('animate-copy-success');
-            setTimeout(() => btn.classList.remove('animate-copy-success'), 600);
-            onCopyLink();
-          }}
-          onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); onCopyLink(); }}
-          title="Copiar link"
-          className="w-7 h-7 rounded-full bg-white/95 text-neutral-900 hover:bg-white flex items-center justify-center transition-all duration-200 [&.animate-copy-success]:scale-125 [&.animate-copy-success]:bg-green-500 [&.animate-copy-success]:text-white"
-        >
-          <LinkIcon className="w-3.5 h-3.5" />
-        </button>
+        <CopyLinkButton onCopy={onCopyLink} />
+
         <button
           data-ev-id="ev_product_tag"
           onClick={(e) => e.stopPropagation()}
@@ -850,5 +838,42 @@ function MediaSourceCard({
         </button>
       </div>
     </div>
+  );
+}
+
+/**
+ * Botão de copiar link com feedback visual:
+ * troca o ícone de link por um check verde com leve scale por ~1.2s.
+ */
+function CopyLinkButton({ onCopy }: { onCopy: () => void }) {
+  const [copied, setCopied] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const trigger = () => {
+    onCopy();
+    setCopied(true);
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => setCopied(false), 1200);
+  };
+
+  return (
+    <button
+      data-ev-id="ev_94069b0704"
+      type="button"
+      onClick={(e) => { e.stopPropagation(); trigger(); }}
+      onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); trigger(); }}
+      title="Copiar link"
+      className={`w-7 h-7 rounded-full flex items-center justify-center transition-all duration-200 ${
+        copied
+          ? 'bg-green-500 text-white scale-110'
+          : 'bg-white/95 text-neutral-900 hover:bg-white'
+      }`}
+    >
+      {copied ? (
+        <Check key="check" className="w-3.5 h-3.5 animate-scale-in" strokeWidth={3} />
+      ) : (
+        <LinkIcon key="link" className="w-3.5 h-3.5" />
+      )}
+    </button>
   );
 }
