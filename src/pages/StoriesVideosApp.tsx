@@ -83,6 +83,10 @@ export default function StoriesVideosApp() {
   const [selectedMedia, setSelectedMedia] = useState<Set<string>>(new Set());
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const galleryFileInputRef = useRef<HTMLInputElement>(null);
+  // Cache de produtos do app — usado para renderizar o card instantaneamente
+  // no modal de preview, sem esperar o fetch por id.
+  const productsCacheRef = useRef<Map<string, { id: string; name: string; price: string; image?: string | null; url?: string | null }>>(new Map());
+
 
   // Fallback: if URL uses app_key (text slug) instead of UUID, resolve to UUID and redirect.
   useEffect(() => {
@@ -109,10 +113,26 @@ export default function StoriesVideosApp() {
   useEffect(() => {
     loadStories();
     loadGallery();
+    loadProductsCache();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appId]);
 
+  const loadProductsCache = async () => {
+    if (!supabase || !user) return;
+    const { data } = await (supabase as any)
+      .from('products')
+      .select('id,name,price,currency,url,image')
+      .eq('user_id', user.id);
+    const map = new Map<string, any>();
+    (data ?? []).forEach((p: any) => {
+      map.set(p.id, { id: p.id, name: p.name, price: String(p.price ?? ''), image: p.image, url: p.url });
+    });
+    productsCacheRef.current = map;
+  };
+
+
   const loadStories = async () => {
+
     if (!supabase || !appId || !UUID_RE.test(appId)) return;
     const { data } = await supabase.
     from('stories').
@@ -125,12 +145,26 @@ export default function StoriesVideosApp() {
   // Carrega produtos vinculados e modelo de medidas para o preview do story
   useEffect(() => {
     let cancelled = false;
-    setPreviewProducts([]);
-    setPreviewMeasure(null);
-    if (!previewMedia || !supabase) return;
+    if (!previewMedia || !supabase) {
+      setPreviewProducts([]);
+      setPreviewMeasure(null);
+      return;
+    }
     const m = previewMedia as StoryMedia & { product_ids?: string[] | null; measure_id?: string | null };
     const productIds = Array.isArray(m.product_ids) ? m.product_ids : [];
     const measureId = m.measure_id ?? null;
+
+    // Hidrata imediatamente a partir do cache para evitar atraso do card
+    const cache = productsCacheRef.current;
+    if (productIds.length > 0 && cache.size > 0) {
+      setPreviewProducts(
+        productIds.map((id) => cache.get(id) ?? { id, name: 'Produto indisponível', price: '', image: null, url: null }),
+      );
+    } else {
+      setPreviewProducts([]);
+    }
+    setPreviewMeasure(null);
+
 
     (async () => {
       if (productIds.length > 0) {
