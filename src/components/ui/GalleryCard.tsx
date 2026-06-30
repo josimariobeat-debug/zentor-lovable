@@ -11,6 +11,8 @@ interface GalleryCardProps {
   isSelectionMode?: boolean;
   showDelete?: boolean;
   showName?: boolean;
+  /** Em touch: 1º toque ativa o card, 2º toque executa onClick (preview). Default false. */
+  twoTapPreview?: boolean;
   onSelect?: (id: string) => void;
   onDelete?: (id: string) => void;
   onClick?: (id: string) => void;
@@ -33,6 +35,7 @@ function GalleryCardComponent({
   isSelectionMode = false,
   showDelete = true,
   showName = true,
+  twoTapPreview = false,
   onSelect,
   onDelete,
   onClick
@@ -77,22 +80,29 @@ function GalleryCardComponent({
 
     // Se foi um toque rápido (não long press) e não moveu
     if (touchDuration < 500 && !hasMoved.current) {
-      // Two-tap interaction
-      if (!isActive) {
-        // Primeiro toque - ativa o card
-        setIsActive(true);
+      // Em selection mode, single tap sempre alterna seleção
+      if (isSelectionMode) {
         e.preventDefault();
-      } else {
-        // Segundo toque - executa a ação
-        if (isSelectionMode) {
-          onSelect?.(id);
+        onSelect?.(id);
+        return;
+      }
+
+      // Two-tap interaction (opt-in: apenas na aba Galeria)
+      if (twoTapPreview) {
+        if (!isActive) {
+          setIsActive(true);
+          e.preventDefault();
         } else {
+          e.preventDefault();
           onClick?.(id);
+          setIsActive(false);
         }
-        setIsActive(false);
+      } else {
+        e.preventDefault();
+        onClick?.(id);
       }
     }
-  }, [id, isActive, isSelectionMode, onClick, onSelect]);
+  }, [id, isActive, isSelectionMode, onClick, onSelect, twoTapPreview]);
 
   // Desativa quando perde foco (touch)
   const handleTouchCancel = useCallback(() => {
