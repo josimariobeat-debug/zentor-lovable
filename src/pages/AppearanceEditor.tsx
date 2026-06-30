@@ -1204,19 +1204,22 @@ export default function AppearanceEditor() {
       boxShadow: '0 10px 28px -10px rgba(0,0,0,.35), 0 2px 6px rgba(0,0,0,.08)',
       willChange: 'transform, opacity',
       transition:
-        'opacity 520ms cubic-bezier(.22,.61,.36,1), transform 560ms cubic-bezier(.22,.61,.36,1)',
+        'opacity 320ms cubic-bezier(.22,.61,.36,1), transform 460ms cubic-bezier(.34,1.32,.5,1)',
       transformOrigin: isLeft ? 'left center' : 'right center',
       zIndex: 1, // behind the bubble (z=2) so it appears to slide from under it
     } as React.CSSProperties;
   }, [cfg, bubbleGeom]);
 
+  // Shown: full size next to the widget. Hidden: collapses horizontally INTO
+  // the widget (scaleX → 0 from the widget-side edge) and fades — matches the
+  // "retract behind the widget" motion.
   const ctaShown: React.CSSProperties = {
     opacity: 1,
-    transform: 'translateY(50%) translateX(0) scale(1)',
+    transform: 'translateY(50%) scaleX(1)',
   };
   const ctaHidden: React.CSSProperties = {
     opacity: 0,
-    transform: `translateY(50%) translateX(${bubbleGeom.isLeft ? '-' : ''}${bubbleGeom.bubbleW + 16}px) scale(.96)`,
+    transform: 'translateY(50%) scaleX(0)',
     pointerEvents: 'none',
   };
 
