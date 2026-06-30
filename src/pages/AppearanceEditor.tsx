@@ -1012,8 +1012,6 @@ export default function AppearanceEditor() {
   const isNew = !presetId || presetId === 'new';
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
-  const bottomSaveRef = useRef<HTMLButtonElement>(null);
-  const bottomSaveVisible = useIsVisible(bottomSaveRef);
   const [name, setName] = useState('');
   const [cfg, setCfg] = useState<Config>(DEFAULT_CONFIG);
   const [device, setDevice] = useState<'mobile' | 'desktop'>('mobile');
