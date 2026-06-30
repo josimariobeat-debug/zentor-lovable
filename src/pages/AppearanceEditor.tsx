@@ -1406,10 +1406,13 @@ export default function AppearanceEditor() {
                           )}
                           <div
                             style={{ ...bubbleStyle, cursor: 'pointer' }}
+                            onMouseEnter={() => setCtaHovered(true)}
+                            onMouseLeave={() => setCtaHovered(false)}
                             onClick={(e) => { e.stopPropagation(); setViewerOpen(true); }}
                           >
                             <PreviewMedia fit={cfg.mediaFit} />
                           </div>
+
                           {cfg.allowClose && (
                             <div style={closeStyle}>
                               <X className="w-2.5 h-2.5" />
