@@ -44,6 +44,13 @@ interface Props {
   refreshNonce?: number;
   autoSelectProductId?: string | null;
   onAutoSelectHandled?: () => void;
+  /**
+   * Produtos pré-carregados pelo componente pai. Quando fornecidos,
+   * o modal abre já hidratado — sem skeleton/“Carregando…” e sem flash.
+   */
+  prefetchedProducts?: ProductRow[];
+  /** Modelos de medida pré-carregados pelo componente pai. */
+  prefetchedMeasures?: MeasureRow[];
 }
 
 function SortableProductItem({
