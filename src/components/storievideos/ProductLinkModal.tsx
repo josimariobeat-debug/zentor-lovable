@@ -198,15 +198,27 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
                 )}
               </div>
 
-              <div className="flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => onAddManual?.()}
-                  className="inline-flex items-center gap-2 h-10 px-4 rounded-full bg-white border border-neutral-200 text-[13px] font-medium text-neutral-900 hover:bg-neutral-50 shadow-sm"
-                >
-                  <Plus className="w-4 h-4" />
-                  Adicionar manualmente o produto
-                </button>
+              <div className="flex flex-wrap items-center justify-end gap-2">
+                {onCreateProduct && (
+                  <button
+                    type="button"
+                    onClick={() => onCreateProduct()}
+                    className="inline-flex items-center gap-2 h-10 px-4 rounded-full bg-neutral-900 text-white text-[13px] font-semibold hover:bg-neutral-800 shadow-sm"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Adicionar novo Produto
+                  </button>
+                )}
+                {onAddManual && (
+                  <button
+                    type="button"
+                    onClick={() => onAddManual?.()}
+                    className="inline-flex items-center gap-2 h-10 px-4 rounded-full bg-white border border-neutral-200 text-[13px] font-medium text-neutral-900 hover:bg-neutral-50 shadow-sm"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Adicionar manualmente
+                  </button>
+                )}
               </div>
             </div>
           ) : (
