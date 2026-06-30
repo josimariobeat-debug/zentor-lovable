@@ -408,64 +408,44 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
 
         {/* Zone 4 — product cards (bottom-right, larger stack matching reference) */}
         {productList.length > 0 && (
-          <div className={`absolute z-10 flex flex-col gap-2 pointer-events-none ${hasPlaylist ? 'left-0 right-0 w-full' : 'right-3 w-[74%] max-w-[300px]'}`} style={{ bottom: hasPlaylist ? 'calc(56px + env(safe-area-inset-bottom))' : 'calc(80px + env(safe-area-inset-bottom))' }}>
+          <div
+            className="absolute z-10 flex flex-col gap-2 pointer-events-none left-0 right-0 w-full"
+            style={{ bottom: 'calc(56px + env(safe-area-inset-bottom))' }}
+          >
             {productList.map((p) => (
-              hasPlaylist ? (
-                <div
-                  key={p.id}
-                  className="pointer-events-auto bg-black/55 backdrop-blur-md overflow-hidden flex items-center gap-2.5 px-2.5 py-2 shadow-[0_6px_18px_rgba(0,0,0,0.35)] rounded-t-[4px]"
-                >
-                  {p.image ? (
-                    <img
-                      src={p.image}
-                      alt={p.name}
-                      loading="eager"
-                      decoding="sync"
-                      // @ts-expect-error fetchpriority is a valid HTML attribute
-                      fetchpriority="high"
-                      className="w-10 h-10 rounded-md object-cover bg-neutral-800 shrink-0"
-                    />
-                  ) : (
-                    <div className="w-10 h-10 rounded-md bg-neutral-800 shrink-0" />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-white truncate leading-tight text-[12px]">{p.name}</div>
-                    <div className="text-white/80 leading-tight mt-0.5 text-[11px] font-semibold">{formatPrice(p.price)}</div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => openProduct(p)}
-                    className="bg-white hover:bg-neutral-100 transition-colors text-neutral-900 font-semibold text-[12px] px-3 py-1.5 rounded-md shrink-0"
-                  >
-                    Comprar
-                  </button>
+              <div
+                key={p.id}
+                className="pointer-events-auto bg-black/55 backdrop-blur-md overflow-hidden flex items-center gap-2.5 px-2.5 py-2 shadow-[0_6px_18px_rgba(0,0,0,0.35)] rounded-t-[4px]"
+              >
+                {p.image ? (
+                  <img
+                    src={p.image}
+                    alt={p.name}
+                    loading="eager"
+                    decoding="sync"
+                    // @ts-expect-error fetchpriority is a valid HTML attribute
+                    fetchpriority="high"
+                    className="w-10 h-10 rounded-md object-cover bg-neutral-800 shrink-0"
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-md bg-neutral-800 shrink-0" />
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-white truncate leading-tight text-[12px]">{p.name}</div>
+                  <div className="text-white/80 leading-tight mt-0.5 text-[11px] font-semibold">{formatPrice(p.price)}</div>
                 </div>
-              ) : (
-                <div
-                  key={p.id}
-                  className="pointer-events-auto bg-white flex items-center shadow-[0_6px_18px_rgba(0,0,0,0.22)] p-2 gap-2.5 rounded-2xl"
+                <button
+                  type="button"
+                  onClick={() => openProduct(p)}
+                  className="bg-white hover:bg-neutral-100 transition-colors text-neutral-900 font-semibold text-[12px] px-3 py-1.5 rounded-md shrink-0"
                 >
-                  {p.image ? (
-                    <img src={p.image} alt={p.name} className="object-cover bg-neutral-100 shrink-0 w-11 h-11 rounded-xl" />
-                  ) : (
-                    <div className="bg-neutral-100 shrink-0 w-11 h-11 rounded-xl" />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-neutral-900 truncate leading-tight text-[13px]">{p.name}</div>
-                    <div className="text-neutral-500 leading-tight mt-0.5 text-[11px]">{formatPrice(p.price)}</div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => openProduct(p)}
-                    className="bg-neutral-900 text-white font-bold rounded-md shrink-0 hover:bg-neutral-700 transition-colors tracking-wider text-[10px] px-2.5 py-2"
-                  >
-                    COMPRAR
-                  </button>
-                </div>
-              )
+                  Comprar
+                </button>
+              </div>
             ))}
           </div>
         )}
+
 
         {/* Zone 5 — bottom bar */}
         <div className="absolute bottom-0 left-0 right-0 bg-[#111] flex items-center px-3.5 gap-3 z-20" style={{ height: 'calc(56px + env(safe-area-inset-bottom))', paddingBottom: 'env(safe-area-inset-bottom)' }}>
