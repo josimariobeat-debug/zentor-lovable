@@ -86,6 +86,8 @@ export default function StoriesVideosApp() {
   // Cache de produtos do app — usado para renderizar o card instantaneamente
   // no modal de preview, sem esperar o fetch por id.
   const productsCacheRef = useRef<Map<string, { id: string; name: string; price: string; image?: string | null; url?: string | null }>>(new Map());
+  // Cache de modelos de medidas — mesma estratégia do cache de produtos.
+  const measuresCacheRef = useRef<Map<string, MeasureModel>>(new Map());
 
 
   // Fallback: if URL uses app_key (text slug) instead of UUID, resolve to UUID and redirect.
