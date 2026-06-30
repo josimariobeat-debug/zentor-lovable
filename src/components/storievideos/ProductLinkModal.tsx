@@ -111,6 +111,27 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
   const [selMeasure, setSelMeasure] = useState<string | null>(initial?.measureId ?? null);
   const [openList, setOpenList] = useState(false);
   const [openMedList, setOpenMedList] = useState(false);
+  const productWrapRef = useRef<HTMLDivElement | null>(null);
+  const measureWrapRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!openList && !openMedList) return;
+    const handler = (e: MouseEvent | TouchEvent) => {
+      const target = e.target as Node;
+      if (openList && productWrapRef.current && !productWrapRef.current.contains(target)) {
+        setOpenList(false);
+      }
+      if (openMedList && measureWrapRef.current && !measureWrapRef.current.contains(target)) {
+        setOpenMedList(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    document.addEventListener('touchstart', handler);
+    return () => {
+      document.removeEventListener('mousedown', handler);
+      document.removeEventListener('touchstart', handler);
+    };
+  }, [openList, openMedList]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
