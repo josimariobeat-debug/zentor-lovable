@@ -373,6 +373,20 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                   <img key={`pre-i-${currentIdx + 1 + i}-${u}`} src={u} alt="" />
                 );
               })}
+              {/* Preload product thumbnails de toda a playlist para aparecerem imediatamente */}
+              {playlist!.flatMap((it, si) =>
+                (it.products ?? []).map((p) =>
+                  p.image ? (
+                    <img
+                      key={`pre-prod-${si}-${p.id}`}
+                      src={p.image}
+                      alt=""
+                      loading="eager"
+                      decoding="sync"
+                    />
+                  ) : null,
+                ),
+              )}
             </div>
           )}
         </div>
@@ -384,10 +398,18 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
               hasPlaylist ? (
                 <div
                   key={p.id}
-                  className="pointer-events-auto bg-black/55 backdrop-blur-md overflow-hidden flex items-center gap-2.5 px-2.5 py-2 shadow-[0_6px_18px_rgba(0,0,0,0.35)]"
+                  className="pointer-events-auto bg-black/55 backdrop-blur-md overflow-hidden flex items-center gap-2.5 px-2.5 py-2 shadow-[0_6px_18px_rgba(0,0,0,0.35)] rounded-t-[4px]"
                 >
                   {p.image ? (
-                    <img src={p.image} alt={p.name} className="w-10 h-10 rounded-md object-cover bg-neutral-800 shrink-0" />
+                    <img
+                      src={p.image}
+                      alt={p.name}
+                      loading="eager"
+                      decoding="sync"
+                      // @ts-expect-error fetchpriority is a valid HTML attribute
+                      fetchpriority="high"
+                      className="w-10 h-10 rounded-md object-cover bg-neutral-800 shrink-0"
+                    />
                   ) : (
                     <div className="w-10 h-10 rounded-md bg-neutral-800 shrink-0" />
                   )}
