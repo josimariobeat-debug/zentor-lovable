@@ -83,17 +83,8 @@ export default function Perfil() {
               className="h-11 rounded-xl border-neutral-200" />
 
           </div>
-          <div data-ev-id="ev_d1f68a2881" className="flex justify-end pt-2">
-            <button data-ev-id="ev_476a28056a"
-            ref={bottomSaveRef}
-            type="submit"
-            disabled={saving}
-            className="btn-save text-[14px] font-medium px-5 py-2.5 rounded-xl">
+          <button type="submit" className="hidden" aria-hidden tabIndex={-1} />
 
-
-              {saving ? 'Salvando…' : 'Salvar alterações'}
-            </button>
-          </div>
         </form>
       </main>
     </>);
