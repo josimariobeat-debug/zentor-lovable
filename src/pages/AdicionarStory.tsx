@@ -598,16 +598,21 @@ export default function AdicionarStory() {
 
           {media.length > 0 &&
           <div data-ev-id="ev_c7b9fad983" className="grid grid-cols-3 md:grid-cols-4 gap-3">
-              {media.map((m, idx) =>
-                <MediaSourceCard
-                  key={idx}
-                  media={m}
-                  onPreview={() => setPreviewMedia(m)}
-                  onRemove={() => removeMedia(idx)}
-                  onSetCover={() => setCover(idx)}
-                  onCopyLink={() => copyLink(m)}
-                />
-              )}
+              {media.map((m, idx) => {
+                const key = m.id ?? m.url ?? String(idx);
+                return (
+                  <MediaSourceCard
+                    key={idx}
+                    media={m}
+                    hasLink={!!productLinks[key] && (productLinks[key].productIds.length > 0 || !!productLinks[key].measureId)}
+                    onPreview={() => setPreviewMedia(m)}
+                    onRemove={() => removeMedia(idx)}
+                    onSetCover={() => setCover(idx)}
+                    onCopyLink={() => copyLink(m)}
+                    onOpenProduct={() => setProductLinkOpenFor(key)}
+                  />
+                );
+              })}
             </div>
           }
         </section>
