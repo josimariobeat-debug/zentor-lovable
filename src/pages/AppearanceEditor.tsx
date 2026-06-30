@@ -1342,16 +1342,14 @@ export default function AppearanceEditor() {
                           <div
                             style={{ ...bubbleStyle, cursor: 'pointer' }}
                             onClick={(e) => { e.stopPropagation(); setViewerOpen(true); }}
-
-
                           >
                             <PreviewMedia fit={cfg.mediaFit} />
-                            {cfg.allowClose && (
-                              <div className="absolute top-1 right-1 w-5 h-5 grid place-items-center rounded-full bg-black/60 text-white">
-                                <X className="w-3 h-3" />
-                              </div>
-                            )}
                           </div>
+                          {cfg.allowClose && (
+                            <div style={closeStyle}>
+                              <X className="w-2.5 h-2.5" />
+                            </div>
+                          )}
                           {cfg.cta && (
                             <div style={{ ...ctaBase, ...(ctaVisible ? ctaShown : ctaHidden) }}>
                               {cfg.cta.toUpperCase()}
