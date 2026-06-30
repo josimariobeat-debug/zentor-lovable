@@ -1203,7 +1203,7 @@ export default function AppearanceEditor() {
       [isLeft ? 'left' : 'right']: horizontalAfter,
       background: cfg.color,
       color: '#fff',
-      fontSize: Math.max(10, cfg.ctaSize - 3),
+      fontSize: Math.max(9, cfg.ctaSize - 5),
       lineHeight: 1,
       padding: '5px 10px',
       borderRadius,
@@ -1211,24 +1211,23 @@ export default function AppearanceEditor() {
       letterSpacing: 0.3,
       whiteSpace: 'nowrap',
       boxShadow: '0 6px 18px -8px rgba(0,0,0,.28)',
-      willChange: 'transform, opacity',
+      willChange: 'opacity, transform',
       transition:
-        'opacity 520ms cubic-bezier(.22,.61,.36,1), transform 720ms cubic-bezier(.22,.61,.36,1)',
+        'opacity 480ms cubic-bezier(.4,0,.2,1), transform 480ms cubic-bezier(.4,0,.2,1)',
       transformOrigin: isLeft ? 'left center' : 'right center',
       zIndex: 1, // behind the bubble (z=2) so it appears to slide from under it
     } as React.CSSProperties;
   }, [cfg, bubbleGeom]);
 
-  // Shown: full size next to the widget. Hidden: collapses horizontally INTO
-  // the widget (scaleX → 0 from the widget-side edge) and fades — matches the
-  // "retract behind the widget" motion.
+  // Smooth fade + subtle slide from behind the widget — no stretching.
+  const hiddenShift = bubbleGeom.isLeft ? -8 : 8;
   const ctaShown: React.CSSProperties = {
     opacity: 1,
-    transform: 'translateY(50%) scaleX(1)',
+    transform: 'translateY(50%) translateX(0)',
   };
   const ctaHidden: React.CSSProperties = {
     opacity: 0,
-    transform: 'translateY(50%) scaleX(0)',
+    transform: `translateY(50%) translateX(${hiddenShift}px)`,
     pointerEvents: 'none',
   };
 
