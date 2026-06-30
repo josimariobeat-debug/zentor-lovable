@@ -353,7 +353,7 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
           ) : (
             <div className="space-y-4">
               <label className="text-[13px] font-semibold text-neutral-800 block">Tabela de medidas</label>
-              <div className="relative">
+              <div className="relative" ref={measureWrapRef}>
                 <button
                   type="button"
                   onClick={() => setOpenMedList((v) => !v)}
