@@ -766,16 +766,20 @@ function SourceBtn({ icon: Icon, label, onClick, disabled }: {icon: React.Compon
  */
 function MediaSourceCard({
   media: m,
+  hasLink,
   onPreview,
   onRemove,
   onSetCover,
   onCopyLink,
+  onOpenProduct,
 }: {
   media: Media;
+  hasLink?: boolean;
   onPreview: () => void;
   onRemove: () => void;
   onSetCover: () => void;
   onCopyLink: () => void;
+  onOpenProduct: () => void;
 }) {
   const [isActive, setIsActive] = useState(false);
   const [isTouch, setIsTouch] = useState(false);
