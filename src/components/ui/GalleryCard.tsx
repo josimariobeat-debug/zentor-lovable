@@ -35,6 +35,7 @@ function GalleryCardComponent({
   isSelectionMode = false,
   showDelete = true,
   showName = true,
+  twoTapPreview = false,
   onSelect,
   onDelete,
   onClick
