@@ -432,15 +432,19 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="font-medium text-white truncate leading-tight text-[12px]">{p.name}</div>
-                  <div className="text-white/80 leading-tight mt-0.5 text-[11px] font-semibold">{formatPrice(p.price)}</div>
+                  <div className="text-white/80 leading-tight mt-0.5 text-[11px] font-semibold min-h-[13px]">
+                    {p.price ? formatPrice(p.price) : '\u00A0'}
+                  </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => openProduct(p)}
-                  className="bg-white hover:bg-neutral-100 transition-colors text-neutral-900 font-semibold text-[12px] px-3 py-1.5 rounded-md shrink-0"
+                  disabled={!p.url}
+                  className="bg-white hover:bg-neutral-100 transition-colors text-neutral-900 font-semibold text-[12px] px-3 py-1.5 rounded-md shrink-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-white"
                 >
                   Comprar
                 </button>
+
               </div>
             ))}
           </div>
