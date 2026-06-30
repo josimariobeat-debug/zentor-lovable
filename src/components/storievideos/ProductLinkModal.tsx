@@ -242,16 +242,26 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
   }, [medActiveIdx, openMedList]);
 
   const handleProdKey = (e: React.KeyboardEvent) => {
+    const len = filteredProducts.length;
     if (e.key === 'Escape') {
       e.preventDefault(); e.stopPropagation();
       setOpenList(false);
       prodTriggerRef.current?.focus();
+    } else if (e.key === 'Tab') {
+      // Close the listbox and let focus move naturally (Tab/Shift+Tab)
+      setOpenList(false);
     } else if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setProdActiveIdx((i) => Math.min(i + 1, Math.max(filteredProducts.length - 1, 0)));
+      if (len > 0) setProdActiveIdx((i) => (i + 1) % len);
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      setProdActiveIdx((i) => Math.max(i - 1, 0));
+      if (len > 0) setProdActiveIdx((i) => (i - 1 + len) % len);
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      setProdActiveIdx(0);
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      if (len > 0) setProdActiveIdx(len - 1);
     } else if (e.key === 'Enter') {
       e.preventDefault();
       const p = filteredProducts[prodActiveIdx];
@@ -260,16 +270,25 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
   };
 
   const handleMedKey = (e: React.KeyboardEvent) => {
+    const len = filteredMeasures.length;
     if (e.key === 'Escape') {
       e.preventDefault(); e.stopPropagation();
       setOpenMedList(false);
       medTriggerRef.current?.focus();
+    } else if (e.key === 'Tab') {
+      setOpenMedList(false);
     } else if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setMedActiveIdx((i) => Math.min(i + 1, Math.max(filteredMeasures.length - 1, 0)));
+      if (len > 0) setMedActiveIdx((i) => (i + 1) % len);
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      setMedActiveIdx((i) => Math.max(i - 1, 0));
+      if (len > 0) setMedActiveIdx((i) => (i - 1 + len) % len);
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      setMedActiveIdx(0);
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      if (len > 0) setMedActiveIdx(len - 1);
     } else if (e.key === 'Enter') {
       e.preventDefault();
       const m = filteredMeasures[medActiveIdx];
