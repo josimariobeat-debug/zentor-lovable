@@ -598,7 +598,9 @@ export default function StoriesVideosApp() {
         onOpenChange={() => setPreviewMedia(null)}
         playlist={previewMedia ? [{ media: previewMedia, products: previewProducts }] : undefined}
         showMeasureIcon={!!previewMeasure}
+        measureOpen={previewMeasureOpen}
         onMeasureClick={() => setPreviewMeasureOpen(true)}
+
       />
 
 
