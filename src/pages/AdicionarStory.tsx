@@ -78,6 +78,8 @@ export default function AdicionarStory() {
   const [helpOpen, setHelpOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [previewMedia, setPreviewMedia] = useState<Media | null>(null);
+  const [productLinkOpenFor, setProductLinkOpenFor] = useState<string | null>(null);
+  const [productLinks, setProductLinks] = useState<Record<string, ProductLinkSelection>>({});
   const [galleryOpen, setGalleryOpen] = useState(false);
 
   useEffect(() => {
