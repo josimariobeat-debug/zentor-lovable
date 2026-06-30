@@ -116,6 +116,7 @@ export default function StoriesVideosApp() {
     loadStories();
     loadGallery();
     loadProductsCache();
+    loadMeasuresCache();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appId]);
 
@@ -130,6 +131,23 @@ export default function StoriesVideosApp() {
       map.set(p.id, { id: p.id, name: p.name, price: String(p.price ?? ''), image: p.image, url: p.url });
     });
     productsCacheRef.current = map;
+  };
+
+  const loadMeasuresCache = async () => {
+    if (!supabase || !user) return;
+    const { data } = await (supabase as any)
+      .from('measure_models')
+      .select('id,name,measure_rows(id,size_name,measure_type,value_cm,position)')
+      .eq('user_id', user.id);
+    const map = new Map<string, MeasureModel>();
+    (data ?? []).forEach((m: any) => {
+      const rows = ((m.measure_rows ?? []) as any[])
+        .slice()
+        .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+        .map((r) => ({ id: r.id, tamanho: r.size_name, medida: r.measure_type as MeasureType, valor: String(r.value_cm) }));
+      map.set(m.id, { id: m.id, name: m.name, rows });
+    });
+    measuresCacheRef.current = map;
   };
 
 
