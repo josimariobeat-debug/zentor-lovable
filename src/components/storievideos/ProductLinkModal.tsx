@@ -4,7 +4,25 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
-import { Search, Plus, ShoppingBag, Ruler, Check } from 'lucide-react';
+import { Search, Plus, ShoppingBag, Ruler, Check, GripVertical, X } from 'lucide-react';
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  TouchSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 type ProductRow = { id: string; name: string; price: string; currency: string; url: string; image: string | null };
 type MeasureRow = { id: string; name: string };
@@ -28,6 +46,58 @@ interface Props {
   onAutoSelectHandled?: () => void;
 }
 
+function SortableProductItem({
+  product,
+  onRemove,
+}: {
+  product: ProductRow;
+  onRemove: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: product.id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : 'auto' as const,
+    opacity: isDragging ? 0.9 : 1,
+  };
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`flex items-center gap-2 px-2 py-2 bg-white border border-neutral-200 rounded-xl ${isDragging ? 'shadow-lg' : ''}`}
+    >
+      <button
+        type="button"
+        className="p-1.5 -ml-1 text-neutral-400 hover:text-neutral-700 cursor-grab active:cursor-grabbing touch-none"
+        {...attributes}
+        {...listeners}
+        aria-label="Reordenar"
+      >
+        <GripVertical className="w-4 h-4" />
+      </button>
+      <div className="w-9 h-9 rounded-md bg-neutral-100 overflow-hidden shrink-0 flex items-center justify-center">
+        {product.image ? (
+          <img src={product.image} alt="" className="w-full h-full object-cover" />
+        ) : (
+          <ShoppingBag className="w-4 h-4 text-neutral-400" />
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="text-[13px] font-medium text-neutral-900 truncate">{product.name}</div>
+        <div className="text-[11px] text-neutral-500">{product.currency} {product.price}</div>
+      </div>
+      <button
+        type="button"
+        onClick={onRemove}
+        className="p-1.5 text-neutral-400 hover:text-red-600 rounded-md hover:bg-neutral-100"
+        aria-label="Remover"
+      >
+        <X className="w-4 h-4" />
+      </button>
+    </div>
+  );
+}
+
 export default function ProductLinkModal({ open, onOpenChange, initial, onSave, onAddManual, onCreateProduct, refreshNonce, autoSelectProductId, onAutoSelectHandled }: Props) {
   const { user } = useAuth();
   const [tab, setTab] = useState<'produtos' | 'medida'>('produtos');
@@ -37,16 +107,22 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [searchMed, setSearchMed] = useState('');
-  const [selProducts, setSelProducts] = useState<Set<string>>(new Set(initial?.productIds ?? []));
+  const [selProductIds, setSelProductIds] = useState<string[]>(initial?.productIds ?? []);
   const [selMeasure, setSelMeasure] = useState<string | null>(initial?.measureId ?? null);
   const [openList, setOpenList] = useState(false);
   const [openMedList, setOpenMedList] = useState(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 120, tolerance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   useEffect(() => {
     if (!open) return;
     setTab('produtos');
     setLayout(initial?.layout ?? 'lista');
-    setSelProducts(new Set(initial?.productIds ?? []));
+    setSelProductIds(initial?.productIds ?? []);
     setSelMeasure(initial?.measureId ?? null);
     setSearch(''); setSearchMed('');
     setOpenList(false); setOpenMedList(false);
@@ -66,16 +142,10 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
     })();
   }, [open, user, refreshNonce]);
 
-  // Auto-seleciona produto recém criado após o reload
   useEffect(() => {
     if (!open || !autoSelectProductId) return;
     if (!products.some((p) => p.id === autoSelectProductId)) return;
-    setSelProducts((prev) => {
-      if (prev.has(autoSelectProductId)) return prev;
-      const next = new Set(prev);
-      next.add(autoSelectProductId);
-      return next;
-    });
+    setSelProductIds((prev) => (prev.includes(autoSelectProductId) ? prev : [...prev, autoSelectProductId]));
     setOpenList(true);
     onAutoSelectHandled?.();
   }, [open, autoSelectProductId, products, onAutoSelectHandled]);
@@ -89,14 +159,32 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
     [measures, searchMed]
   );
 
+  const selectedProducts = useMemo(
+    () => selProductIds.map((id) => products.find((p) => p.id === id)).filter(Boolean) as ProductRow[],
+    [selProductIds, products],
+  );
+
   const toggleProduct = (id: string) => {
-    const next = new Set(selProducts);
-    next.has(id) ? next.delete(id) : next.add(id);
-    setSelProducts(next);
+    setSelProductIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  };
+
+  const removeProduct = (id: string) => {
+    setSelProductIds((prev) => prev.filter((x) => x !== id));
+  };
+
+  const handleDragEnd = (e: DragEndEvent) => {
+    const { active, over } = e;
+    if (!over || active.id === over.id) return;
+    setSelProductIds((prev) => {
+      const oldIndex = prev.indexOf(String(active.id));
+      const newIndex = prev.indexOf(String(over.id));
+      if (oldIndex < 0 || newIndex < 0) return prev;
+      return arrayMove(prev, oldIndex, newIndex);
+    });
   };
 
   const handleSave = () => {
-    onSave({ layout, productIds: Array.from(selProducts), measureId: selMeasure });
+    onSave({ layout, productIds: selProductIds, measureId: selMeasure });
     onOpenChange(false);
   };
 
@@ -150,8 +238,8 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
                   className="w-full h-11 px-3 rounded-xl border border-neutral-200 bg-white text-left text-[14px] text-neutral-500 hover:border-neutral-300 flex items-center justify-between"
                 >
                   <span className="truncate">
-                    {selProducts.size > 0
-                      ? `${selProducts.size} produto(s) selecionado(s)`
+                    {selProductIds.length > 0
+                      ? `${selProductIds.length} produto(s) selecionado(s)`
                       : 'Digite para procurar o produto cadastrado'}
                   </span>
                   <Search className="w-4 h-4 text-neutral-400" />
@@ -174,7 +262,7 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
                       <div className="p-4 text-center text-[13px] text-neutral-400">Nenhum produto cadastrado</div>
                     ) : (
                       filteredProducts.map((p) => {
-                        const sel = selProducts.has(p.id);
+                        const sel = selProductIds.includes(p.id);
                         return (
                           <button
                             key={p.id}
@@ -197,6 +285,24 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
                   </div>
                 )}
               </div>
+
+              {selectedProducts.length > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[13px] font-semibold text-neutral-800">Produtos selecionados</label>
+                    <span className="text-[11px] text-neutral-400">Arraste para reordenar</span>
+                  </div>
+                  <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                    <SortableContext items={selProductIds} strategy={verticalListSortingStrategy}>
+                      <div className="space-y-2 max-h-56 overflow-auto pr-1">
+                        {selectedProducts.map((p) => (
+                          <SortableProductItem key={p.id} product={p} onRemove={() => removeProduct(p.id)} />
+                        ))}
+                      </div>
+                    </SortableContext>
+                  </DndContext>
+                </div>
+              )}
 
               <div className="flex flex-wrap items-center justify-end gap-2">
                 {onCreateProduct && (
