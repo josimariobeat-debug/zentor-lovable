@@ -551,12 +551,21 @@ export default function StoriesVideosApp() {
         onConfirm={handleDelete}
       />
 
-      {/* Video Preview Dialog */}
+      {/* Video Preview Dialog — Stories list */}
       <MediaPreviewModal
         open={!!previewMedia}
         onOpenChange={() => setPreviewMedia(null)}
         media={previewMedia}
+        products={previewProducts}
+        showMeasureIcon={!!previewMeasure}
+        onMeasureClick={() => setPreviewMeasureOpen(true)}
       />
+
+      <MeasureModelPreviewModal
+        model={previewMeasureOpen ? previewMeasure : null}
+        onClose={() => setPreviewMeasureOpen(false)}
+      />
+
 
       {/* Gallery Preview Dialog */}
       <MediaPreviewModal
