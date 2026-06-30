@@ -211,9 +211,33 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
     medTriggerRef.current?.focus();
   };
 
-  // Reset highlight when filter or open state changes
-  useEffect(() => { setProdActiveIdx(0); }, [search, openList]);
-  useEffect(() => { setMedActiveIdx(0); }, [searchMed, openMedList]);
+  // Focus the currently selected (or first) option when opening; reset on filter change
+  useEffect(() => {
+    if (!openList) return;
+    const lastSel = selProductIds[selProductIds.length - 1];
+    const idx = lastSel ? filteredProducts.findIndex((p) => p.id === lastSel) : -1;
+    setProdActiveIdx(idx >= 0 ? idx : 0);
+  }, [openList]);
+  useEffect(() => { setProdActiveIdx(0); }, [search]);
+
+  useEffect(() => {
+    if (!openMedList) return;
+    const idx = selMeasure ? filteredMeasures.findIndex((m) => m.id === selMeasure) : -1;
+    setMedActiveIdx(idx >= 0 ? idx : 0);
+  }, [openMedList]);
+  useEffect(() => { setMedActiveIdx(0); }, [searchMed]);
+
+  // Scroll active option into view
+  useEffect(() => {
+    if (!openList) return;
+    const el = productWrapRef.current?.querySelector<HTMLElement>(`[data-prod-idx="${prodActiveIdx}"]`);
+    el?.scrollIntoView({ block: 'nearest' });
+  }, [prodActiveIdx, openList]);
+  useEffect(() => {
+    if (!openMedList) return;
+    const el = measureWrapRef.current?.querySelector<HTMLElement>(`[data-med-idx="${medActiveIdx}"]`);
+    el?.scrollIntoView({ block: 'nearest' });
+  }, [medActiveIdx, openMedList]);
 
   const handleProdKey = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
@@ -363,6 +387,7 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
                             key={p.id}
                             type="button"
                             role="option"
+                            data-prod-idx={idx}
                             aria-selected={sel}
                             onMouseEnter={() => setProdActiveIdx(idx)}
                             onClick={() => toggleProduct(p.id)}
@@ -470,6 +495,7 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
                             key={m.id}
                             type="button"
                             role="option"
+                            data-med-idx={idx}
                             aria-selected={sel}
                             disabled={sel}
                             onMouseEnter={() => setMedActiveIdx(idx)}
