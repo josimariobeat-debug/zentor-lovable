@@ -42,6 +42,8 @@ interface MediaPreviewModalProps {
   showMeasureIcon?: boolean;
   /** Callback ao clicar no ícone de Medidas. */
   onMeasureClick?: () => void;
+  /** Quando true, pausa o vídeo (sem reset de currentTime) — usado enquanto o modal de Medidas está aberto. */
+  measureOpen?: boolean;
 }
 
 interface Comment {
@@ -60,7 +62,7 @@ function formatPrice(price: string): string {
   return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
-export default function MediaPreviewModal({ open, onOpenChange, media, products, playlist, showMeasureIcon, onMeasureClick }: MediaPreviewModalProps) {
+export default function MediaPreviewModal({ open, onOpenChange, media, products, playlist, showMeasureIcon, onMeasureClick, measureOpen }: MediaPreviewModalProps) {
   const hasPlaylist = !!playlist && playlist.length > 0;
   const segmentCount = hasPlaylist ? playlist!.length : 1;
 
@@ -94,7 +96,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
   const [formPhone, setFormPhone] = useState('');
   const [formText, setFormText] = useState('');
 
-  const anyDrawerOpen = showCommentForm || showCommentList || showShare;
+  const anyDrawerOpen = showCommentForm || showCommentList || showShare || !!measureOpen;
 
   // Reset state on open
   useEffect(() => {
