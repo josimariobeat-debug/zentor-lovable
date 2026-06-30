@@ -1216,7 +1216,8 @@ export function AddProductModal({
             <button
               type="submit"
               disabled={saving}
-              className="inline-flex items-center gap-2 h-10 px-4 text-[13.5px] font-medium text-white bg-neutral-900 hover:bg-neutral-800 disabled:opacity-60 disabled:cursor-not-allowed rounded-xl transition-colors">
+              className="btn-save inline-flex items-center gap-2 h-10 px-4 text-[13.5px] font-medium rounded-xl">
+
               {saving ?
                 <Loader2 className="w-4 h-4 animate-spin" /> :
                 isEdit ? <Edit2 className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
