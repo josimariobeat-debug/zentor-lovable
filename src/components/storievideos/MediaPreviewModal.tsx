@@ -373,6 +373,20 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                   <img key={`pre-i-${currentIdx + 1 + i}-${u}`} src={u} alt="" />
                 );
               })}
+              {/* Preload product thumbnails de toda a playlist para aparecerem imediatamente */}
+              {playlist!.flatMap((it, si) =>
+                (it.products ?? []).map((p) =>
+                  p.image ? (
+                    <img
+                      key={`pre-prod-${si}-${p.id}`}
+                      src={p.image}
+                      alt=""
+                      loading="eager"
+                      decoding="sync"
+                    />
+                  ) : null,
+                ),
+              )}
             </div>
           )}
         </div>
