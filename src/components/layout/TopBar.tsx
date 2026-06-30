@@ -16,9 +16,15 @@ interface TopBarProps {
   backTo?: string;
   breadcrumb?: string;
   rightSlot?: ReactNode;
+  /**
+   * When true, hides the profile dropdown so `rightSlot` takes its visual
+   * position in the header. Used by edit/create pages to swap the user chip
+   * for a "Salvar" CTA without changing the surrounding layout.
+   */
+  hideProfile?: boolean;
 }
 
-function TopBar({ title, backTo, breadcrumb, rightSlot }: TopBarProps) {
+function TopBar({ title, backTo, breadcrumb, rightSlot, hideProfile = false }: TopBarProps) {
   const navigate = useNavigate();
   const { profile, logout } = useAuth();
 
