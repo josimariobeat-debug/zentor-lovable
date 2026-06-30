@@ -111,8 +111,12 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
   const [selMeasure, setSelMeasure] = useState<string | null>(initial?.measureId ?? null);
   const [openList, setOpenList] = useState(false);
   const [openMedList, setOpenMedList] = useState(false);
+  const [prodActiveIdx, setProdActiveIdx] = useState(0);
+  const [medActiveIdx, setMedActiveIdx] = useState(0);
   const productWrapRef = useRef<HTMLDivElement | null>(null);
   const measureWrapRef = useRef<HTMLDivElement | null>(null);
+  const prodTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const medTriggerRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     if (!openList && !openMedList) return;
