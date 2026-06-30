@@ -595,37 +595,15 @@ export default function AdicionarStory() {
           {media.length > 0 &&
           <div data-ev-id="ev_c7b9fad983" className="grid grid-cols-3 md:grid-cols-4 gap-3">
               {media.map((m, idx) =>
-            <div data-ev-id="ev_c9a7f5e6f2" key={idx} className="group relative rounded-xl overflow-hidden border border-neutral-200 bg-neutral-100">
-                  <button data-ev-id="ev_853fae407d" type="button" onClick={() => setPreviewMedia(m)} className="w-full">
-                    <MediaThumbnail
-                      src={m.url}
-                      type={m.type}
-                      alt={m.name}
-                    />
-                  </button>
-                  {m.cover &&
-              <span data-ev-id="ev_0787ea46c4" className="absolute top-2 left-2 text-[10px] font-semibold tracking-wider uppercase bg-amber-300 text-neutral-900 px-2 py-0.5 rounded pointer-events-none z-10">Capa</span>
-              }
-                  <button data-ev-id="ev_6336cb8a7e" onClick={() => removeMedia(idx)} title="Remover" className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/50 text-white hover:bg-red-600 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all z-20"><Trash2 className="w-3.5 h-3.5" /></button>
-                  <div data-ev-id="ev_da978dc95b" className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 p-2 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-20">
-                    <button data-ev-id="ev_adbed9c64e" onClick={() => setCover(idx)} title="Definir capa" className={`w-7 h-7 rounded-full flex items-center justify-center ${m.cover ? 'bg-amber-400 text-white hover:bg-amber-500' : 'bg-white/95 text-neutral-900 hover:bg-white'}`}><Star className="w-3.5 h-3.5" fill={m.cover ? 'currentColor' : 'none'} /></button>
-                    <button 
-                      data-ev-id="ev_94069b0704" 
-                      onClick={(e) => {
-                        const btn = e.currentTarget;
-                        btn.classList.add('animate-copy-success');
-                        setTimeout(() => btn.classList.remove('animate-copy-success'), 600);
-                        copyLink(m);
-                      }} 
-                      title="Copiar link" 
-                      className="w-7 h-7 rounded-full bg-white/95 text-neutral-900 hover:bg-white flex items-center justify-center transition-all duration-200 [&.animate-copy-success]:scale-125 [&.animate-copy-success]:bg-green-500 [&.animate-copy-success]:text-white"
-                    >
-                      <LinkIcon className="w-3.5 h-3.5" />
-                    </button>
-                    <button data-ev-id="ev_product_tag" title="Vincular produto" className="w-7 h-7 rounded-full bg-white/95 text-neutral-900 hover:bg-white flex items-center justify-center"><ShoppingBag className="w-3.5 h-3.5" /></button>
-                  </div>
-                </div>
-            )}
+                <MediaSourceCard
+                  key={idx}
+                  media={m}
+                  onPreview={() => setPreviewMedia(m)}
+                  onRemove={() => removeMedia(idx)}
+                  onSetCover={() => setCover(idx)}
+                  onCopyLink={() => copyLink(m)}
+                />
+              )}
             </div>
           }
         </section>
