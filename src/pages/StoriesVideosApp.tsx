@@ -183,10 +183,10 @@ export default function StoriesVideosApp() {
     } else {
       setPreviewProducts([]);
     }
-    // Hidrata imediatamente um stub do modelo quando há measure_id vinculado,
-    // para que o ícone de Medidas apareça junto com o card de produto. As linhas
-    // (rows) são preenchidas logo em seguida pela query abaixo.
-    setPreviewMeasure(measureId ? { id: measureId, name: '', rows: [] } : null);
+    // Hidrata o modelo de medidas a partir do cache — mesma estratégia do card
+    // de produto — para que o ícone apareça já com o conteúdo pronto.
+    const mCache = measuresCacheRef.current;
+    setPreviewMeasure(measureId ? (mCache.get(measureId) ?? { id: measureId, name: '', rows: [] }) : null);
 
 
     (async () => {
