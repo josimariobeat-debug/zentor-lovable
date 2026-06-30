@@ -322,8 +322,12 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
               <div className="relative" ref={productWrapRef}>
                 <button
                   type="button"
+                  ref={prodTriggerRef}
                   onClick={() => setOpenList((v) => !v)}
-                  className="w-full h-11 px-3 rounded-xl border border-neutral-200 bg-white text-left text-[14px] text-neutral-500 hover:border-neutral-300 flex items-center justify-between"
+                  onKeyDown={handleTriggerKey('prod')}
+                  aria-haspopup="listbox"
+                  aria-expanded={openList}
+                  className="w-full h-11 px-3 rounded-xl border border-neutral-200 bg-white text-left text-[14px] text-neutral-500 hover:border-neutral-300 focus:outline-none focus:ring-2 focus:ring-violet-500 flex items-center justify-between"
                 >
                   <span className="truncate">
                     {selProductIds.length > 0
@@ -334,14 +338,16 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
                 </button>
 
                 {openList && (
-                  <div className="absolute left-0 right-0 mt-1 z-30 bg-white border border-neutral-200 rounded-xl shadow-lg max-h-64 overflow-auto">
+                  <div className="absolute left-0 right-0 mt-1 z-30 bg-white border border-neutral-200 rounded-xl shadow-lg max-h-64 overflow-auto" role="listbox" aria-label="Produtos cadastrados">
                     <div className="p-2 sticky top-0 bg-white border-b border-neutral-100">
                       <Input
                         autoFocus
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
+                        onKeyDown={handleProdKey}
                         placeholder="Buscar..."
                         className="h-9 rounded-lg"
+                        aria-label="Buscar produto"
                       />
                     </div>
                     {loading ? (
@@ -349,14 +355,18 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
                     ) : filteredProducts.length === 0 ? (
                       <div className="p-4 text-center text-[13px] text-neutral-400">Nenhum produto cadastrado</div>
                     ) : (
-                      filteredProducts.map((p) => {
+                      filteredProducts.map((p, idx) => {
                         const sel = selProductIds.includes(p.id);
+                        const active = idx === prodActiveIdx;
                         return (
                           <button
                             key={p.id}
                             type="button"
+                            role="option"
+                            aria-selected={sel}
+                            onMouseEnter={() => setProdActiveIdx(idx)}
                             onClick={() => toggleProduct(p.id)}
-                            className={`w-full flex items-center gap-3 px-3 py-2 hover:bg-neutral-50 text-left ${sel ? 'bg-neutral-50' : ''}`}
+                            className={`w-full flex items-center gap-3 px-3 py-2 text-left ${active ? 'bg-neutral-100' : sel ? 'bg-neutral-50' : 'hover:bg-neutral-50'}`}
                           >
                             <div className="w-8 h-8 rounded-md bg-neutral-100 overflow-hidden shrink-0 flex items-center justify-center">
                               {p.image ? <img src={p.image} alt="" className="w-full h-full object-cover" /> : <ShoppingBag className="w-3.5 h-3.5 text-neutral-400" />}
@@ -373,6 +383,7 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
                   </div>
                 )}
               </div>
+
 
               {selectedProducts.length > 0 && (
                 <div className="space-y-2">
