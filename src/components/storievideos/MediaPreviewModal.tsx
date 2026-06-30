@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Play, Volume2, VolumeX, X, Heart, MessageCircle, Send } from 'lucide-react';
+import { Play, Ruler, Volume2, VolumeX, X, Heart, MessageCircle, Send } from 'lucide-react';
 
 interface Product {
   id: string;
@@ -28,6 +28,10 @@ interface MediaPreviewModalProps {
   /** Quando informado, ignora `media`/`products` e exibe múltiplos stories
    *  com barras de progresso por segmento, auto-advance e tap zones. */
   playlist?: PlaylistItem[];
+  /** Mostra um ícone de Medidas ao lado do botão Fechar. */
+  showMeasureIcon?: boolean;
+  /** Callback ao clicar no ícone de Medidas. */
+  onMeasureClick?: () => void;
 }
 
 interface Comment {
@@ -46,7 +50,7 @@ function formatPrice(price: string): string {
   return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
-export default function MediaPreviewModal({ open, onOpenChange, media, products, playlist }: MediaPreviewModalProps) {
+export default function MediaPreviewModal({ open, onOpenChange, media, products, playlist, showMeasureIcon, onMeasureClick }: MediaPreviewModalProps) {
   const hasPlaylist = !!playlist && playlist.length > 0;
   const segmentCount = hasPlaylist ? playlist!.length : 1;
 
@@ -274,6 +278,17 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
 
         {/* Zone 2 — top controls */}
         <div className="absolute right-3 flex items-center gap-2.5 z-20" style={{ top: 'calc(max(10px, env(safe-area-inset-top)) + 14px)' }}>
+          {showMeasureIcon && (
+            <button
+              type="button"
+              onClick={() => onMeasureClick?.()}
+              className="bg-transparent border-0 flex items-center justify-center text-white cursor-pointer p-1"
+              aria-label="Ver medidas"
+              title="Medidas"
+            >
+              <Ruler className="w-5 h-5" />
+            </button>
+          )}
           <button
             type="button"
             onClick={() => onOpenChange(false)}
