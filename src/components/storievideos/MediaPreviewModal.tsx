@@ -462,7 +462,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                 <div
                   key={p.id}
                   className={
-                    'bg-black/55 backdrop-blur-md overflow-hidden flex items-stretch gap-0 shadow-[0_6px_18px_rgba(0,0,0,0.35)] rounded-[10px] h-[72px] ' +
+                    'bg-black/55 backdrop-blur-md overflow-hidden flex items-stretch gap-0 shadow-[0_6px_18px_rgba(0,0,0,0.35)] rounded-[10px] h-[58px] ' +
                     (productList.length > 1
                       ? 'shrink-0 snap-start basis-[72%]'
                       : 'w-full')
@@ -477,15 +477,15 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                       decoding="sync"
                       // @ts-expect-error fetchpriority is a valid HTML attribute
                       fetchpriority="high"
-                      className="w-14 self-stretch object-cover bg-neutral-800 shrink-0 pointer-events-none"
+                      className="w-12 self-stretch object-cover bg-neutral-800 shrink-0 pointer-events-none"
                     />
                   ) : (
-                    <div className="w-14 self-stretch bg-neutral-800 shrink-0" />
+                    <div className="w-12 self-stretch bg-neutral-800 shrink-0" />
                   )}
-                  <div className="flex-1 min-w-0 flex flex-col py-1.5 pl-2.5 pr-2.5">
+                  <div className="flex-1 min-w-0 flex flex-col py-1 pl-2 pr-2">
                     <div className="flex-1 min-w-0 overflow-hidden">
                       <div
-                        className="font-medium text-white leading-tight text-[12px] overflow-hidden"
+                        className="font-medium text-white leading-[1.1] text-[10px] overflow-hidden"
                         style={{
                           display: '-webkit-box',
                           WebkitLineClamp: 2,
@@ -497,19 +497,20 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                       </div>
                     </div>
                     <div className="flex items-center justify-between gap-2 mt-auto">
-                      <div className="text-white/90 leading-none text-[11px] font-semibold truncate">
+                      <div className="text-white/90 leading-none text-[9px] font-semibold truncate">
                         {p.price ? formatPrice(p.price) : '\u00A0'}
                       </div>
                       <button
                         type="button"
                         onClick={() => openProduct(p)}
                         disabled={!p.url}
-                        className="bg-white hover:bg-neutral-100 transition-colors text-neutral-900 font-semibold text-[10px] px-1.5 py-1 rounded-md shrink-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-white"
+                        className="bg-white hover:bg-neutral-100 transition-colors text-neutral-900 font-semibold text-[9px] px-1.5 py-[2px] rounded-md shrink-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-white"
                       >
                         Comprar
                       </button>
                     </div>
                   </div>
+
 
                 </div>
               ))}
