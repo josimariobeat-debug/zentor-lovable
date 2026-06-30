@@ -72,6 +72,9 @@ export default function StoriesVideosApp() {
   const [carrossel, setCarrossel] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<StoryWithMedia | null>(null);
   const [previewMedia, setPreviewMedia] = useState<StoryMedia | null>(null);
+  const [previewProducts, setPreviewProducts] = useState<{ id: string; name: string; price: string; image?: string | null; url?: string | null }[]>([]);
+  const [previewMeasure, setPreviewMeasure] = useState<MeasureModel | null>(null);
+  const [previewMeasureOpen, setPreviewMeasureOpen] = useState(false);
   const [gallery, setGallery] = useState<GalleryMedia[] | null>(null);
   const [gallerySearch, setGallerySearch] = useState('');
   const [previewGallery, setPreviewGallery] = useState<GalleryMedia | null>(null);
