@@ -475,7 +475,7 @@ export default function AdicionarStory() {
             position: idx,
             product_ids: link?.productIds ?? [],
             measure_id: link?.measureId ?? null,
-            products_layout: link?.layout ?? 'lista',
+            products_layout: link?.layout ?? 'carrossel',
           };
         });
         await supabase.from('story_media').insert(mediaInserts);
