@@ -825,21 +825,8 @@ function MediaSourceCard({
         >
           <Star className="w-3.5 h-3.5" fill={m.cover ? 'currentColor' : 'none'} />
         </button>
-        <button
-          data-ev-id="ev_94069b0704"
-          onClick={(e) => {
-            e.stopPropagation();
-            const btn = e.currentTarget;
-            btn.classList.add('animate-copy-success');
-            setTimeout(() => btn.classList.remove('animate-copy-success'), 600);
-            onCopyLink();
-          }}
-          onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); onCopyLink(); }}
-          title="Copiar link"
-          className="w-7 h-7 rounded-full bg-white/95 text-neutral-900 hover:bg-white flex items-center justify-center transition-all duration-200 [&.animate-copy-success]:scale-125 [&.animate-copy-success]:bg-green-500 [&.animate-copy-success]:text-white"
-        >
-          <LinkIcon className="w-3.5 h-3.5" />
-        </button>
+        <CopyLinkButton onCopy={onCopyLink} />
+
         <button
           data-ev-id="ev_product_tag"
           onClick={(e) => e.stopPropagation()}
