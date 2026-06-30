@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react';
 import { Play, Volume2, VolumeX, X, Heart, MessageCircle, Send } from 'lucide-react';
 
 function RulerIcon({ className }: { className?: string }) {
