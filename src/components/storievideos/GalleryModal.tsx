@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
-import { Search, Check, Image as ImageIcon } from 'lucide-react';
+import { Search, Image as ImageIcon } from 'lucide-react';
 import { GalleryCard } from '@/components/ui/GalleryCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Tables } from '@/integrations/supabase/helpers';
@@ -15,18 +15,33 @@ interface GalleryModalProps {
   onOpenChange: (open: boolean) => void;
   onSelect: (items: GalleryMedia[]) => void;
   multiple?: boolean;
+  /**
+   * Mídia já pré-carregada pelo componente pai.
+   * Quando fornecida, o modal renderiza instantaneamente sem skeleton,
+   * e só dispara um refresh silencioso em segundo plano.
+   */
+  prefetched?: GalleryMedia[] | null;
 }
 
-export default function GalleryModal({ open, onOpenChange, onSelect, multiple = true }: GalleryModalProps) {
+export default function GalleryModal({ open, onOpenChange, onSelect, multiple = true, prefetched }: GalleryModalProps) {
   const { user } = useAuth();
-  const [media, setMedia] = useState<GalleryMedia[] | null>(null);
+  // Hidratação síncrona: se o pai já tem os dados, evitamos o estado "null"
+  // que dispara o skeleton e o pop-in visual ao abrir o modal.
+  const [media, setMedia] = useState<GalleryMedia[] | null>(prefetched ?? null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState('');
 
+  // Mantém o estado interno alinhado caso o pai atualize o prefetched.
+  useEffect(() => {
+    if (prefetched) setMedia(prefetched);
+  }, [prefetched]);
+
   useEffect(() => {
     if (open) {
-      loadMedia();
       setSelected(new Set());
+      // Refresh silencioso em segundo plano — não substitui o estado por null,
+      // mantendo o conteúdo visível sem flashes.
+      loadMedia();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);

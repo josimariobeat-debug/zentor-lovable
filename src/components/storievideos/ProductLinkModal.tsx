@@ -44,6 +44,13 @@ interface Props {
   refreshNonce?: number;
   autoSelectProductId?: string | null;
   onAutoSelectHandled?: () => void;
+  /**
+   * Produtos pré-carregados pelo componente pai. Quando fornecidos,
+   * o modal abre já hidratado — sem skeleton/“Carregando…” e sem flash.
+   */
+  prefetchedProducts?: ProductRow[];
+  /** Modelos de medida pré-carregados pelo componente pai. */
+  prefetchedMeasures?: MeasureRow[];
 }
 
 function SortableProductItem({
@@ -98,12 +105,14 @@ function SortableProductItem({
   );
 }
 
-export default function ProductLinkModal({ open, onOpenChange, initial, onSave, onAddManual, onCreateProduct, refreshNonce, autoSelectProductId, onAutoSelectHandled }: Props) {
+export default function ProductLinkModal({ open, onOpenChange, initial, onSave, onAddManual, onCreateProduct, refreshNonce, autoSelectProductId, onAutoSelectHandled, prefetchedProducts, prefetchedMeasures }: Props) {
   const { user } = useAuth();
   const [tab, setTab] = useState<'produtos' | 'medida'>('produtos');
   const [layout, setLayout] = useState<Layout>(initial?.layout ?? 'lista');
-  const [products, setProducts] = useState<ProductRow[]>([]);
-  const [measures, setMeasures] = useState<MeasureRow[]>([]);
+  // Hidratação síncrona a partir do prefetch — evita o estado vazio + skeleton
+  // e o consequente flash visual quando o modal abre.
+  const [products, setProducts] = useState<ProductRow[]>(prefetchedProducts ?? []);
+  const [measures, setMeasures] = useState<MeasureRow[]>(prefetchedMeasures ?? []);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [searchMed, setSearchMed] = useState('');
@@ -155,9 +164,21 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
     setOpenList(false); setOpenMedList(false);
   }, [open, initial]);
 
+  // Mantém o estado em sincronia com mudanças do prefetch vindas do pai
+  // (sem flash, pois nunca esvaziamos o estado).
+  useEffect(() => {
+    if (prefetchedProducts) setProducts(prefetchedProducts);
+  }, [prefetchedProducts]);
+  useEffect(() => {
+    if (prefetchedMeasures) setMeasures(prefetchedMeasures);
+  }, [prefetchedMeasures]);
+
   useEffect(() => {
     if (!open || !user || !supabase) return;
-    setLoading(true);
+    // Só mostramos o estado de "Carregando..." quando NÃO há dados em mãos.
+    // Com prefetch, fazemos um refresh silencioso em segundo plano.
+    const hasInitialData = products.length > 0 || measures.length > 0;
+    if (!hasInitialData) setLoading(true);
     (async () => {
       const [p, m] = await Promise.all([
         supabase.from('products').select('id,name,price,currency,url,image').eq('user_id', user.id).order('created_at', { ascending: false }),
@@ -167,6 +188,7 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
       setMeasures((m.data as any) ?? []);
       setLoading(false);
     })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, user, refreshNonce]);
 
   useEffect(() => {

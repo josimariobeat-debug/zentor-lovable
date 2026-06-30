@@ -86,6 +86,29 @@ export default function AdicionarStory() {
   const [savingNewProduct, setSavingNewProduct] = useState(false);
   const [productRefreshNonce, setProductRefreshNonce] = useState(0);
   const [autoSelectProductId, setAutoSelectProductId] = useState<string | null>(null);
+  // Prefetch para hidratação imediata dos modais — evita skeleton/flash ao abrir.
+  const [galleryPrefetch, setGalleryPrefetch] = useState<Tables<'media_gallery'>[] | null>(null);
+  const [productsPrefetch, setProductsPrefetch] = useState<{ id: string; name: string; price: string; currency: string; url: string; image: string | null }[]>([]);
+  const [measuresPrefetch, setMeasuresPrefetch] = useState<{ id: string; name: string }[]>([]);
+
+  // Carrega galeria, produtos e modelos de medida silenciosamente assim que
+  // a página monta (e quando produtos são criados via AddProductModal).
+  useEffect(() => {
+    if (!supabase || !user) return;
+    let cancel = false;
+    (async () => {
+      const [g, p, m] = await Promise.all([
+        supabase.from('media_gallery').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
+        supabase.from('products').select('id,name,price,currency,url,image').eq('user_id', user.id).order('created_at', { ascending: false }),
+        (supabase as any).from('measure_models').select('id,name').eq('user_id', user.id).order('created_at', { ascending: false }),
+      ]);
+      if (cancel) return;
+      setGalleryPrefetch((g.data as any) ?? []);
+      setProductsPrefetch(((p.data as any) ?? []) as typeof productsPrefetch);
+      setMeasuresPrefetch(((m.data as any) ?? []) as typeof measuresPrefetch);
+    })();
+    return () => { cancel = true; };
+  }, [user, productRefreshNonce]);
 
   useEffect(() => {
     // Restaura estado quando retornamos do editor de aparência
@@ -746,6 +769,7 @@ export default function AdicionarStory() {
         open={galleryOpen}
         onOpenChange={setGalleryOpen}
         onSelect={onGallerySelect}
+        prefetched={galleryPrefetch}
       />
 
       {/* Video Preview */}
@@ -769,7 +793,10 @@ export default function AdicionarStory() {
         refreshNonce={productRefreshNonce}
         autoSelectProductId={autoSelectProductId}
         onAutoSelectHandled={() => setAutoSelectProductId(null)}
+        prefetchedProducts={productsPrefetch}
+        prefetchedMeasures={measuresPrefetch}
       />
+
 
       {/* Cadastro rápido de produto a partir do modal da sacola */}
       <AddProductModal
