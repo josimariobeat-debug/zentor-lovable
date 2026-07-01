@@ -416,7 +416,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
       <div
         ref={modalRootRef}
         className="bg-black overflow-hidden flex flex-col relative rounded-2xl max-sm:rounded-none max-sm:!w-screen max-sm:!h-[100dvh] max-sm:!max-w-none max-sm:!max-h-none"
-        style={{ aspectRatio: '9 / 16', height: 'min(92dvh, 780px)', maxWidth: '100%', WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none', touchAction: 'none' } as React.CSSProperties}
+        style={{ aspectRatio: '9 / 16', height: 'min(92dvh, 780px)', maxWidth: '100%', WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none' } as React.CSSProperties}
         onContextMenu={(e) => e.preventDefault()}
       >
         {/* Zone 1 — progress bars (1 segmento por mídia) */}
