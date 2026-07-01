@@ -85,14 +85,9 @@ export default function StoriesVideosApp() {
   const [selectedMedia, setSelectedMedia] = useState<Set<string>>(new Set());
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const galleryFileInputRef = useRef<HTMLInputElement>(null);
-  // Cache de produtos do app — usado para renderizar o card instantaneamente
-  // no modal de preview, sem esperar o fetch por id.
-  const productsCacheRef = useRef<Map<string, { id: string; name: string; price: string; image?: string | null; url?: string | null }>>(new Map());
-  // Cache de modelos de medidas — mesma estratégia do cache de produtos.
-  const measuresCacheRef = useRef<Map<string, MeasureModel>>(new Map());
-  // IDs de produtos confirmados como ausentes após fetch bem-sucedido.
-  // Só é usado para exibir "Produto indisponível" (nunca durante loading).
-  const productsNotFoundRef = useRef<Set<string>>(new Set());
+  // Cache compartilhado (módulo) com TTL — persiste entre montagens deste
+  // componente, então reabrir o modal reutiliza os dados sem novo fetch
+  // enquanto estiverem "frescos". Ver src/lib/previewCache.ts.
 
 
   // Fallback: if URL uses app_key (text slug) instead of UUID, resolve to UUID and redirect.
