@@ -24,6 +24,14 @@ import {
   type MeasureModel,
 } from '@/components/storievideos/MeasurePreviewModal';
 import {
+  productsStore,
+  measuresStore,
+  productsNotFoundStore,
+  seedProducts,
+  seedMeasures,
+  invalidateProduct,
+} from '@/lib/previewCache';
+import {
   Search,
   Plus,
   Settings2,
@@ -85,14 +93,9 @@ export default function StoriesVideosApp() {
   const [selectedMedia, setSelectedMedia] = useState<Set<string>>(new Set());
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const galleryFileInputRef = useRef<HTMLInputElement>(null);
-  // Cache de produtos do app — usado para renderizar o card instantaneamente
-  // no modal de preview, sem esperar o fetch por id.
-  const productsCacheRef = useRef<Map<string, { id: string; name: string; price: string; image?: string | null; url?: string | null }>>(new Map());
-  // Cache de modelos de medidas — mesma estratégia do cache de produtos.
-  const measuresCacheRef = useRef<Map<string, MeasureModel>>(new Map());
-  // IDs de produtos confirmados como ausentes após fetch bem-sucedido.
-  // Só é usado para exibir "Produto indisponível" (nunca durante loading).
-  const productsNotFoundRef = useRef<Set<string>>(new Set());
+  // Cache compartilhado (módulo) com TTL — persiste entre montagens deste
+  // componente, então reabrir o modal reutiliza os dados sem novo fetch
+  // enquanto estiverem "frescos". Ver src/lib/previewCache.ts.
 
 
   // Fallback: if URL uses app_key (text slug) instead of UUID, resolve to UUID and redirect.
@@ -125,35 +128,36 @@ export default function StoriesVideosApp() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appId]);
 
-  const loadProductsCache = async () => {
+  const loadProductsCache = async (force = false) => {
     if (!supabase || !user) return;
+    // Reuso: se ainda houver entradas válidas no cache TTL, não refaz o fetch.
+    if (!force && productsStore.validKeys().length > 0) return;
     const { data } = await (supabase as any)
       .from('products')
       .select('id,name,price,currency,url,image')
       .eq('user_id', user.id);
-    const map = new Map<string, any>();
-    (data ?? []).forEach((p: any) => {
-      map.set(p.id, { id: p.id, name: p.name, price: String(p.price ?? ''), image: p.image, url: p.url });
-    });
-    productsCacheRef.current = map;
+    seedProducts((data ?? []).map((p: any) => ({
+      id: p.id, name: p.name, price: String(p.price ?? ''), image: p.image, url: p.url,
+    })));
   };
 
-  const loadMeasuresCache = async () => {
+  const loadMeasuresCache = async (force = false) => {
     if (!supabase || !user) return;
+    if (!force && measuresStore.validKeys().length > 0) return;
     const { data } = await (supabase as any)
       .from('measure_models')
       .select('id,name,measure_rows(id,size_name,measure_type,value_cm,position)')
       .eq('user_id', user.id);
-    const map = new Map<string, MeasureModel>();
-    (data ?? []).forEach((m: any) => {
+    const models = (data ?? []).map((m: any) => {
       const rows = ((m.measure_rows ?? []) as any[])
         .slice()
         .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
         .map((r) => ({ id: r.id, tamanho: r.size_name, medida: r.measure_type as MeasureType, valor: String(r.value_cm) }));
-      map.set(m.id, { id: m.id, name: m.name, rows });
+      return { id: m.id, name: m.name, rows };
     });
-    measuresCacheRef.current = map;
+    seedMeasures(models);
   };
+
 
 
   const loadStories = async () => {
@@ -179,7 +183,7 @@ export default function StoriesVideosApp() {
     // Medida do primeiro item da playlist (para o ícone de medidas)
     const first = list[startIdx] as (StoryMedia & { measure_id?: string | null }) | undefined;
     const measureId = first?.measure_id ?? null;
-    setPreviewMeasure(measureId ? (measuresCacheRef.current.get(measureId) ?? { id: measureId, name: '', rows: [] }) : null);
+    setPreviewMeasure(measureId ? ((measuresStore.get(measureId) as MeasureModel | undefined) ?? { id: measureId, name: '', rows: [] }) : null);
     setPreviewStartIndex(startIdx);
     setPreviewStory(story);
   };
@@ -215,7 +219,8 @@ export default function StoriesVideosApp() {
     const allMeasureIds = Array.from(new Set(mediaList.map((m) => m.measure_id).filter((x): x is string => !!x)));
 
     const fetchProducts = async () => {
-      const missing = allProductIds.filter((id) => !productsCacheRef.current.has(id) && !productsNotFoundRef.current.has(id));
+      // Só busca IDs que não estão no cache TTL nem marcados como ausentes.
+      const missing = allProductIds.filter((id) => !productsStore.has(id) && !productsNotFoundStore.has(id));
       if (missing.length === 0) return;
       for (let attempt = 0; attempt < 3 && !cancelled; attempt++) {
         const { data, error } = await (supabase as any)
@@ -226,11 +231,10 @@ export default function StoriesVideosApp() {
           const returned = new Set<string>();
           (data as any[]).forEach((p) => {
             returned.add(p.id);
-            productsCacheRef.current.set(p.id, { id: p.id, name: p.name, price: String(p.price ?? ''), image: p.image, url: p.url });
+            productsStore.set(p.id, { id: p.id, name: p.name, price: String(p.price ?? ''), image: p.image, url: p.url });
           });
-          // Só marca como definitivamente indisponível na última tentativa,
-          // após o servidor responder com sucesso mas sem o produto.
-          missing.forEach((id) => { if (!returned.has(id)) productsNotFoundRef.current.add(id); });
+          // Marca ausentes com TTL curto para permitir recuperação futura.
+          missing.forEach((id) => { if (!returned.has(id)) productsNotFoundStore.set(id, true); });
           if (!cancelled) setPreviewHydrateTick((t) => t + 1);
           return;
         }
@@ -240,25 +244,27 @@ export default function StoriesVideosApp() {
     };
 
     const fetchMeasures = async () => {
-      if (allMeasureIds.length === 0) return;
+      const missingMeasures = allMeasureIds.filter((id) => !measuresStore.has(id));
+      if (missingMeasures.length === 0) return;
       const { data } = await (supabase as any)
         .from('measure_models')
         .select('id,name,measure_rows(id,size_name,measure_type,value_cm,position)')
-        .in('id', allMeasureIds);
+        .in('id', missingMeasures);
       if (!cancelled && data) {
         (data as any[]).forEach((m) => {
           const rows = ((m.measure_rows ?? []) as any[])
             .slice()
             .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
             .map((r) => ({ id: r.id, tamanho: r.size_name, medida: r.measure_type as MeasureType, valor: String(r.value_cm) }));
-          measuresCacheRef.current.set(m.id, { id: m.id, name: m.name, rows });
+          measuresStore.set(m.id, { id: m.id, name: m.name, rows });
         });
         const first = mediaList[previewStartIndex] as (StoryMedia & { measure_id?: string | null }) | undefined;
         const mid = first?.measure_id ?? null;
-        if (mid) setPreviewMeasure(measuresCacheRef.current.get(mid) ?? null);
+        if (mid) setPreviewMeasure((measuresStore.get(mid) as MeasureModel | undefined) ?? null);
         setPreviewHydrateTick((t) => t + 1);
       }
     };
+
 
     // Paralelo: produtos e medidas ao mesmo tempo.
     Promise.all([fetchProducts(), fetchMeasures()]);
@@ -274,8 +280,8 @@ export default function StoriesVideosApp() {
   const previewPlaylist = useMemo(() => {
     if (!previewStory) return undefined;
     const mediaList = getOrderedStoryMedia(previewStory) as Array<StoryMedia & { product_ids?: string[] | null }>;
-    const cache = productsCacheRef.current;
-    const notFound = productsNotFoundRef.current;
+    const cache = productsStore;
+    const notFound = productsNotFoundStore;
     return mediaList.map((m) => {
       const ids = Array.isArray(m.product_ids) ? m.product_ids : [];
       const products = ids.map((id) => {
@@ -874,6 +880,9 @@ function ProdutosTab() {
         return;
       }
       setProducts((arr) => arr.map((x) => x.id === editing.id ? (data as any) : x));
+      // Invalida a entrada cacheada para o modal de preview refletir a edição.
+      invalidateProduct(editing.id);
+      productsStore.set(editing.id, { id: (data as any).id, name: (data as any).name, price: String((data as any).price ?? ''), image: (data as any).image, url: (data as any).url });
       setEditing(null);
       toast.success('Produto atualizado');
       return;
@@ -889,6 +898,8 @@ function ProdutosTab() {
       return;
     }
     setProducts((arr) => [data as any, ...arr]);
+    // Seed no cache TTL para o modal reaproveitar imediatamente.
+    productsStore.set((data as any).id, { id: (data as any).id, name: (data as any).name, price: String((data as any).price ?? ''), image: (data as any).image, url: (data as any).url });
     setAddOpen(false);
     toast.success('Produto adicionado');
   };
@@ -896,6 +907,7 @@ function ProdutosTab() {
   const handleDelete = async (id: string) => {
     const prev = products;
     setProducts((arr) => arr.filter((x) => x.id !== id));
+    invalidateProduct(id);
     const { error } = await supabase.from('products').delete().eq('id', id);
     if (error) {
       setProducts(prev);

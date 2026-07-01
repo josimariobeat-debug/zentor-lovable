@@ -17,6 +17,7 @@ import ProductLinkModal, { type ProductLinkSelection } from '@/components/storie
 import { AddProductModal } from '@/pages/StoriesVideosApp';
 import { MediaThumbnail } from '@/components/ui/MediaThumbnail';
 import type { Tables } from '@/integrations/supabase/helpers';
+import { seedProducts, seedMeasures } from '@/lib/previewCache';
 import {
   Upload,
   Smartphone,
@@ -108,7 +109,8 @@ export default function AdicionarStory() {
       ]);
       if (cancel) return;
       setGalleryPrefetch((g.data as any) ?? []);
-      setProductsPrefetch(((p.data as any) ?? []) as typeof productsPrefetch);
+      const prods = ((p.data as any) ?? []) as typeof productsPrefetch;
+      setProductsPrefetch(prods);
       const models: MeasureModel[] = ((m.data as any) ?? []).map((mm: any) => ({
         id: mm.id,
         name: mm.name,
@@ -118,6 +120,11 @@ export default function AdicionarStory() {
           .map((r) => ({ id: r.id, tamanho: r.size_name, medida: r.measure_type as MeasureType, valor: String(r.value_cm) })),
       }));
       setMeasuresPrefetch(models);
+      // Popula o cache TTL compartilhado — assim, ao abrir o modal de preview
+      // (na aba Lista de Stories ou em Adicionar Story), os dados já estão
+      // disponíveis sem novo fetch enquanto estiverem válidos.
+      seedProducts(prods.map((p) => ({ id: p.id, name: p.name, price: String(p.price ?? ''), image: p.image, url: p.url })));
+      seedMeasures(models);
     })();
     return () => { cancel = true; };
   }, [user, productRefreshNonce]);
