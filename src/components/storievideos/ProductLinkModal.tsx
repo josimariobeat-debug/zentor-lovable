@@ -370,7 +370,7 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
           })}
         </div>
 
-        <div className="px-6 py-5 min-h-[280px]">
+        <div className="px-6 py-5 min-h-[280px] flex-1 min-h-0 overflow-y-auto">
           {tab === 'produtos' ? (
             <div className="space-y-4">
               <div>
