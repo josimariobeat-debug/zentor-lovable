@@ -345,9 +345,9 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl p-0 overflow-hidden">
+      <DialogContent className="max-w-2xl p-0 overflow-hidden max-h-[90vh] max-h-[90dvh] flex flex-col">
         {/* Tabs */}
-        <div className="flex items-center gap-1 px-6 pt-5 border-b border-neutral-200">
+        <div className="flex items-center gap-1 px-6 pt-5 border-b border-neutral-200 shrink-0">
           {([
             { id: 'produtos', label: 'Produtos', icon: ShoppingBag },
             { id: 'medida', label: 'Medida', icon: Ruler },
@@ -370,7 +370,7 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
           })}
         </div>
 
-        <div className="px-6 py-5 min-h-[280px]">
+        <div className="px-6 py-5 flex-1 min-h-0 overflow-y-auto">
           {tab === 'produtos' ? (
             <div className="space-y-4">
               <div>
@@ -562,7 +562,7 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
           )}
         </div>
 
-        <div className="px-6 py-4 border-t border-neutral-200 flex items-center justify-end gap-2">
+        <div className="px-6 py-4 border-t border-neutral-200 flex items-center justify-end gap-2 shrink-0 bg-white">
           <button
             type="button"
             onClick={() => onOpenChange(false)}
