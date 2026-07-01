@@ -71,8 +71,8 @@ function storageKey(namespace: string) {
 
 function makeStore<T>(ttl: number, namespace: string, storageKind: StorageKind = 'session') {
   const map = new Map<string, Entry<T>>();
-  const storage = getStorage(storageKind);
-  const sKey = storageKey(namespace);
+  const resolved = getStorage(storageKind);
+  const storage = resolved?.storage ?? null;
 
   // Hidrata do storage descartando expirados.
   if (storage) {
