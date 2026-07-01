@@ -898,6 +898,8 @@ function ProdutosTab() {
       return;
     }
     setProducts((arr) => [data as any, ...arr]);
+    // Seed no cache TTL para o modal reaproveitar imediatamente.
+    productsStore.set((data as any).id, { id: (data as any).id, name: (data as any).name, price: String((data as any).price ?? ''), image: (data as any).image, url: (data as any).url });
     setAddOpen(false);
     toast.success('Produto adicionado');
   };
@@ -905,6 +907,7 @@ function ProdutosTab() {
   const handleDelete = async (id: string) => {
     const prev = products;
     setProducts((arr) => arr.filter((x) => x.id !== id));
+    invalidateProduct(id);
     const { error } = await supabase.from('products').delete().eq('id', id);
     if (error) {
       setProducts(prev);
