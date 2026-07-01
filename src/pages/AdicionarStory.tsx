@@ -935,6 +935,7 @@ function MediaSourceCard({
   const activeRef = useRef(false);
   const touchStartTime = useRef(0);
   const hasMoved = useRef(false);
+  const rootRef = useRef<HTMLDivElement | null>(null);
 
   const activate = () => {
     activeRef.current = true;
@@ -944,6 +945,23 @@ function MediaSourceCard({
     activeRef.current = false;
     setIsActive(false);
   };
+
+  // Desativa ao tocar fora do card (apenas em dispositivos touch).
+  useEffect(() => {
+    if (!isTouch || !isActive) return;
+    const handleOutside = (e: Event) => {
+      const target = e.target as Node | null;
+      if (rootRef.current && target && !rootRef.current.contains(target)) {
+        deactivate();
+      }
+    };
+    document.addEventListener('touchstart', handleOutside, true);
+    document.addEventListener('pointerdown', handleOutside, true);
+    return () => {
+      document.removeEventListener('touchstart', handleOutside, true);
+      document.removeEventListener('pointerdown', handleOutside, true);
+    };
+  }, [isTouch, isActive]);
 
   const handleTouchStart = () => {
     setIsTouch(true);
