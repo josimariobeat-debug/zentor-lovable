@@ -932,8 +932,18 @@ function MediaSourceCard({
 }) {
   const [isActive, setIsActive] = useState(false);
   const [isTouch, setIsTouch] = useState(false);
+  const activeRef = useRef(false);
   const touchStartTime = useRef(0);
   const hasMoved = useRef(false);
+
+  const activate = () => {
+    activeRef.current = true;
+    setIsActive(true);
+  };
+  const deactivate = () => {
+    activeRef.current = false;
+    setIsActive(false);
+  };
 
   const handleTouchStart = () => {
     setIsTouch(true);
@@ -941,15 +951,29 @@ function MediaSourceCard({
     hasMoved.current = false;
   };
   const handleTouchMove = () => { hasMoved.current = true; };
+
+  // No 1º toque em qualquer botão de ação, apenas ativa o card.
+  const guardActionTouch = (e: React.TouchEvent, action: () => void) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const dur = Date.now() - touchStartTime.current;
+    if (dur >= 500 || hasMoved.current) return;
+    if (!activeRef.current) {
+      activate();
+      return;
+    }
+    action();
+  };
+
   const handleCenterTouchEnd = (e: React.TouchEvent) => {
     const dur = Date.now() - touchStartTime.current;
     if (dur >= 500 || hasMoved.current) return;
     e.preventDefault();
-    if (!isActive) {
-      setIsActive(true);
+    if (!activeRef.current) {
+      activate();
     } else {
       onPreview();
-      setIsActive(false);
+      deactivate();
     }
   };
   const handleCenterClick = () => {
@@ -963,8 +987,8 @@ function MediaSourceCard({
       className="group relative rounded-xl overflow-hidden border border-neutral-200 bg-neutral-100 select-none"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
-      onMouseEnter={() => !isTouch && setIsActive(true)}
-      onMouseLeave={() => !isTouch && setIsActive(false)}
+      onMouseEnter={() => { if (!isTouch) activate(); }}
+      onMouseLeave={() => { if (!isTouch) deactivate(); }}
     >
       <button
         data-ev-id="ev_853fae407d"
@@ -980,8 +1004,8 @@ function MediaSourceCard({
       )}
       <button
         data-ev-id="ev_6336cb8a7e"
-        onClick={(e) => { e.stopPropagation(); onRemove(); }}
-        onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); onRemove(); }}
+        onClick={(e) => { e.stopPropagation(); if (isTouch && !activeRef.current) { activate(); return; } onRemove(); }}
+        onTouchEnd={(e) => guardActionTouch(e, onRemove)}
         title="Remover"
         className={`absolute top-2 right-2 w-7 h-7 rounded-full bg-black/50 text-white hover:bg-red-600 flex items-center justify-center transition-all z-20 ${isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
       >
@@ -993,19 +1017,25 @@ function MediaSourceCard({
       >
         <button
           data-ev-id="ev_adbed9c64e"
-          onClick={(e) => { e.stopPropagation(); onSetCover(); }}
-          onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); onSetCover(); }}
+          onClick={(e) => { e.stopPropagation(); if (isTouch && !activeRef.current) { activate(); return; } onSetCover(); }}
+          onTouchEnd={(e) => guardActionTouch(e, onSetCover)}
           title="Definir capa"
           className={`w-7 h-7 rounded-full flex items-center justify-center ${m.cover ? 'bg-amber-400 text-white hover:bg-amber-500' : 'bg-white/95 text-neutral-900 hover:bg-white'}`}
         >
           <Star className="w-3.5 h-3.5" fill={m.cover ? 'currentColor' : 'none'} />
         </button>
-        <CopyLinkButton onCopy={onCopyLink} />
+        <CopyLinkButton
+          onCopy={onCopyLink}
+          shouldBlock={() => {
+            if (isTouch && !activeRef.current) { activate(); return true; }
+            return false;
+          }}
+        />
 
         <button
           data-ev-id="ev_product_tag"
-          onClick={(e) => { e.stopPropagation(); onOpenProduct(); }}
-          onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); onOpenProduct(); }}
+          onClick={(e) => { e.stopPropagation(); if (isTouch && !activeRef.current) { activate(); return; } onOpenProduct(); }}
+          onTouchEnd={(e) => guardActionTouch(e, onOpenProduct)}
           title="Vincular produto"
           className={`w-7 h-7 rounded-full flex items-center justify-center ${hasLink ? 'bg-violet-600 text-white hover:bg-violet-700' : 'bg-white/95 text-neutral-900 hover:bg-white'}`}
         >
