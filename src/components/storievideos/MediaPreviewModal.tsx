@@ -427,7 +427,11 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
         </div>
 
         {/* Zone 3 — media */}
-        <div className="flex-1 relative bg-black overflow-hidden">
+        <div
+          className="flex-1 relative bg-black overflow-hidden select-none"
+          onContextMenu={(e) => e.preventDefault()}
+          style={{ WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none' } as React.CSSProperties}
+        >
           {url ? (
             isVideo ? (
               <video
@@ -436,7 +440,14 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                 src={url}
                 autoPlay
                 playsInline
-                className="absolute inset-0 w-full h-full object-cover"
+                controls={false}
+                disablePictureInPicture
+                // @ts-ignore - non-standard attribute to hide download/save UI
+                controlsList="nodownload noplaybackrate nofullscreen noremoteplayback"
+                onContextMenu={(e) => e.preventDefault()}
+                draggable={false}
+                className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
+                style={{ WebkitTouchCallout: 'none' } as React.CSSProperties}
               />
             ) : (
               <img
@@ -444,7 +455,11 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                 src={url}
                 alt={effectiveMedia?.name ?? ''}
                 onLoad={() => setProgressStarted(true)}
-                className="absolute inset-0 w-full h-full object-cover"
+                onContextMenu={(e) => e.preventDefault()}
+                onDragStart={(e) => e.preventDefault()}
+                draggable={false}
+                className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
+                style={{ WebkitTouchCallout: 'none' } as React.CSSProperties}
               />
             )
           ) : null}
@@ -458,8 +473,10 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
             onPointerMove={onGestureMove}
             onPointerUp={onGestureEnd}
             onPointerCancel={onGestureEnd}
+            onContextMenu={(e) => e.preventDefault()}
+            onDragStart={(e) => e.preventDefault()}
             className="absolute inset-0 z-[5] cursor-default bg-transparent select-none touch-pan-y"
-            style={{ WebkitTapHighlightColor: 'transparent' }}
+            style={{ WebkitTapHighlightColor: 'transparent', WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none' } as React.CSSProperties}
           />
 
 

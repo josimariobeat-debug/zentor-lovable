@@ -73,8 +73,9 @@
     '@keyframes ztFade{from{opacity:0}to{opacity:1}}',
     '.zt-player{position:relative;width:min(420px,100vw);height:min(92vh,780px);background:#000;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;font-family:-apple-system,system-ui,Segoe UI,Roboto,sans-serif}',
     '@media(max-width:520px){.zt-player{width:100vw;height:100vh;border-radius:0}}',
-    '.zt-media{flex:1;position:relative;background:#000;overflow:hidden}',
-    '.zt-media video,.zt-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}',
+    '.zt-media{flex:1;position:relative;background:#000;overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}',
+    '.zt-media video,.zt-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-user-drag:none}',
+
     '.zt-progress{position:absolute;top:10px;left:8px;right:8px;display:flex;gap:3px;z-index:10}',
     '.zt-bar{flex:1;height:2.5px;background:rgba(255,255,255,.35);border-radius:2px;overflow:hidden}',
     '.zt-bar-fill{height:100%;width:0%;background:#fff;transition:width .1s linear}',
@@ -489,6 +490,10 @@
       if (isVideo) {
         var v = document.createElement('video');
         v.src = item.url; v.autoplay = true; v.playsInline = true; v.controls = false; v.muted = muted;
+        v.setAttribute('controlsList', 'nodownload noplaybackrate nofullscreen noremoteplayback');
+        v.setAttribute('disablePictureInPicture', '');
+        v.oncontextmenu = function(e){ e.preventDefault(); return false; };
+
         var bar = progress.children[mediaIdx] && progress.children[mediaIdx].firstChild;
         function tick(now) {
           try {
@@ -523,7 +528,7 @@
         mediaWrap.appendChild(v); currentEl = v;
         v.play().catch(function () { v.muted = true; muted = true; pauseSoundBtn.innerHTML = ''; pauseSoundBtn.appendChild(svgIcon(ICO_MUTE)); v.play().catch(function(){}); });
       } else {
-        var im = document.createElement('img'); im.src = item.url; mediaWrap.appendChild(im); currentEl = im;
+        var im = document.createElement('img'); im.src = item.url; im.draggable = false; im.oncontextmenu = function(e){ e.preventDefault(); return false; }; mediaWrap.appendChild(im); currentEl = im;
         var bar2 = progress.children[mediaIdx] && progress.children[mediaIdx].firstChild;
         var start = performance.now(); var DUR = 5000;
         function tick2(t) {
