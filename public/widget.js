@@ -73,8 +73,9 @@
     '@keyframes ztFade{from{opacity:0}to{opacity:1}}',
     '.zt-player{position:relative;width:min(420px,100vw);height:min(92vh,780px);background:#000;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;font-family:-apple-system,system-ui,Segoe UI,Roboto,sans-serif}',
     '@media(max-width:520px){.zt-player{width:100vw;height:100vh;border-radius:0}}',
-    '.zt-media{flex:1;position:relative;background:#000;overflow:hidden}',
-    '.zt-media video,.zt-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}',
+    '.zt-media{flex:1;position:relative;background:#000;overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}',
+    '.zt-media video,.zt-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-user-drag:none}',
+
     '.zt-progress{position:absolute;top:10px;left:8px;right:8px;display:flex;gap:3px;z-index:10}',
     '.zt-bar{flex:1;height:2.5px;background:rgba(255,255,255,.35);border-radius:2px;overflow:hidden}',
     '.zt-bar-fill{height:100%;width:0%;background:#fff;transition:width .1s linear}',
