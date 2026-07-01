@@ -562,7 +562,7 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
           )}
         </div>
 
-        <div className="px-6 py-4 border-t border-neutral-200 flex items-center justify-end gap-2">
+        <div className="px-6 py-4 border-t border-neutral-200 flex items-center justify-end gap-2 shrink-0 bg-white">
           <button
             type="button"
             onClick={() => onOpenChange(false)}
