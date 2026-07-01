@@ -56,7 +56,7 @@
 
   /* ── Styles ── */
   var STYLES = [
-    ':host,*{box-sizing:border-box;margin:0;padding:0}',
+    ':host,*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}',
     '.zt-wrap{position:fixed;display:flex;gap:10px;padding:14px;font-family:-apple-system,system-ui,Segoe UI,Roboto,sans-serif}',
     '.zt-pos-bottom-left{left:0;bottom:0}',
     '.zt-pos-bottom-right{right:0;bottom:0}',
@@ -69,9 +69,9 @@
     '.zt-bubble-img,.zt-bubble-video{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;background:#eee}',
     '.zt-label{font-size:11px;color:#111;max-width:72px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
     '.zt-dark .zt-label{color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.4)}',
-    '.zt-overlay{position:fixed;inset:0;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;z-index:2147483600;animation:ztFade .18s ease}',
+    '.zt-overlay{position:fixed;inset:0;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;z-index:2147483600;animation:ztFade .18s ease;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:none}',
     '@keyframes ztFade{from{opacity:0}to{opacity:1}}',
-    '.zt-player{position:relative;width:min(420px,100vw);height:min(92vh,780px);background:#000;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;font-family:-apple-system,system-ui,Segoe UI,Roboto,sans-serif}',
+    '.zt-player{position:relative;width:min(420px,100vw);height:min(92vh,780px);background:#000;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;font-family:-apple-system,system-ui,Segoe UI,Roboto,sans-serif;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:none}',
     '@media(max-width:520px){.zt-player{width:100vw;height:100vh;border-radius:0}}',
     '.zt-media{flex:1;position:relative;background:#000;overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}',
     '.zt-media video,.zt-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-user-drag:none}',
@@ -85,9 +85,9 @@
     '.zt-ctrl-btn svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}',
     '.zt-ctrl-btn.zt-ctrl-close{width:36px;height:36px}',
     '.zt-ctrl-btn.zt-ctrl-close svg{width:28px;height:28px;stroke-width:1.5}',
-    '.zt-nav{position:absolute;top:0;bottom:80px;width:30%;z-index:5;cursor:pointer}',
+    '.zt-nav{position:absolute;top:0;bottom:80px;width:30%;z-index:5;cursor:pointer;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:none}',
     '.zt-nav-l{left:0}.zt-nav-r{right:0}',
-    '.zt-tap-pause{position:absolute;top:0;bottom:80px;left:30%;right:30%;z-index:5;cursor:pointer;background:transparent}',
+    '.zt-tap-pause{position:absolute;top:0;bottom:80px;left:30%;right:30%;z-index:5;cursor:pointer;background:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:none}',
     '.zt-pause-indicator{position:absolute;top:0;bottom:80px;left:0;right:0;z-index:6;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;pointer-events:none}',
     '.zt-pause-indicator.show{display:flex}',
     '.zt-pause-indicator-inner{width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;border:0;color:#fff;cursor:default;padding:0}',
@@ -366,6 +366,21 @@
       if (currentEl && currentEl.tagName === 'VIDEO') { try { currentEl.pause(); } catch(_){} }
     }
 
+    function blockNativeMediaAction(e) {
+      try {
+        e.preventDefault();
+        e.stopPropagation();
+      } catch (_) {}
+      return false;
+    }
+
+    [overlay, player, mediaWrap, navL, navR, tapPause].forEach(function (node) {
+      node.addEventListener('contextmenu', blockNativeMediaAction, { capture: true });
+      node.addEventListener('dragstart', blockNativeMediaAction, { capture: true });
+      node.addEventListener('selectstart', blockNativeMediaAction, { capture: true });
+      node.addEventListener('touchstart', function () {}, { passive: false });
+    });
+
     function destroy() {
       cleanup(); overlay.remove(); document.removeEventListener('keydown', onKey);
     }
@@ -492,7 +507,12 @@
         v.src = item.url; v.autoplay = true; v.playsInline = true; v.controls = false; v.muted = muted;
         v.setAttribute('controlsList', 'nodownload noplaybackrate nofullscreen noremoteplayback');
         v.setAttribute('disablePictureInPicture', '');
-        v.oncontextmenu = function(e){ e.preventDefault(); return false; };
+        v.setAttribute('draggable', 'false');
+        v.style.webkitUserSelect = 'none';
+        v.style.userSelect = 'none';
+        v.style.webkitTouchCallout = 'none';
+        v.oncontextmenu = blockNativeMediaAction;
+        v.ondragstart = blockNativeMediaAction;
 
         var bar = progress.children[mediaIdx] && progress.children[mediaIdx].firstChild;
         function tick(now) {
@@ -528,7 +548,7 @@
         mediaWrap.appendChild(v); currentEl = v;
         v.play().catch(function () { v.muted = true; muted = true; pauseSoundBtn.innerHTML = ''; pauseSoundBtn.appendChild(svgIcon(ICO_MUTE)); v.play().catch(function(){}); });
       } else {
-        var im = document.createElement('img'); im.src = item.url; im.draggable = false; im.oncontextmenu = function(e){ e.preventDefault(); return false; }; mediaWrap.appendChild(im); currentEl = im;
+        var im = document.createElement('img'); im.src = item.url; im.draggable = false; im.style.webkitUserSelect = 'none'; im.style.userSelect = 'none'; im.style.webkitTouchCallout = 'none'; im.oncontextmenu = blockNativeMediaAction; im.ondragstart = blockNativeMediaAction; mediaWrap.appendChild(im); currentEl = im;
         var bar2 = progress.children[mediaIdx] && progress.children[mediaIdx].firstChild;
         var start = performance.now(); var DUR = 5000;
         function tick2(t) {

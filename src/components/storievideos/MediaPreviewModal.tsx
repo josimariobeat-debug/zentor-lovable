@@ -57,6 +57,11 @@ interface Comment {
 
 const PROGRESS_MS = 5000;
 
+function blockNativeMediaAction(event: Event) {
+  event.preventDefault();
+  event.stopPropagation();
+}
+
 function formatPrice(price: string): string {
   if (!price) return '';
   if (/^R\$/i.test(price)) return price;
@@ -81,6 +86,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
   const url = effectiveMedia?.url ?? '';
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const modalRootRef = useRef<HTMLDivElement | null>(null);
   const segmentRefs = useRef<Array<HTMLDivElement | null>>([]);
   const rafRef = useRef<number | null>(null);
   const imgElapsedRef = useRef<number>(0);
@@ -122,6 +128,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
   };
 
   const onGestureDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.preventDefault();
     const g = gestureRef.current;
     g.down = true; g.moved = false;
     g.startX = e.clientX; g.startY = e.clientY;
@@ -142,6 +149,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
   };
 
   const onGestureMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.preventDefault();
     const g = gestureRef.current;
     if (!g.down) return;
     const dx = e.clientX - g.startX;
@@ -157,6 +165,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
   };
 
   const onGestureEnd = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.preventDefault();
     const g = gestureRef.current;
     if (!g.down) return;
     g.down = false;
@@ -200,6 +209,21 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
   const [, setLikeCount] = useState(0);
   const [comments, setComments] = useState<Comment[]>([]);
   const [progressStarted, setProgressStarted] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    const root = modalRootRef.current;
+    if (!root) return;
+    const options: AddEventListenerOptions = { capture: true, passive: false };
+    root.addEventListener('contextmenu', blockNativeMediaAction, options);
+    root.addEventListener('dragstart', blockNativeMediaAction, options);
+    root.addEventListener('selectstart', blockNativeMediaAction, options);
+    return () => {
+      root.removeEventListener('contextmenu', blockNativeMediaAction, options);
+      root.removeEventListener('dragstart', blockNativeMediaAction, options);
+      root.removeEventListener('selectstart', blockNativeMediaAction, options);
+    };
+  }, [open]);
 
   const [showCommentForm, setShowCommentForm] = useState(false);
   const [showCommentList, setShowCommentList] = useState(false);
@@ -389,7 +413,12 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
       style={{ zIndex: 2147483600 }}
       onClick={(e) => { if (e.target === e.currentTarget) onOpenChange(false); }}
     >
-      <div className="bg-black overflow-hidden flex flex-col relative rounded-2xl max-sm:rounded-none max-sm:!w-screen max-sm:!h-[100dvh] max-sm:!max-w-none max-sm:!max-h-none" style={{ aspectRatio: '9 / 16', height: 'min(92dvh, 780px)', maxWidth: '100%' }}>
+      <div
+        ref={modalRootRef}
+        className="bg-black overflow-hidden flex flex-col relative rounded-2xl max-sm:rounded-none max-sm:!w-screen max-sm:!h-[100dvh] max-sm:!max-w-none max-sm:!max-h-none"
+        style={{ aspectRatio: '9 / 16', height: 'min(92dvh, 780px)', maxWidth: '100%', WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none' } as React.CSSProperties}
+        onContextMenu={(e) => e.preventDefault()}
+      >
         {/* Zone 1 — progress bars (1 segmento por mídia) */}
         <div className="absolute left-2 right-2 flex gap-1 z-10" style={{ top: 'max(10px, env(safe-area-inset-top))' }}>
           {Array.from({ length: segmentCount }).map((_, i) => (
@@ -430,7 +459,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
         <div
           className="flex-1 relative bg-black overflow-hidden select-none"
           onContextMenu={(e) => e.preventDefault()}
-          style={{ WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none' } as React.CSSProperties}
+          style={{ WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none', touchAction: 'none' } as React.CSSProperties}
         >
           {url ? (
             isVideo ? (
@@ -475,8 +504,8 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
             onPointerCancel={onGestureEnd}
             onContextMenu={(e) => e.preventDefault()}
             onDragStart={(e) => e.preventDefault()}
-            className="absolute inset-0 z-[5] cursor-default bg-transparent select-none touch-pan-y"
-            style={{ WebkitTapHighlightColor: 'transparent', WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none' } as React.CSSProperties}
+            className="absolute inset-0 z-[5] cursor-default bg-transparent select-none"
+            style={{ WebkitTapHighlightColor: 'transparent', WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none', touchAction: 'none' } as React.CSSProperties}
           />
 
 
