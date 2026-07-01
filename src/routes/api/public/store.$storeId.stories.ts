@@ -65,6 +65,7 @@ export const Route = createFileRoute('/api/public/store/$storeId/stories')({
                 cta: s.cta,
                 cover: (await reSign(s.thumbnail_url ?? s.cover_url ?? cover?.url ?? null)) ?? null,
                 media: items.filter((m) => !!m.url),
+                urls: Array.isArray(s.urls) ? s.urls : [],
               };
             }),
           );
