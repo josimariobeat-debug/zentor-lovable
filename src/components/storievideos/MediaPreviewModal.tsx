@@ -362,36 +362,19 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
             )
           ) : null}
 
-          {/* Tap zones: prev/next em playlist + center toggles pause */}
-          {hasPlaylist ? (
-            <>
-              <button
-                type="button"
-                aria-label="Anterior"
-                onClick={goPrev}
-                className="absolute left-0 top-0 bottom-0 w-[30%] z-[5] cursor-default bg-transparent border-0"
-              />
-              <button
-                type="button"
-                aria-label={paused ? 'Reproduzir' : 'Pausar'}
-                onClick={() => setPaused((p) => !p)}
-                className="absolute left-[30%] right-[30%] top-0 bottom-0 z-[5] cursor-default bg-transparent border-0"
-              />
-              <button
-                type="button"
-                aria-label="Próximo"
-                onClick={goNext}
-                className="absolute right-0 top-0 bottom-0 w-[30%] z-[5] cursor-default bg-transparent border-0"
-              />
-            </>
-          ) : (
-            <button
-              type="button"
-              aria-label={paused ? 'Reproduzir' : 'Pausar'}
-              onClick={() => setPaused((p) => !p)}
-              className="absolute inset-0 z-[5] cursor-default bg-transparent border-0"
-            />
-          )}
+          {/* Gesture layer: tap (pause/toggle e prev/next), press-and-hold (pausa enquanto segura), swipe/drag horizontal (navegar) */}
+          <div
+            role="button"
+            tabIndex={-1}
+            aria-label={paused ? 'Reproduzir' : 'Pausar'}
+            onPointerDown={onGestureDown}
+            onPointerMove={onGestureMove}
+            onPointerUp={onGestureEnd}
+            onPointerCancel={onGestureEnd}
+            className="absolute inset-0 z-[5] cursor-default bg-transparent select-none touch-pan-y"
+            style={{ WebkitTapHighlightColor: 'transparent' }}
+          />
+
 
           {/* Indicador central de pause (play + som) */}
           {paused && (
