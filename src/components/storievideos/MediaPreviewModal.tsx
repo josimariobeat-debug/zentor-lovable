@@ -499,8 +499,8 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                     onClick={() => openProduct(p)}
                     disabled={!p.url}
                     className={
-                      'w-full bg-black/30 hover:bg-black/40 backdrop-blur-md transition-colors text-white font-sans font-thin text-[13px] leading-none tracking-tight rounded-[4px] flex items-center justify-center disabled:opacity-100 disabled:cursor-not-allowed ' +
-                      (productList.length > 1 ? 'h-[20px]' : 'h-[27px]')
+                      'w-full bg-black/30 hover:bg-black/40 backdrop-blur-md transition-colors text-white font-sans font-thin leading-none tracking-tight rounded-[4px] flex items-center justify-center disabled:opacity-100 disabled:cursor-not-allowed ' +
+                      (productList.length > 1 ? 'h-[20px] text-[12px]' : 'h-[27px] text-[13px]')
                     }
                   >
                     Comprar
