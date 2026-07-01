@@ -496,12 +496,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                         type="button"
                         onClick={() => openProduct(p)}
                         disabled={!p.url}
-                        className={
-                          'bg-white hover:bg-neutral-100 transition-colors text-neutral-900 font-medium leading-none tracking-tight px-1.5 rounded-md shrink-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-white inline-flex items-center justify-center h-[19px] ' +
-                          (productList.length === 1
-                            ? 'text-[13px] -translate-y-[2px]'
-                            : 'text-[11px]')
-                        }
+                        className="bg-white hover:bg-neutral-100 transition-colors text-neutral-900 font-medium text-[11px] leading-none tracking-tight px-1.5 rounded-md shrink-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-white inline-flex items-center justify-center h-[19px]"
                       >
                         Adicionar
                       </button>
