@@ -183,7 +183,7 @@ export default function StoriesVideosApp() {
     // Medida do primeiro item da playlist (para o ícone de medidas)
     const first = list[startIdx] as (StoryMedia & { measure_id?: string | null }) | undefined;
     const measureId = first?.measure_id ?? null;
-    setPreviewMeasure(measureId ? (measuresStore.get(measureId) ?? { id: measureId, name: '', rows: [] }) : null);
+    setPreviewMeasure(measureId ? ((measuresStore.get(measureId) as MeasureModel | undefined) ?? { id: measureId, name: '', rows: [] }) : null);
     setPreviewStartIndex(startIdx);
     setPreviewStory(story);
   };
