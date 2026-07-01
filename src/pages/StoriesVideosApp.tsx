@@ -466,7 +466,7 @@ export default function StoriesVideosApp() {
                   className={`flex items-center gap-4 px-5 py-4 ${idx !== filtered.length - 1 ? 'border-b border-neutral-100' : ''}`}>
 
                       <button data-ev-id="ev_576596ca16"
-                    onClick={() => cover && openStoryPreview(cover)}
+                    onClick={() => openStoryPreview(s, cover?.id)}
                     className="w-14 shrink-0 cursor-pointer hover:opacity-90 transition-opacity rounded-lg overflow-hidden">
                         {cover?.url ?
                       <MediaThumbnail
