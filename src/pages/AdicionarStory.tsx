@@ -3,6 +3,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router';
 import TopBar from '@/components/layout/TopBar';
 
 import MediaPreviewModal from '@/components/storievideos/MediaPreviewModal';
+import { MeasurePreviewModal, type MeasureModel, type MeasureType } from '@/components/storievideos/MeasurePreviewModal';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
