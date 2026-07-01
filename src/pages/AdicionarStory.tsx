@@ -787,7 +787,7 @@ export default function AdicionarStory() {
           .map((p) => ({ id: p!.id, name: p!.name, price: p!.price, image: p!.image, url: p!.url }));
         return (
           <MediaPreviewModal
-            key={`preview-${key}-${previewProducts.length}`}
+            key={`preview-${key}-${previewProducts.map((p) => p.id).join('|')}`}
             open={!!previewMedia}
             onOpenChange={() => setPreviewMedia(null)}
             media={previewMedia}
