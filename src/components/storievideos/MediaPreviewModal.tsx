@@ -38,6 +38,8 @@ interface MediaPreviewModalProps {
   /** Quando informado, ignora `media`/`products` e exibe múltiplos stories
    *  com barras de progresso por segmento, auto-advance e tap zones. */
   playlist?: PlaylistItem[];
+  /** Índice inicial da playlist ao abrir (default 0). */
+  startIndex?: number;
   /** Mostra um ícone de Medidas ao lado do botão Fechar. */
   showMeasureIcon?: boolean;
   /** Callback ao clicar no ícone de Medidas. */
@@ -45,6 +47,7 @@ interface MediaPreviewModalProps {
   /** Quando true, pausa o vídeo (sem reset de currentTime) — usado enquanto o modal de Medidas está aberto. */
   measureOpen?: boolean;
 }
+
 
 interface Comment {
   name: string;
@@ -62,12 +65,14 @@ function formatPrice(price: string): string {
   return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
-export default function MediaPreviewModal({ open, onOpenChange, media, products, playlist, showMeasureIcon, onMeasureClick, measureOpen }: MediaPreviewModalProps) {
+export default function MediaPreviewModal({ open, onOpenChange, media, products, playlist, startIndex, showMeasureIcon, onMeasureClick, measureOpen }: MediaPreviewModalProps) {
   const hasPlaylist = !!playlist && playlist.length > 0;
   const segmentCount = hasPlaylist ? playlist!.length : 1;
 
-  const [currentIdx, setCurrentIdx] = useState(0);
+  const initialIdx = hasPlaylist ? Math.min(Math.max(0, startIndex ?? 0), segmentCount - 1) : 0;
+  const [currentIdx, setCurrentIdx] = useState(initialIdx);
   const currentItem: PlaylistItem | null = hasPlaylist ? playlist![currentIdx] ?? null : null;
+
 
   const effectiveMedia: MediaInput | null = hasPlaylist ? currentItem?.media ?? null : media ?? null;
   const effectiveProducts: Product[] = hasPlaylist ? currentItem?.products ?? [] : products ?? [];
@@ -123,7 +128,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
   // Reset state on open
   useEffect(() => {
     if (!open) return;
-    setCurrentIdx(0);
+    setCurrentIdx(initialIdx);
     setPaused(false);
     setMuted(false);
     setLiked(false);
@@ -136,7 +141,8 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
     setFormEmail('');
     setFormPhone('');
     setFormText('');
-  }, [open]);
+  }, [open, initialIdx]);
+
 
   // Reset per-segment progress quando troca de mídia
   useEffect(() => {
