@@ -880,6 +880,9 @@ function ProdutosTab() {
         return;
       }
       setProducts((arr) => arr.map((x) => x.id === editing.id ? (data as any) : x));
+      // Invalida a entrada cacheada para o modal de preview refletir a edição.
+      invalidateProduct(editing.id);
+      productsStore.set(editing.id, { id: (data as any).id, name: (data as any).name, price: String((data as any).price ?? ''), image: (data as any).image, url: (data as any).url });
       setEditing(null);
       toast.success('Produto atualizado');
       return;
