@@ -172,11 +172,21 @@ export function MeasurePreviewModal({ model, onClose }: { model: MeasureModel | 
                     <tbody>
                       {types.map((t, i) => {
                         const val = valueFor(sizes[0], t);
+                        const isEmpty = val === '—';
+                        let display = val;
+                        let unit = 'cm';
+                        if (!isEmpty && t === 'Altura') {
+                          const num = parseFloat(String(val).replace(',', '.'));
+                          if (!Number.isNaN(num)) {
+                            display = (num / 100).toFixed(2).replace('.', ',');
+                            unit = 'm';
+                          }
+                        }
                         return (
                           <tr key={t} className={i !== types.length - 1 ? 'border-b border-neutral-100' : ''}>
                             <td className="px-3 py-2.5 font-semibold text-neutral-900 whitespace-nowrap">{t}</td>
                             <td className="px-3 py-2.5 tabular-nums whitespace-nowrap">
-                              {val}{val !== '—' ? ' cm' : ''}
+                              {display}{!isEmpty ? ` ${unit}` : ''}
                             </td>
                           </tr>
                         );
