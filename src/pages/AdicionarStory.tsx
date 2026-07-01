@@ -1050,7 +1050,39 @@ function MediaSourceCard({
  * Botão de copiar link com feedback visual:
  * troca o ícone de link por um check verde com leve scale por ~1.2s.
  */
-function CopyLinkButton({ onCopy }: { onCopy: () => void }) {
+function CopyLinkButton({ onCopy, shouldBlock }: { onCopy: () => void; shouldBlock?: () => boolean }) {
+  const [copied, setCopied] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const trigger = () => {
+    if (shouldBlock && shouldBlock()) return;
+    onCopy();
+    setCopied(true);
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => setCopied(false), 1200);
+  };
+
+  return (
+    <button
+      data-ev-id="ev_94069b0704"
+      type="button"
+      onClick={(e) => { e.stopPropagation(); trigger(); }}
+      onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); trigger(); }}
+      title="Copiar link"
+      className={`w-7 h-7 rounded-full flex items-center justify-center transition-all duration-200 ${
+        copied
+          ? 'bg-green-500 text-white scale-110'
+          : 'bg-white/95 text-neutral-900 hover:bg-white'
+      }`}
+    >
+      {copied ? (
+        <Check key="check" className="w-3.5 h-3.5 animate-scale-in" strokeWidth={3} />
+      ) : (
+        <LinkIcon key="link" className="w-3.5 h-3.5" />
+      )}
+    </button>
+  );
+}
   const [copied, setCopied] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
