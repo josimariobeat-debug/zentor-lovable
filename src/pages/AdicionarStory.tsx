@@ -1001,6 +1001,7 @@ function MediaSourceCard({
 
   return (
     <div
+      ref={rootRef}
       data-ev-id="ev_c9a7f5e6f2"
       className="group relative rounded-xl overflow-hidden border border-neutral-200 bg-neutral-100 select-none"
       onTouchStart={handleTouchStart}
