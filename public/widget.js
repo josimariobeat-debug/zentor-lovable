@@ -366,6 +366,21 @@
       if (currentEl && currentEl.tagName === 'VIDEO') { try { currentEl.pause(); } catch(_){} }
     }
 
+    function blockNativeMediaAction(e) {
+      try {
+        e.preventDefault();
+        e.stopPropagation();
+      } catch (_) {}
+      return false;
+    }
+
+    [overlay, player, mediaWrap, navL, navR, tapPause].forEach(function (node) {
+      node.addEventListener('contextmenu', blockNativeMediaAction, { capture: true });
+      node.addEventListener('dragstart', blockNativeMediaAction, { capture: true });
+      node.addEventListener('selectstart', blockNativeMediaAction, { capture: true });
+      node.addEventListener('touchstart', function () {}, { passive: false });
+    });
+
     function destroy() {
       cleanup(); overlay.remove(); document.removeEventListener('keydown', onKey);
     }
@@ -492,7 +507,12 @@
         v.src = item.url; v.autoplay = true; v.playsInline = true; v.controls = false; v.muted = muted;
         v.setAttribute('controlsList', 'nodownload noplaybackrate nofullscreen noremoteplayback');
         v.setAttribute('disablePictureInPicture', '');
-        v.oncontextmenu = function(e){ e.preventDefault(); return false; };
+        v.setAttribute('draggable', 'false');
+        v.style.webkitUserSelect = 'none';
+        v.style.userSelect = 'none';
+        v.style.webkitTouchCallout = 'none';
+        v.oncontextmenu = blockNativeMediaAction;
+        v.ondragstart = blockNativeMediaAction;
 
         var bar = progress.children[mediaIdx] && progress.children[mediaIdx].firstChild;
         function tick(now) {
@@ -528,7 +548,7 @@
         mediaWrap.appendChild(v); currentEl = v;
         v.play().catch(function () { v.muted = true; muted = true; pauseSoundBtn.innerHTML = ''; pauseSoundBtn.appendChild(svgIcon(ICO_MUTE)); v.play().catch(function(){}); });
       } else {
-        var im = document.createElement('img'); im.src = item.url; im.draggable = false; im.oncontextmenu = function(e){ e.preventDefault(); return false; }; mediaWrap.appendChild(im); currentEl = im;
+        var im = document.createElement('img'); im.src = item.url; im.draggable = false; im.style.webkitUserSelect = 'none'; im.style.userSelect = 'none'; im.style.webkitTouchCallout = 'none'; im.oncontextmenu = blockNativeMediaAction; im.ondragstart = blockNativeMediaAction; mediaWrap.appendChild(im); currentEl = im;
         var bar2 = progress.children[mediaIdx] && progress.children[mediaIdx].firstChild;
         var start = performance.now(); var DUR = 5000;
         function tick2(t) {
