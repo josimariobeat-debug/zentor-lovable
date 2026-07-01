@@ -133,9 +133,18 @@ export function MeasurePreviewModal({ model, onClose }: { model: MeasureModel | 
       <DialogContent className="w-[calc(100vw-1rem)] sm:w-full max-w-[min(100%,56rem)] sm:max-w-4xl mx-auto my-auto p-0 overflow-hidden max-h-[90vh] max-h-[90dvh] flex flex-col">
         <div className="px-4 sm:px-6 pt-4 sm:pt-5 shrink-0">
           <DialogHeader>
-            <DialogTitle>{model?.name ?? 'Modelo de medidas'}</DialogTitle>
+            <DialogTitle className="flex flex-col gap-0.5">
+              <span className="text-[12px] font-medium uppercase tracking-wide text-neutral-500">
+                Medidas da Modelo
+              </span>
+              <span className="text-[18px] font-semibold text-neutral-900">
+                {model?.name ?? 'Modelo de medidas'}
+              </span>
+            </DialogTitle>
             <DialogDescription>
-              Pré-visualização do manequim com as referências de medida e a tabela completa.
+              {sizes.length > 0
+                ? `A modelo usa o tamanho ${sizes.join(', ')}`
+                : 'Pré-visualização do manequim com as referências de medida.'}
             </DialogDescription>
           </DialogHeader>
         </div>
@@ -156,23 +165,22 @@ export function MeasurePreviewModal({ model, onClose }: { model: MeasureModel | 
                   <table className="w-full text-[13px] text-neutral-800 border-collapse">
                     <thead>
                       <tr className="bg-neutral-50 text-[11.5px] uppercase tracking-wide text-neutral-500">
-                        <th className="text-left font-medium px-3 py-2.5 border-b border-neutral-200">Tamanho</th>
-                        {types.map((t) => (
-                          <th key={t} className="text-left font-medium px-3 py-2.5 border-b border-neutral-200 whitespace-nowrap">{t}</th>
-                        ))}
+                        <th className="text-left font-medium px-3 py-2.5 border-b border-neutral-200">Medida</th>
+                        <th className="text-left font-medium px-3 py-2.5 border-b border-neutral-200 whitespace-nowrap">Valor</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {sizes.map((s, i) => (
-                        <tr key={s} className={i !== sizes.length - 1 ? 'border-b border-neutral-100' : ''}>
-                          <td className="px-3 py-2.5 font-semibold text-neutral-900">{s}</td>
-                          {types.map((t) => (
-                            <td key={t} className="px-3 py-2.5 tabular-nums whitespace-nowrap">
-                              {valueFor(s, t)}{valueFor(s, t) !== '—' ? ' cm' : ''}
+                      {types.map((t, i) => {
+                        const val = valueFor(sizes[0], t);
+                        return (
+                          <tr key={t} className={i !== types.length - 1 ? 'border-b border-neutral-100' : ''}>
+                            <td className="px-3 py-2.5 font-semibold text-neutral-900 whitespace-nowrap">{t}</td>
+                            <td className="px-3 py-2.5 tabular-nums whitespace-nowrap">
+                              {val}{val !== '—' ? ' cm' : ''}
                             </td>
-                          ))}
-                        </tr>
-                      ))}
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
