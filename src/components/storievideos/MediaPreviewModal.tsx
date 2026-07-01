@@ -124,6 +124,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
 
   const blockNativeMediaAction = (event: Event) => {
     event.preventDefault();
+    event.stopPropagation();
   };
 
   const onGestureDown = (e: React.PointerEvent<HTMLDivElement>) => {
