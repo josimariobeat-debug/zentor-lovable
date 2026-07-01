@@ -280,8 +280,8 @@ export default function StoriesVideosApp() {
   const previewPlaylist = useMemo(() => {
     if (!previewStory) return undefined;
     const mediaList = getOrderedStoryMedia(previewStory) as Array<StoryMedia & { product_ids?: string[] | null }>;
-    const cache = productsCacheRef.current;
-    const notFound = productsNotFoundRef.current;
+    const cache = productsStore;
+    const notFound = productsNotFoundStore;
     return mediaList.map((m) => {
       const ids = Array.isArray(m.product_ids) ? m.product_ids : [];
       const products = ids.map((id) => {
