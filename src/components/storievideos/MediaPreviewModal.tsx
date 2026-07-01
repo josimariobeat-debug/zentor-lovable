@@ -107,6 +107,93 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
     el.style.cursor = '';
   };
 
+  // ─── Gesture layer: tap, hold-to-pause, swipe-to-navigate (estilo Instagram Stories) ───
+  const gestureRef = useRef<{
+    down: boolean; moved: boolean; startX: number; startY: number; startT: number;
+    holdTimer: ReturnType<typeof setTimeout> | null;
+    heldPause: boolean; wasPaused: boolean; pointerId: number;
+  }>({ down: false, moved: false, startX: 0, startY: 0, startT: 0, holdTimer: null, heldPause: false, wasPaused: false, pointerId: 0 });
+
+  const clearHoldTimer = () => {
+    if (gestureRef.current.holdTimer) {
+      clearTimeout(gestureRef.current.holdTimer);
+      gestureRef.current.holdTimer = null;
+    }
+  };
+
+  const onGestureDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    const g = gestureRef.current;
+    g.down = true; g.moved = false;
+    g.startX = e.clientX; g.startY = e.clientY;
+    g.startT = performance.now();
+    g.pointerId = e.pointerId;
+    g.heldPause = false;
+    g.wasPaused = paused;
+    try { (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId); } catch { /* ignore */ }
+    clearHoldTimer();
+    // Após ~180ms mantendo pressionado sem mover, pausa (segurar para pausar).
+    gestureRef.current.holdTimer = setTimeout(() => {
+      const gg = gestureRef.current;
+      if (gg.down && !gg.moved && !gg.wasPaused) {
+        gg.heldPause = true;
+        setPaused(true);
+      }
+    }, 180);
+  };
+
+  const onGestureMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const g = gestureRef.current;
+    if (!g.down) return;
+    const dx = e.clientX - g.startX;
+    const dy = e.clientY - g.startY;
+    if (!g.moved && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
+      g.moved = true;
+      clearHoldTimer();
+      if (g.heldPause) {
+        g.heldPause = false;
+        setPaused(g.wasPaused);
+      }
+    }
+  };
+
+  const onGestureEnd = (e: React.PointerEvent<HTMLDivElement>) => {
+    const g = gestureRef.current;
+    if (!g.down) return;
+    g.down = false;
+    clearHoldTimer();
+    try { (e.currentTarget as HTMLDivElement).releasePointerCapture(g.pointerId); } catch { /* ignore */ }
+    const dx = e.clientX - g.startX;
+    const dy = e.clientY - g.startY;
+    const dt = performance.now() - g.startT;
+    const absX = Math.abs(dx), absY = Math.abs(dy);
+
+    // Se estava segurando para pausar, apenas retoma a reprodução ao soltar.
+    if (g.heldPause) {
+      g.heldPause = false;
+      setPaused(g.wasPaused);
+      return;
+    }
+
+    const canSwipe = hasPlaylist && segmentCount > 1;
+    if (canSwipe && absX > 40 && absX > absY) {
+      if (dx < 0) goNext(); else goPrev();
+      return;
+    }
+
+    // Tap curto e sem arrasto: prev/next nas zonas laterais (playlist) ou toggle pause no centro.
+    if (dt < 350 && absX < 8 && absY < 8) {
+      if (hasPlaylist && segmentCount > 1) {
+        const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
+        const relX = rect.width > 0 ? (e.clientX - rect.left) / rect.width : 0.5;
+        if (relX < 0.3) goPrev();
+        else if (relX > 0.7) goNext();
+        else setPaused((p) => !p);
+      } else {
+        setPaused((p) => !p);
+      }
+    }
+  };
+
   const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(false);
   const [liked, setLiked] = useState(false);
@@ -362,36 +449,19 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
             )
           ) : null}
 
-          {/* Tap zones: prev/next em playlist + center toggles pause */}
-          {hasPlaylist ? (
-            <>
-              <button
-                type="button"
-                aria-label="Anterior"
-                onClick={goPrev}
-                className="absolute left-0 top-0 bottom-0 w-[30%] z-[5] cursor-default bg-transparent border-0"
-              />
-              <button
-                type="button"
-                aria-label={paused ? 'Reproduzir' : 'Pausar'}
-                onClick={() => setPaused((p) => !p)}
-                className="absolute left-[30%] right-[30%] top-0 bottom-0 z-[5] cursor-default bg-transparent border-0"
-              />
-              <button
-                type="button"
-                aria-label="Próximo"
-                onClick={goNext}
-                className="absolute right-0 top-0 bottom-0 w-[30%] z-[5] cursor-default bg-transparent border-0"
-              />
-            </>
-          ) : (
-            <button
-              type="button"
-              aria-label={paused ? 'Reproduzir' : 'Pausar'}
-              onClick={() => setPaused((p) => !p)}
-              className="absolute inset-0 z-[5] cursor-default bg-transparent border-0"
-            />
-          )}
+          {/* Gesture layer: tap (pause/toggle e prev/next), press-and-hold (pausa enquanto segura), swipe/drag horizontal (navegar) */}
+          <div
+            role="button"
+            tabIndex={-1}
+            aria-label={paused ? 'Reproduzir' : 'Pausar'}
+            onPointerDown={onGestureDown}
+            onPointerMove={onGestureMove}
+            onPointerUp={onGestureEnd}
+            onPointerCancel={onGestureEnd}
+            className="absolute inset-0 z-[5] cursor-default bg-transparent select-none touch-pan-y"
+            style={{ WebkitTapHighlightColor: 'transparent' }}
+          />
+
 
           {/* Indicador central de pause (play + som) */}
           {paused && (
