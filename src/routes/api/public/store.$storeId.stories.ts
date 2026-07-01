@@ -24,7 +24,7 @@ export const Route = createFileRoute('/api/public/store/$storeId/stories')({
 
           const { data: rows, error } = await supabaseAdmin
             .from('stories')
-            .select('id, title, cta, cover_url, thumbnail_url, story_media(url, type, is_cover, position)')
+            .select('id, title, cta, cover_url, thumbnail_url, urls, story_media(url, type, is_cover, position)')
             .eq('store_id', storeId)
             .eq('active', true)
             .order('created_at', { ascending: false })
@@ -65,6 +65,7 @@ export const Route = createFileRoute('/api/public/store/$storeId/stories')({
                 cta: s.cta,
                 cover: (await reSign(s.thumbnail_url ?? s.cover_url ?? cover?.url ?? null)) ?? null,
                 media: items.filter((m) => !!m.url),
+                urls: Array.isArray(s.urls) ? s.urls : [],
               };
             }),
           );
