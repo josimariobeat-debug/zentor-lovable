@@ -459,7 +459,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
         <div
           className="flex-1 relative bg-black overflow-hidden select-none"
           onContextMenu={(e) => e.preventDefault()}
-          style={{ WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none' } as React.CSSProperties}
+          style={{ WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none', touchAction: 'none' } as React.CSSProperties}
         >
           {url ? (
             isVideo ? (
@@ -504,8 +504,8 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
             onPointerCancel={onGestureEnd}
             onContextMenu={(e) => e.preventDefault()}
             onDragStart={(e) => e.preventDefault()}
-            className="absolute inset-0 z-[5] cursor-default bg-transparent select-none touch-pan-y"
-            style={{ WebkitTapHighlightColor: 'transparent', WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none' } as React.CSSProperties}
+            className="absolute inset-0 z-[5] cursor-default bg-transparent select-none"
+            style={{ WebkitTapHighlightColor: 'transparent', WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none', touchAction: 'none' } as React.CSSProperties}
           />
 
 
