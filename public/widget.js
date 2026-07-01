@@ -528,7 +528,7 @@
         mediaWrap.appendChild(v); currentEl = v;
         v.play().catch(function () { v.muted = true; muted = true; pauseSoundBtn.innerHTML = ''; pauseSoundBtn.appendChild(svgIcon(ICO_MUTE)); v.play().catch(function(){}); });
       } else {
-        var im = document.createElement('img'); im.src = item.url; mediaWrap.appendChild(im); currentEl = im;
+        var im = document.createElement('img'); im.src = item.url; im.draggable = false; im.oncontextmenu = function(e){ e.preventDefault(); return false; }; mediaWrap.appendChild(im); currentEl = im;
         var bar2 = progress.children[mediaIdx] && progress.children[mediaIdx].firstChild;
         var start = performance.now(); var DUR = 5000;
         function tick2(t) {
