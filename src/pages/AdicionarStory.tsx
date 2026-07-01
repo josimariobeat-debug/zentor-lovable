@@ -787,31 +787,44 @@ export default function AdicionarStory() {
         prefetched={galleryPrefetch}
       />
 
-      {/* Video Preview — cada mídia é um Story independente e o preview
-          reflete APENAS os produtos/medidas/ordem vinculados a essa mídia. */}
+      {/* Preview — playlist com TODAS as mídias do projeto (cada uma um Story
+          independente, com seus próprios produtos/medidas/ordem/layout).
+          Ao abrir, começa na mídia clicada e permite navegar com Avançar/Voltar. */}
       {(() => {
-        const key = previewMedia ? (previewMedia.id ?? previewMedia.url ?? '') : '';
-        const link = key ? productLinks[key] : undefined;
-        const ids = link?.productIds ?? [];
-        const measureId = link?.measureId ?? null;
-        const layout = link?.layout ?? 'carrossel';
-        const previewProducts = ids
-          .map((pid) => productsPrefetch.find((p) => p.id === pid))
-          .filter(Boolean)
-          .map((p) => ({ id: p!.id, name: p!.name, price: p!.price, image: p!.image, url: p!.url }));
-        // A key inclui: mídia, ordem exata dos produtos, quantidade, medida e layout,
-        // forçando re-render em tempo real a qualquer alteração no modal de vínculo.
-        const previewKey = `preview-${key}-${layout}-${previewProducts.length}-${previewProducts.map((p) => p.id).join('|')}-m:${measureId ?? 'none'}`;
+        if (!previewMedia) return null;
+        const startIndex = Math.max(
+          0,
+          media.findIndex((m) => (m.id ?? m.url) === (previewMedia.id ?? previewMedia.url)),
+        );
+        const playlist = media.map((m) => {
+          const k = m.id ?? m.url ?? '';
+          const link = k ? productLinks[k] : undefined;
+          const ids = link?.productIds ?? [];
+          const items = ids
+            .map((pid) => productsPrefetch.find((p) => p.id === pid))
+            .filter(Boolean)
+            .map((p) => ({ id: p!.id, name: p!.name, price: p!.price, image: p!.image, url: p!.url }));
+          return {
+            media: { url: m.url, type: m.type, name: m.name },
+            products: items,
+          };
+        });
+        const previewKey = `preview-${media.length}-${media.map((m) => {
+          const k = m.id ?? m.url ?? '';
+          const link = productLinks[k];
+          return `${k}:${link?.layout ?? 'carrossel'}:${(link?.productIds ?? []).join('|')}:m${link?.measureId ?? 'none'}`;
+        }).join('__')}-s${startIndex}`;
         return (
           <MediaPreviewModal
             key={previewKey}
             open={!!previewMedia}
             onOpenChange={() => setPreviewMedia(null)}
-            media={previewMedia}
-            products={previewProducts}
+            playlist={playlist}
+            startIndex={startIndex}
           />
         );
       })()}
+
 
       {/* Product link modal */}
       <ProductLinkModal
