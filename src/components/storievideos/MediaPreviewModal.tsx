@@ -485,7 +485,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                   <div className="flex-1 min-w-0 flex flex-col py-1 pl-2 pr-2">
                     <div className="flex-1 min-w-0 overflow-hidden">
                       <div
-                        className="text-white leading-[1.1] text-[14px] truncate"
+                        className="text-white leading-[1.1] text-[11px] truncate"
                         style={{ fontWeight: 100 }}
                       >
                         {p.name}
@@ -499,7 +499,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                         type="button"
                         onClick={() => openProduct(p)}
                         disabled={!p.url}
-                        className="bg-white hover:bg-neutral-100 transition-colors text-neutral-900 font-semibold text-[9px] px-1.5 rounded-md shrink-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-white inline-flex items-center justify-center h-[16px]"
+                        className="bg-white hover:bg-neutral-100 transition-colors text-neutral-900 font-semibold text-[16px] px-1.5 rounded-md shrink-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-white inline-flex items-center justify-center h-[19px]"
                       >
                         Adicionar
                       </button>
