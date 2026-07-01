@@ -1345,6 +1345,18 @@ function AddMeasureModelModal({
             </div>
 
             <div>
+              <label className="text-[12.5px] font-medium text-neutral-600 mb-1.5 block">Tamanho que a modelo usa</label>
+              <Input
+                value={sizeUsed}
+                onChange={(e) => setSizeUsed(e.target.value)}
+                placeholder="Ex.: P, M, G, 38, 40"
+                aria-invalid={touched && !!sizeError}
+                className={`h-11 rounded-xl ${touched && sizeError ? 'border-red-400 focus-visible:ring-red-200' : 'border-neutral-200'}`} />
+              <p className="text-[11.5px] text-neutral-500 mt-1">Preenchido apenas uma vez e reutilizado em toda a tabela de medidas.</p>
+              {touched && sizeError && <p className="text-[12px] text-red-600 mt-1">{sizeError}</p>}
+            </div>
+
+            <div>
               <div className="flex items-center justify-between mb-2 gap-2">
                 <label className="text-[12.5px] font-medium text-neutral-600">Tabela de Medidas</label>
                 <button
@@ -1356,8 +1368,7 @@ function AddMeasureModelModal({
               </div>
 
               <div className="border border-neutral-200 rounded-xl overflow-hidden">
-                <div className="hidden sm:grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_110px_36px] gap-2 px-3 py-2 bg-neutral-50 text-[11.5px] font-medium text-neutral-500 uppercase tracking-wide">
-                  <div>Nome do Tamanho</div>
+                <div className="hidden sm:grid grid-cols-[minmax(0,1fr)_110px_36px] gap-2 px-3 py-2 bg-neutral-50 text-[11.5px] font-medium text-neutral-500 uppercase tracking-wide">
                   <div>Medida</div>
                   <div>Valor (cm)</div>
                   <div />
@@ -1367,24 +1378,7 @@ function AddMeasureModelModal({
                   <div key={r.id} className="p-2 sm:p-2">
                       {/* Mobile: stacked card with labels */}
                       <div className="sm:hidden flex flex-col gap-2 p-1">
-                        <div className="flex items-start gap-2">
-                          <div className="flex-1 min-w-0">
-                            <label className="text-[11px] font-medium text-neutral-500 uppercase tracking-wide block mb-1">Tamanho</label>
-                            <Input
-                              value={r.tamanho}
-                              onChange={(e) => updateRow(r.id, { tamanho: e.target.value })}
-                              placeholder="Ex.: P, M, G"
-                              className="h-10 rounded-lg border-neutral-200 min-w-0" />
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => removeRow(r.id)}
-                            aria-label="Remover linha"
-                            className="w-9 h-10 mt-[22px] rounded-lg hover:bg-red-50 hover:text-red-600 flex items-center justify-center text-neutral-500 transition-colors shrink-0">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                        <div className="grid grid-cols-[minmax(0,1fr)_96px] gap-2">
+                        <div className="grid grid-cols-[minmax(0,1fr)_96px_36px] gap-2 items-end">
                           <div className="min-w-0">
                             <label className="text-[11px] font-medium text-neutral-500 uppercase tracking-wide block mb-1">Medida</label>
                             <select
@@ -1404,16 +1398,18 @@ function AddMeasureModelModal({
                               inputMode="decimal"
                               className="h-10 rounded-lg border-neutral-200 min-w-0 px-2 text-center" />
                           </div>
+                          <button
+                            type="button"
+                            onClick={() => removeRow(r.id)}
+                            aria-label="Remover linha"
+                            className="w-9 h-10 rounded-lg hover:bg-red-50 hover:text-red-600 flex items-center justify-center text-neutral-500 transition-colors shrink-0">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
                       </div>
 
                       {/* Desktop: table-style grid */}
-                      <div className="hidden sm:grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_110px_36px] gap-2">
-                        <Input
-                          value={r.tamanho}
-                          onChange={(e) => updateRow(r.id, { tamanho: e.target.value })}
-                          placeholder="Tam."
-                          className="h-10 rounded-lg border-neutral-200 min-w-0" />
+                      <div className="hidden sm:grid grid-cols-[minmax(0,1fr)_110px_36px] gap-2">
                         <select
                           value={r.medida}
                           onChange={(e) => updateRow(r.id, { medida: e.target.value as MeasureType })}
