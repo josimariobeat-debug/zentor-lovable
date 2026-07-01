@@ -133,15 +133,13 @@ export function MeasurePreviewModal({ model, onClose }: { model: MeasureModel | 
       <DialogContent className="w-[calc(100vw-1rem)] sm:w-full max-w-[min(100%,56rem)] sm:max-w-4xl mx-auto my-auto p-0 overflow-hidden max-h-[90vh] max-h-[90dvh] flex flex-col">
         <div className="px-4 sm:px-6 pt-4 sm:pt-5 shrink-0">
           <DialogHeader>
-            <DialogTitle asChild>
-              <div>
-                <span className="block text-[12px] font-medium uppercase tracking-wide text-neutral-500">
-                  Medidas da Modelo
-                </span>
-                <span className="block text-[18px] font-semibold text-neutral-900 mt-0.5">
-                  {model?.name ?? 'Modelo de medidas'}
-                </span>
-              </div>
+            <DialogTitle className="flex flex-col gap-0.5">
+              <span className="text-[12px] font-medium uppercase tracking-wide text-neutral-500">
+                Medidas da Modelo
+              </span>
+              <span className="text-[18px] font-semibold text-neutral-900">
+                {model?.name ?? 'Modelo de medidas'}
+              </span>
             </DialogTitle>
             <DialogDescription>
               {sizes.length > 0
