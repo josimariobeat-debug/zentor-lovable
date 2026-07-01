@@ -27,7 +27,7 @@ export function MannequinSVG({ activeTypes }: { activeTypes: MeasureType[] }) {
 
   return (
     <div className="mx-auto flex w-full justify-center">
-      <div className="relative w-full max-w-[200px] sm:max-w-[210px]">
+      <div className="relative w-full max-w-[140px] sm:max-w-[150px]">
         <img
           src={mannequinUrl}
           alt="Manequim"
