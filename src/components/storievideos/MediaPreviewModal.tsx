@@ -482,24 +482,21 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                   ) : (
                     <div className="w-12 self-stretch bg-neutral-800 shrink-0" />
                   )}
-                  <div className="flex-1 min-w-0 flex flex-col py-1 pl-2 pr-2">
+                  <div className="flex-1 min-w-0 flex flex-col py-1 pl-2 pr-2 antialiased [font-feature-settings:'ss01','cv11'] tracking-tight">
                     <div className="flex-1 min-w-0 overflow-hidden">
-                      <div
-                        className="text-white leading-[1.1] text-[13px] truncate"
-                        style={{ fontWeight: 100 }}
-                      >
+                      <div className="text-white leading-[1.15] text-[13px] font-light truncate">
                         {p.name}
                       </div>
                     </div>
                     <div className="flex items-center justify-between gap-2 mt-auto">
-                      <div className="text-white/90 leading-none text-[10px] font-light truncate">
+                      <div className="text-white/90 leading-none text-[10px] font-light tabular-nums truncate">
                         {p.price ? formatPrice(p.price) : '\u00A0'}
                       </div>
                       <button
                         type="button"
                         onClick={() => openProduct(p)}
                         disabled={!p.url}
-                        className="bg-white hover:bg-neutral-100 transition-colors text-neutral-900 font-semibold text-[11px] px-1.5 rounded-md shrink-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-white inline-flex items-center justify-center h-[19px]"
+                        className="bg-white hover:bg-neutral-100 transition-colors text-neutral-900 font-medium text-[11px] leading-none tracking-tight px-1.5 rounded-md shrink-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-white inline-flex items-center justify-center h-[19px]"
                       >
                         Adicionar
                       </button>
