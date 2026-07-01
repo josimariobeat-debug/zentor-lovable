@@ -345,9 +345,9 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl p-0 overflow-hidden">
+      <DialogContent className="max-w-2xl p-0 overflow-hidden max-h-[90vh] max-h-[90dvh] flex flex-col">
         {/* Tabs */}
-        <div className="flex items-center gap-1 px-6 pt-5 border-b border-neutral-200">
+        <div className="flex items-center gap-1 px-6 pt-5 border-b border-neutral-200 shrink-0">
           {([
             { id: 'produtos', label: 'Produtos', icon: ShoppingBag },
             { id: 'medida', label: 'Medida', icon: Ruler },
