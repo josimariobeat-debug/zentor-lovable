@@ -202,7 +202,8 @@ export default function StoriesVideosApp() {
 
   // Refresh assíncrono dos produtos/medidas de TODAS as mídias do story aberto —
   // hidrata o cache e força re-render da playlist para refletir dados atualizados
-  // sem pop-in (o estado inicial já vem do cache).
+  // sem pop-in. Enquanto o fetch estiver em andamento, cards em estado "pending"
+  // renderizam skeleton no modal (nunca "Produto indisponível").
   useEffect(() => {
     let cancelled = false;
     if (!previewStory || !supabase) return;
@@ -210,56 +211,80 @@ export default function StoriesVideosApp() {
     const allProductIds = Array.from(new Set(mediaList.flatMap((m) => Array.isArray(m.product_ids) ? m.product_ids : [])));
     const allMeasureIds = Array.from(new Set(mediaList.map((m) => m.measure_id).filter((x): x is string => !!x)));
 
-    (async () => {
-      if (allProductIds.length > 0) {
-        const { data } = await (supabase as any)
+    const fetchProducts = async () => {
+      const missing = allProductIds.filter((id) => !productsCacheRef.current.has(id) && !productsNotFoundRef.current.has(id));
+      if (missing.length === 0) return;
+      for (let attempt = 0; attempt < 3 && !cancelled; attempt++) {
+        const { data, error } = await (supabase as any)
           .from('products')
           .select('id,name,price,currency,url,image')
-          .in('id', allProductIds);
-        if (!cancelled && data) {
+          .in('id', missing);
+        if (!error && data) {
+          const returned = new Set<string>();
           (data as any[]).forEach((p) => {
+            returned.add(p.id);
             productsCacheRef.current.set(p.id, { id: p.id, name: p.name, price: String(p.price ?? ''), image: p.image, url: p.url });
           });
-          setPreviewHydrateTick((t) => t + 1);
+          // Só marca como definitivamente indisponível na última tentativa,
+          // após o servidor responder com sucesso mas sem o produto.
+          missing.forEach((id) => { if (!returned.has(id)) productsNotFoundRef.current.add(id); });
+          if (!cancelled) setPreviewHydrateTick((t) => t + 1);
+          return;
         }
+        // backoff antes do retry
+        await new Promise((r) => setTimeout(r, 250 * (attempt + 1)));
       }
-      if (allMeasureIds.length > 0) {
-        const { data } = await (supabase as any)
-          .from('measure_models')
-          .select('id,name,measure_rows(id,size_name,measure_type,value_cm,position)')
-          .in('id', allMeasureIds);
-        if (!cancelled && data) {
-          (data as any[]).forEach((m) => {
-            const rows = ((m.measure_rows ?? []) as any[])
-              .slice()
-              .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
-              .map((r) => ({ id: r.id, tamanho: r.size_name, medida: r.measure_type as MeasureType, valor: String(r.value_cm) }));
-            measuresCacheRef.current.set(m.id, { id: m.id, name: m.name, rows });
-          });
-          // Atualiza a medida do primeiro item para o ícone de medidas
-          const first = mediaList[previewStartIndex] as (StoryMedia & { measure_id?: string | null }) | undefined;
-          const mid = first?.measure_id ?? null;
-          if (mid) setPreviewMeasure(measuresCacheRef.current.get(mid) ?? null);
-          setPreviewHydrateTick((t) => t + 1);
-        }
+    };
+
+    const fetchMeasures = async () => {
+      if (allMeasureIds.length === 0) return;
+      const { data } = await (supabase as any)
+        .from('measure_models')
+        .select('id,name,measure_rows(id,size_name,measure_type,value_cm,position)')
+        .in('id', allMeasureIds);
+      if (!cancelled && data) {
+        (data as any[]).forEach((m) => {
+          const rows = ((m.measure_rows ?? []) as any[])
+            .slice()
+            .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+            .map((r) => ({ id: r.id, tamanho: r.size_name, medida: r.measure_type as MeasureType, valor: String(r.value_cm) }));
+          measuresCacheRef.current.set(m.id, { id: m.id, name: m.name, rows });
+        });
+        const first = mediaList[previewStartIndex] as (StoryMedia & { measure_id?: string | null }) | undefined;
+        const mid = first?.measure_id ?? null;
+        if (mid) setPreviewMeasure(measuresCacheRef.current.get(mid) ?? null);
+        setPreviewHydrateTick((t) => t + 1);
       }
-    })();
+    };
+
+    // Paralelo: produtos e medidas ao mesmo tempo.
+    Promise.all([fetchProducts(), fetchMeasures()]);
 
     return () => { cancelled = true; };
   }, [previewStory, previewStartIndex]);
 
-  // Playlist derivada — cada mídia é um story independente com seus produtos
+  // Playlist derivada — cada mídia é um story independente com seus produtos.
+  // Regras:
+  //  - Se o produto está no cache → render normal.
+  //  - Se está confirmado como ausente (após fetch concluído) → "Produto indisponível".
+  //  - Caso contrário (carregando) → pending=true (modal exibe skeleton).
   const previewPlaylist = useMemo(() => {
     if (!previewStory) return undefined;
     const mediaList = getOrderedStoryMedia(previewStory) as Array<StoryMedia & { product_ids?: string[] | null }>;
     const cache = productsCacheRef.current;
+    const notFound = productsNotFoundRef.current;
     return mediaList.map((m) => {
       const ids = Array.isArray(m.product_ids) ? m.product_ids : [];
-      const products = ids.map((id) => cache.get(id) ?? { id, name: 'Produto indisponível', price: '', image: null, url: null });
+      const products = ids.map((id) => {
+        const cached = cache.get(id);
+        if (cached) return cached;
+        if (notFound.has(id)) return { id, name: 'Produto indisponível', price: '', image: null, url: null };
+        return { id, name: '', price: '', image: null, url: null, pending: true };
+      });
       return { media: m as any, products };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [previewStory, stories]);
+  }, [previewStory, stories, previewHydrateTick]);
 
 
 
