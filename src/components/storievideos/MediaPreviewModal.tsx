@@ -462,7 +462,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                 <div
                   key={p.id}
                   className={
-                    'bg-[#1a1a1a]/85 backdrop-blur-md overflow-hidden flex flex-col shadow-[0_6px_18px_rgba(0,0,0,0.4)] rounded-[7px] ' +
+                    'bg-[#1a1a1a]/40 backdrop-blur-md overflow-hidden flex flex-col shadow-[0_6px_18px_rgba(0,0,0,0.35)] rounded-[7px] ' +
                     (productList.length > 1
                       ? 'shrink-0 snap-start basis-[72%]'
                       : 'w-full')
@@ -499,7 +499,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                     onClick={() => openProduct(p)}
                     disabled={!p.url}
                     className={
-                      'w-full bg-black/55 hover:bg-black/65 backdrop-blur-md transition-colors text-white font-sans font-thin text-[13px] leading-none tracking-tight rounded-[4px] flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed ' +
+                      'w-full bg-black/30 hover:bg-black/40 backdrop-blur-md transition-colors text-white font-sans font-thin text-[13px] leading-none tracking-tight rounded-[4px] flex items-center justify-center disabled:opacity-100 disabled:cursor-not-allowed ' +
                       (productList.length > 1 ? 'h-[20px]' : 'h-[27px]')
                     }
                   >
