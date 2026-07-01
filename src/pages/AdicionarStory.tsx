@@ -814,17 +814,30 @@ export default function AdicionarStory() {
           media: { url: previewMedia.url, type: previewMedia.type, name: previewMedia.name },
           products: items,
         }];
+        const measureModel = link?.measureId
+          ? measuresPrefetch.find((m) => m.id === link.measureId) ?? null
+          : null;
         const previewKey = `preview-${k}:${link?.layout ?? 'carrossel'}:${ids.join('|')}:m${link?.measureId ?? 'none'}`;
         return (
-          <MediaPreviewModal
-            key={previewKey}
-            open={!!previewMedia}
-            onOpenChange={() => setPreviewMedia(null)}
-            playlist={playlist}
-            startIndex={0}
-          />
+          <>
+            <MediaPreviewModal
+              key={previewKey}
+              open={!!previewMedia}
+              onOpenChange={() => { setPreviewMedia(null); setPreviewMeasureOpen(false); }}
+              playlist={playlist}
+              startIndex={0}
+              showMeasureIcon={!!measureModel}
+              measureOpen={previewMeasureOpen}
+              onMeasureClick={() => setPreviewMeasureOpen(true)}
+            />
+            <MeasurePreviewModal
+              model={previewMeasureOpen ? measureModel : null}
+              onClose={() => setPreviewMeasureOpen(false)}
+            />
+          </>
         );
       })()}
+
 
 
 
