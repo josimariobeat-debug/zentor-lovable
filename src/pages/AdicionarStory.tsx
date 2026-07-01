@@ -334,9 +334,19 @@ export default function AdicionarStory() {
   };
 
   const removeMedia = (idx: number) => {
+    const removed = media[idx];
+    const removedKey = removed?.id ?? removed?.url ?? String(idx);
     const next = media.filter((_, i) => i !== idx);
     if (next.length && !next.some((m) => m.cover)) next[0].cover = true;
     setMedia(next);
+    // Remove vínculo de produtos/medidas da mídia excluída para não vazar
+    // informações para outras mídias/stories.
+    setProductLinks((prev) => {
+      if (!(removedKey in prev)) return prev;
+      const clone = { ...prev };
+      delete clone[removedKey];
+      return clone;
+    });
   };
 
   const uploadFile = async (original: File): Promise<{ url: string; name: string; type: 'image' | 'video'; size: number }> => {
@@ -777,17 +787,24 @@ export default function AdicionarStory() {
         prefetched={galleryPrefetch}
       />
 
-      {/* Video Preview */}
+      {/* Video Preview — cada mídia é um Story independente e o preview
+          reflete APENAS os produtos/medidas/ordem vinculados a essa mídia. */}
       {(() => {
         const key = previewMedia ? (previewMedia.id ?? previewMedia.url ?? '') : '';
-        const ids = key && productLinks[key] ? productLinks[key].productIds : [];
+        const link = key ? productLinks[key] : undefined;
+        const ids = link?.productIds ?? [];
+        const measureId = link?.measureId ?? null;
+        const layout = link?.layout ?? 'carrossel';
         const previewProducts = ids
           .map((pid) => productsPrefetch.find((p) => p.id === pid))
           .filter(Boolean)
           .map((p) => ({ id: p!.id, name: p!.name, price: p!.price, image: p!.image, url: p!.url }));
+        // A key inclui: mídia, ordem exata dos produtos, quantidade, medida e layout,
+        // forçando re-render em tempo real a qualquer alteração no modal de vínculo.
+        const previewKey = `preview-${key}-${layout}-${previewProducts.length}-${previewProducts.map((p) => p.id).join('|')}-m:${measureId ?? 'none'}`;
         return (
           <MediaPreviewModal
-            key={`preview-${key}-${previewProducts.map((p) => p.id).join('|')}`}
+            key={previewKey}
             open={!!previewMedia}
             onOpenChange={() => setPreviewMedia(null)}
             media={previewMedia}
