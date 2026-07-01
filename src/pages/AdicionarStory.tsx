@@ -787,43 +787,34 @@ export default function AdicionarStory() {
         prefetched={galleryPrefetch}
       />
 
-      {/* Preview — playlist com TODAS as mídias do projeto (cada uma um Story
-          independente, com seus próprios produtos/medidas/ordem/layout).
-          Ao abrir, começa na mídia clicada e permite navegar com Avançar/Voltar. */}
+      {/* Preview — apenas o Story selecionado (visualização individual,
+          sem playlist/auto-avanço). Reflete produtos, medidas, ordem e layout
+          exclusivos daquela mídia. */}
       {(() => {
         if (!previewMedia) return null;
-        const startIndex = Math.max(
-          0,
-          media.findIndex((m) => (m.id ?? m.url) === (previewMedia.id ?? previewMedia.url)),
-        );
-        const playlist = media.map((m) => {
-          const k = m.id ?? m.url ?? '';
-          const link = k ? productLinks[k] : undefined;
-          const ids = link?.productIds ?? [];
-          const items = ids
-            .map((pid) => productsPrefetch.find((p) => p.id === pid))
-            .filter(Boolean)
-            .map((p) => ({ id: p!.id, name: p!.name, price: p!.price, image: p!.image, url: p!.url }));
-          return {
-            media: { url: m.url, type: m.type, name: m.name },
-            products: items,
-          };
-        });
-        const previewKey = `preview-${media.length}-${media.map((m) => {
-          const k = m.id ?? m.url ?? '';
-          const link = productLinks[k];
-          return `${k}:${link?.layout ?? 'carrossel'}:${(link?.productIds ?? []).join('|')}:m${link?.measureId ?? 'none'}`;
-        }).join('__')}-s${startIndex}`;
+        const k = previewMedia.id ?? previewMedia.url ?? '';
+        const link = k ? productLinks[k] : undefined;
+        const ids = link?.productIds ?? [];
+        const items = ids
+          .map((pid) => productsPrefetch.find((p) => p.id === pid))
+          .filter(Boolean)
+          .map((p) => ({ id: p!.id, name: p!.name, price: p!.price, image: p!.image, url: p!.url }));
+        const playlist = [{
+          media: { url: previewMedia.url, type: previewMedia.type, name: previewMedia.name },
+          products: items,
+        }];
+        const previewKey = `preview-${k}:${link?.layout ?? 'carrossel'}:${ids.join('|')}:m${link?.measureId ?? 'none'}`;
         return (
           <MediaPreviewModal
             key={previewKey}
             open={!!previewMedia}
             onOpenChange={() => setPreviewMedia(null)}
             playlist={playlist}
-            startIndex={startIndex}
+            startIndex={0}
           />
         );
       })()}
+
 
 
       {/* Product link modal */}
