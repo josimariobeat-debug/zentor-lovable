@@ -219,7 +219,8 @@ export default function StoriesVideosApp() {
     const allMeasureIds = Array.from(new Set(mediaList.map((m) => m.measure_id).filter((x): x is string => !!x)));
 
     const fetchProducts = async () => {
-      const missing = allProductIds.filter((id) => !productsCacheRef.current.has(id) && !productsNotFoundRef.current.has(id));
+      // Só busca IDs que não estão no cache TTL nem marcados como ausentes.
+      const missing = allProductIds.filter((id) => !productsStore.has(id) && !productsNotFoundStore.has(id));
       if (missing.length === 0) return;
       for (let attempt = 0; attempt < 3 && !cancelled; attempt++) {
         const { data, error } = await (supabase as any)
@@ -230,11 +231,10 @@ export default function StoriesVideosApp() {
           const returned = new Set<string>();
           (data as any[]).forEach((p) => {
             returned.add(p.id);
-            productsCacheRef.current.set(p.id, { id: p.id, name: p.name, price: String(p.price ?? ''), image: p.image, url: p.url });
+            productsStore.set(p.id, { id: p.id, name: p.name, price: String(p.price ?? ''), image: p.image, url: p.url });
           });
-          // Só marca como definitivamente indisponível na última tentativa,
-          // após o servidor responder com sucesso mas sem o produto.
-          missing.forEach((id) => { if (!returned.has(id)) productsNotFoundRef.current.add(id); });
+          // Marca ausentes com TTL curto para permitir recuperação futura.
+          missing.forEach((id) => { if (!returned.has(id)) productsNotFoundStore.set(id, true); });
           if (!cancelled) setPreviewHydrateTick((t) => t + 1);
           return;
         }
@@ -244,25 +244,27 @@ export default function StoriesVideosApp() {
     };
 
     const fetchMeasures = async () => {
-      if (allMeasureIds.length === 0) return;
+      const missingMeasures = allMeasureIds.filter((id) => !measuresStore.has(id));
+      if (missingMeasures.length === 0) return;
       const { data } = await (supabase as any)
         .from('measure_models')
         .select('id,name,measure_rows(id,size_name,measure_type,value_cm,position)')
-        .in('id', allMeasureIds);
+        .in('id', missingMeasures);
       if (!cancelled && data) {
         (data as any[]).forEach((m) => {
           const rows = ((m.measure_rows ?? []) as any[])
             .slice()
             .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
             .map((r) => ({ id: r.id, tamanho: r.size_name, medida: r.measure_type as MeasureType, valor: String(r.value_cm) }));
-          measuresCacheRef.current.set(m.id, { id: m.id, name: m.name, rows });
+          measuresStore.set(m.id, { id: m.id, name: m.name, rows });
         });
         const first = mediaList[previewStartIndex] as (StoryMedia & { measure_id?: string | null }) | undefined;
         const mid = first?.measure_id ?? null;
-        if (mid) setPreviewMeasure(measuresCacheRef.current.get(mid) ?? null);
+        if (mid) setPreviewMeasure((measuresStore.get(mid) as MeasureModel | undefined) ?? null);
         setPreviewHydrateTick((t) => t + 1);
       }
     };
+
 
     // Paralelo: produtos e medidas ao mesmo tempo.
     Promise.all([fetchProducts(), fetchMeasures()]);
