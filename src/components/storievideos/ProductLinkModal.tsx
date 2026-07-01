@@ -381,7 +381,6 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="carrossel">Carrossel</SelectItem>
-                    <SelectItem value="lista">Lista</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
