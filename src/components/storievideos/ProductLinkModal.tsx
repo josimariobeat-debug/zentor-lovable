@@ -108,7 +108,7 @@ function SortableProductItem({
 export default function ProductLinkModal({ open, onOpenChange, initial, onSave, onAddManual, onCreateProduct, refreshNonce, autoSelectProductId, onAutoSelectHandled, prefetchedProducts, prefetchedMeasures }: Props) {
   const { user } = useAuth();
   const [tab, setTab] = useState<'produtos' | 'medida'>('produtos');
-  const [layout, setLayout] = useState<Layout>(initial?.layout ?? 'carrossel');
+  const [layout, setLayout] = useState<Layout>('carrossel');
   // Hidratação síncrona a partir do prefetch — evita o estado vazio + skeleton
   // e o consequente flash visual quando o modal abre.
   const [products, setProducts] = useState<ProductRow[]>(prefetchedProducts ?? []);
@@ -157,7 +157,7 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
   useEffect(() => {
     if (!open) return;
     setTab('produtos');
-    setLayout(initial?.layout ?? 'carrossel');
+    setLayout('carrossel');
     setSelProductIds(initial?.productIds ?? []);
     setSelMeasure(initial?.measureId ?? null);
     setSearch(''); setSearchMed('');
