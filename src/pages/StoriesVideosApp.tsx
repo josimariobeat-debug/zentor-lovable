@@ -74,7 +74,7 @@ export default function StoriesVideosApp() {
   const [previewStory, setPreviewStory] = useState<StoryWithMedia | null>(null);
   const [previewStartIndex, setPreviewStartIndex] = useState(0);
   // tick usado para forçar re-render após hidratação assíncrona dos caches
-  const [, setPreviewHydrateTick] = useState(0);
+  const [previewHydrateTick, setPreviewHydrateTick] = useState(0);
   const [previewMeasure, setPreviewMeasure] = useState<MeasureModel | null>(null);
   const [previewMeasureOpen, setPreviewMeasureOpen] = useState(false);
   const [gallery, setGallery] = useState<GalleryMedia[] | null>(null);
