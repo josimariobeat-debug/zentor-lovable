@@ -484,8 +484,8 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                     ) : (
                       <div className="w-[52px] h-[52px] bg-neutral-800 shrink-0" />
                     )}
-                    <div className="flex-1 min-w-0 flex flex-col justify-center py-1 pl-2.5 pr-2.5 antialiased [font-feature-settings:'ss01','cv11'] tracking-tight">
-                      <div className="text-white leading-[1.2] text-[13px] font-normal truncate">
+                    <div className="flex-1 min-w-0 flex flex-col justify-center py-1 pl-2.5 pr-2.5 antialiased [font-feature-settings:'ss01','cv11'] tracking-tight font-sans">
+                      <div className="text-white leading-[1.2] text-[13px] font-thin truncate">
                         {p.name}
                       </div>
                       <div className="text-white/95 leading-tight text-[12px] font-light tabular-nums truncate mt-0.5">
