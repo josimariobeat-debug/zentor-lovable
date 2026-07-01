@@ -17,6 +17,7 @@ import ProductLinkModal, { type ProductLinkSelection } from '@/components/storie
 import { AddProductModal } from '@/pages/StoriesVideosApp';
 import { MediaThumbnail } from '@/components/ui/MediaThumbnail';
 import type { Tables } from '@/integrations/supabase/helpers';
+import { seedProducts, seedMeasures } from '@/lib/previewCache';
 import {
   Upload,
   Smartphone,
