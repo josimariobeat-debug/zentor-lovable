@@ -500,7 +500,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                     disabled={!p.url}
                     className={
                       'w-full bg-black/55 hover:bg-black/65 backdrop-blur-md transition-colors text-white font-medium text-[13px] leading-none tracking-tight rounded-[4px] flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed ' +
-                      (productList.length > 1 ? 'h-[25px]' : 'h-[27px]')
+                      (productList.length > 1 ? 'h-[20px]' : 'h-[27px]')
                     }
                   >
                     Comprar
