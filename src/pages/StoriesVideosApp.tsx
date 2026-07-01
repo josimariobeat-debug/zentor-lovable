@@ -71,8 +71,10 @@ export default function StoriesVideosApp() {
   const [widget, setWidget] = useState(true);
   const [carrossel, setCarrossel] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<StoryWithMedia | null>(null);
-  const [previewMedia, setPreviewMedia] = useState<StoryMedia | null>(null);
-  const [previewProducts, setPreviewProducts] = useState<{ id: string; name: string; price: string; image?: string | null; url?: string | null }[]>([]);
+  const [previewStory, setPreviewStory] = useState<StoryWithMedia | null>(null);
+  const [previewStartIndex, setPreviewStartIndex] = useState(0);
+  // tick usado para forçar re-render após hidratação assíncrona dos caches
+  const [, setPreviewHydrateTick] = useState(0);
   const [previewMeasure, setPreviewMeasure] = useState<MeasureModel | null>(null);
   const [previewMeasureOpen, setPreviewMeasureOpen] = useState(false);
   const [gallery, setGallery] = useState<GalleryMedia[] | null>(null);
@@ -162,66 +164,102 @@ export default function StoriesVideosApp() {
     setStories(data as StoryWithMedia[] ?? []);
   };
 
-  // Abre o preview do story com hidratação SÍNCRONA a partir do cache,
-  // de modo que o modal renderize já com todos os elementos prontos
-  // (mesma experiência do modal da aba Aparência).
-  const openStoryPreview = (media: StoryMedia) => {
-    const m = media as StoryMedia & { product_ids?: string[] | null; measure_id?: string | null };
-    const productIds = Array.isArray(m.product_ids) ? m.product_ids : [];
-    const measureId = m.measure_id ?? null;
-    const cache = productsCacheRef.current;
-    const mCache = measuresCacheRef.current;
-    const products = productIds.map((id) => cache.get(id) ?? { id, name: 'Produto indisponível', price: '', image: null, url: null });
-    const measure = measureId ? (mCache.get(measureId) ?? { id: measureId, name: '', rows: [] }) : null;
-    setPreviewProducts(products);
-    setPreviewMeasure(measure);
-    setPreviewMedia(media);
+  // Abre o preview do story em modo playlist — todas as mídias do projeto,
+  // cada uma como um Story independente com sua própria mídia, produtos,
+  // medidas, ordem e layout. Comporta-se como o modal da aba Aparência.
+  const openStoryPreview = (story: StoryWithMedia, clickedMediaId?: string) => {
+    const list = getOrderedStoryMedia(story);
+    const startIdx = Math.max(
+      0,
+      clickedMediaId ? list.findIndex((m) => m.id === clickedMediaId) : 0,
+    );
+    // Medida do primeiro item da playlist (para o ícone de medidas)
+    const first = list[startIdx] as (StoryMedia & { measure_id?: string | null }) | undefined;
+    const measureId = first?.measure_id ?? null;
+    setPreviewMeasure(measureId ? (measuresCacheRef.current.get(measureId) ?? { id: measureId, name: '', rows: [] }) : null);
+    setPreviewStartIndex(startIdx);
+    setPreviewStory(story);
   };
 
-  // Refresh assíncrono dos produtos/medidas vinculados (sem causar pop-in,
-  // pois o estado inicial já vem do cache no clique).
+  // Ordena mídias do story: cover primeiro; demais pela posição/created_at.
+  const getOrderedStoryMedia = (story: StoryWithMedia): StoryMedia[] => {
+    const list = (story.story_media ?? []).slice();
+    list.sort((a: any, b: any) => {
+      const ap = a.position ?? 0;
+      const bp = b.position ?? 0;
+      if (ap !== bp) return ap - bp;
+      const at = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const bt = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return at - bt;
+    });
+    const coverIdx = list.findIndex((m) => (m as any).is_cover);
+    if (coverIdx > 0) {
+      const [cover] = list.splice(coverIdx, 1);
+      list.unshift(cover);
+    }
+    return list;
+  };
+
+  // Refresh assíncrono dos produtos/medidas de TODAS as mídias do story aberto —
+  // hidrata o cache e força re-render da playlist para refletir dados atualizados
+  // sem pop-in (o estado inicial já vem do cache).
   useEffect(() => {
     let cancelled = false;
-    if (!previewMedia || !supabase) return;
-    const m = previewMedia as StoryMedia & { product_ids?: string[] | null; measure_id?: string | null };
-    const productIds = Array.isArray(m.product_ids) ? m.product_ids : [];
-    const measureId = m.measure_id ?? null;
+    if (!previewStory || !supabase) return;
+    const mediaList = getOrderedStoryMedia(previewStory) as Array<StoryMedia & { product_ids?: string[] | null; measure_id?: string | null }>;
+    const allProductIds = Array.from(new Set(mediaList.flatMap((m) => Array.isArray(m.product_ids) ? m.product_ids : [])));
+    const allMeasureIds = Array.from(new Set(mediaList.map((m) => m.measure_id).filter((x): x is string => !!x)));
 
     (async () => {
-      if (productIds.length > 0) {
+      if (allProductIds.length > 0) {
         const { data } = await (supabase as any)
           .from('products')
           .select('id,name,price,currency,url,image')
-          .in('id', productIds);
-        if (!cancelled) {
-          const byId = new Map<string, any>((data ?? []).map((p: any) => [p.id, p]));
-          const ordered = productIds.map((id) => {
-            const p = byId.get(id);
-            if (p) return { id: p.id, name: p.name, price: String(p.price ?? ''), image: p.image, url: p.url };
-            return { id, name: 'Produto indisponível', price: '', image: null, url: null };
+          .in('id', allProductIds);
+        if (!cancelled && data) {
+          (data as any[]).forEach((p) => {
+            productsCacheRef.current.set(p.id, { id: p.id, name: p.name, price: String(p.price ?? ''), image: p.image, url: p.url });
           });
-          setPreviewProducts(ordered);
+          setPreviewHydrateTick((t) => t + 1);
         }
       }
-
-      if (measureId) {
+      if (allMeasureIds.length > 0) {
         const { data } = await (supabase as any)
           .from('measure_models')
           .select('id,name,measure_rows(id,size_name,measure_type,value_cm,position)')
-          .eq('id', measureId)
-          .maybeSingle();
+          .in('id', allMeasureIds);
         if (!cancelled && data) {
-          const rows = ((data.measure_rows ?? []) as any[])
-            .slice()
-            .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
-            .map((r) => ({ id: r.id, tamanho: r.size_name, medida: r.measure_type as MeasureType, valor: String(r.value_cm) }));
-          setPreviewMeasure({ id: data.id, name: data.name, rows });
+          (data as any[]).forEach((m) => {
+            const rows = ((m.measure_rows ?? []) as any[])
+              .slice()
+              .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+              .map((r) => ({ id: r.id, tamanho: r.size_name, medida: r.measure_type as MeasureType, valor: String(r.value_cm) }));
+            measuresCacheRef.current.set(m.id, { id: m.id, name: m.name, rows });
+          });
+          // Atualiza a medida do primeiro item para o ícone de medidas
+          const first = mediaList[previewStartIndex] as (StoryMedia & { measure_id?: string | null }) | undefined;
+          const mid = first?.measure_id ?? null;
+          if (mid) setPreviewMeasure(measuresCacheRef.current.get(mid) ?? null);
+          setPreviewHydrateTick((t) => t + 1);
         }
       }
     })();
 
     return () => { cancelled = true; };
-  }, [previewMedia]);
+  }, [previewStory, previewStartIndex]);
+
+  // Playlist derivada — cada mídia é um story independente com seus produtos
+  const previewPlaylist = useMemo(() => {
+    if (!previewStory) return undefined;
+    const mediaList = getOrderedStoryMedia(previewStory) as Array<StoryMedia & { product_ids?: string[] | null }>;
+    const cache = productsCacheRef.current;
+    return mediaList.map((m) => {
+      const ids = Array.isArray(m.product_ids) ? m.product_ids : [];
+      const products = ids.map((id) => cache.get(id) ?? { id, name: 'Produto indisponível', price: '', image: null, url: null });
+      return { media: m as any, products };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [previewStory, stories]);
 
 
 
@@ -428,7 +466,7 @@ export default function StoriesVideosApp() {
                   className={`flex items-center gap-4 px-5 py-4 ${idx !== filtered.length - 1 ? 'border-b border-neutral-100' : ''}`}>
 
                       <button data-ev-id="ev_576596ca16"
-                    onClick={() => cover && openStoryPreview(cover)}
+                    onClick={() => openStoryPreview(s, cover?.id)}
                     className="w-14 shrink-0 cursor-pointer hover:opacity-90 transition-opacity rounded-lg overflow-hidden">
                         {cover?.url ?
                       <MediaThumbnail
@@ -612,16 +650,15 @@ export default function StoriesVideosApp() {
         onConfirm={handleDelete}
       />
 
-      {/* Video Preview Dialog — Stories list (mesma lógica do modal da aba Aparência: usa playlist) */}
+      {/* Video Preview Dialog — Stories list (mesma lógica do modal da aba Aparência: playlist com todas as mídias do projeto) */}
       <MediaPreviewModal
-        open={!!previewMedia}
-        onOpenChange={() => { setPreviewMedia(null); setPreviewProducts([]); setPreviewMeasure(null); }}
-
-        playlist={previewMedia ? [{ media: previewMedia, products: previewProducts }] : undefined}
+        open={!!previewStory}
+        onOpenChange={() => { setPreviewStory(null); setPreviewMeasure(null); }}
+        playlist={previewPlaylist}
+        startIndex={previewStartIndex}
         showMeasureIcon={!!previewMeasure}
         measureOpen={previewMeasureOpen}
         onMeasureClick={() => setPreviewMeasureOpen(true)}
-
       />
 
 
