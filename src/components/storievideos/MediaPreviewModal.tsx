@@ -462,50 +462,46 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                 <div
                   key={p.id}
                   className={
-                    'bg-black/55 backdrop-blur-md overflow-hidden flex items-stretch gap-0 shadow-[0_6px_18px_rgba(0,0,0,0.35)] rounded-[10px] h-[50px] ' +
+                    'bg-[#1a1a1a]/85 backdrop-blur-md overflow-hidden flex flex-col shadow-[0_6px_18px_rgba(0,0,0,0.4)] rounded-[14px] ' +
                     (productList.length > 1
                       ? 'shrink-0 snap-start basis-[72%]'
                       : 'w-full')
                   }
                 >
-                  {p.image ? (
-                    <img
-                      src={p.image}
-                      alt={p.name}
-                      draggable={false}
-                      loading="eager"
-                      decoding="sync"
-                      // @ts-expect-error fetchpriority is a valid HTML attribute
-                      fetchpriority="high"
-                      className="w-12 self-stretch object-cover bg-neutral-800 shrink-0 pointer-events-none"
-                    />
-                  ) : (
-                    <div className="w-12 self-stretch bg-neutral-800 shrink-0" />
-                  )}
-                  <div className="flex-1 min-w-0 flex flex-col py-1 pl-2 pr-2 antialiased [font-feature-settings:'ss01','cv11'] tracking-tight">
-                    <div className="flex-1 min-w-0 overflow-hidden">
-                      <div className="text-white leading-[1.15] text-[13px] font-light truncate">
+                  {/* Top: image + text */}
+                  <div className="flex items-stretch gap-0 h-[52px]">
+                    {p.image ? (
+                      <img
+                        src={p.image}
+                        alt={p.name}
+                        draggable={false}
+                        loading="eager"
+                        decoding="sync"
+                        // @ts-expect-error fetchpriority is a valid HTML attribute
+                        fetchpriority="high"
+                        className="w-[52px] h-[52px] object-cover bg-neutral-800 shrink-0 pointer-events-none"
+                      />
+                    ) : (
+                      <div className="w-[52px] h-[52px] bg-neutral-800 shrink-0" />
+                    )}
+                    <div className="flex-1 min-w-0 flex flex-col justify-center py-1 pl-2.5 pr-2.5 antialiased [font-feature-settings:'ss01','cv11'] tracking-tight">
+                      <div className="text-white leading-[1.2] text-[13px] font-normal truncate">
                         {p.name}
                       </div>
-                    </div>
-                    <div className="flex items-center justify-between gap-2 mt-auto">
-                      <div className="text-white/90 leading-none text-[10px] font-light tabular-nums truncate">
+                      <div className="text-white/95 leading-tight text-[12px] font-light tabular-nums truncate mt-0.5">
                         {p.price ? formatPrice(p.price) : '\u00A0'}
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => openProduct(p)}
-                        disabled={!p.url}
-                        className="bg-white hover:bg-neutral-100 transition-colors text-neutral-900 font-medium text-[11px] leading-none tracking-tight px-1.5 rounded-md shrink-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-white inline-flex items-center justify-center h-[19px]"
-                      >
-                        Adicionar
-                      </button>
-
                     </div>
-
                   </div>
-
-
+                  {/* Bottom: full-width Comprar button */}
+                  <button
+                    type="button"
+                    onClick={() => openProduct(p)}
+                    disabled={!p.url}
+                    className="w-full bg-black hover:bg-neutral-900 transition-colors text-white font-medium text-[13px] leading-none tracking-tight h-[30px] flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    Comprar
+                  </button>
                 </div>
               ))}
             </div>
