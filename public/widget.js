@@ -646,12 +646,53 @@
     show();
   }
 
+  /* ── URL matching ── */
+  function currentPagePath() {
+    try {
+      var loc = window.location;
+      return (loc.pathname || '/') + (loc.search || '');
+    } catch (_) { return '/'; }
+  }
+  function currentPageFull() {
+    try { return window.location.href || ''; } catch (_) { return ''; }
+  }
+  function normalizeRule(v) {
+    if (v == null) return '';
+    var s = String(v).trim();
+    if (!s) return '';
+    // strip protocol/host if the lojista colou uma URL completa
+    s = s.replace(/^https?:\/\/[^/]+/i, '');
+    if (!s) s = '/';
+    return s;
+  }
+  function storyMatchesPage(story) {
+    var urls = (story && story.urls) || [];
+    if (!urls.length) return true; // legacy: mostrar em todas
+    var path = currentPagePath();
+    var full = currentPageFull();
+    for (var i = 0; i < urls.length; i++) {
+      var rule = urls[i] || {};
+      var type = rule.type || 'contem';
+      if (type === 'todas') return true;
+      var val = normalizeRule(rule.value);
+      if (!val) continue;
+      if (type === 'exato') {
+        if (path === val || path === val.replace(/\/$/, '') || full === rule.value) return true;
+      } else { // contem
+        if (path.indexOf(val) !== -1 || full.indexOf(val) !== -1) return true;
+      }
+    }
+    return false;
+  }
+
   function boot() {
     fetchJSON(API_BASE + '/api/public/store/' + encodeURIComponent(STORE_ID))
       .then(function (cfg) {
         injectStyles();
         return fetchJSON(API_BASE + '/api/public/store/' + encodeURIComponent(STORE_ID) + '/stories').then(function (res) {
-          var stories = (res && res.stories) || [];
+          var all = (res && res.stories) || [];
+          var stories = all.filter(storyMatchesPage);
+          flowLog('page-filter', { path: currentPagePath(), total: all.length, visible: stories.length });
           if (!stories.length) return;
           renderBubbles(cfg, stories);
         });
