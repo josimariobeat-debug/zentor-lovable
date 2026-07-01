@@ -455,14 +455,14 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
               className={
                 productList.length > 1
                   ? 'flex gap-2 overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar pl-3 pr-3 pointer-events-auto cursor-grab select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'
-                  : 'flex px-3 pointer-events-auto'
+                  : 'flex px-1.5 pointer-events-auto'
               }
             >
               {productList.map((p) => (
                 <div
                   key={p.id}
                   className={
-                    'bg-[#1a1a1a]/85 backdrop-blur-md overflow-hidden flex flex-col shadow-[0_6px_18px_rgba(0,0,0,0.4)] rounded-[2px] ' +
+                    'bg-[#1a1a1a]/85 backdrop-blur-md overflow-hidden flex flex-col shadow-[0_6px_18px_rgba(0,0,0,0.4)] rounded-[7px] ' +
                     (productList.length > 1
                       ? 'shrink-0 snap-start basis-[72%]'
                       : 'w-full')
@@ -500,7 +500,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                     disabled={!p.url}
                     className={
                       'w-full bg-black/55 hover:bg-black/65 backdrop-blur-md transition-colors text-white font-medium text-[13px] leading-none tracking-tight rounded-[4px] flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed ' +
-                      (productList.length > 1 ? 'h-[25px]' : 'h-[27px]')
+                      (productList.length > 1 ? 'h-[20px]' : 'h-[27px]')
                     }
                   >
                     Comprar
