@@ -17,6 +17,8 @@ interface Product {
   price: string;
   image?: string | null;
   url?: string | null;
+  /** Enquanto true, o card renderiza um skeleton em vez do conteúdo. */
+  pending?: boolean;
 }
 
 interface MediaInput {
@@ -592,7 +594,9 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                 >
                   {/* Top: image + text */}
                   <div className="flex items-stretch gap-0 h-[52px]">
-                    {p.image ? (
+                    {p.pending ? (
+                      <div className="w-[52px] h-[52px] bg-neutral-700/60 shrink-0 animate-pulse" />
+                    ) : p.image ? (
                       <img
                         src={p.image}
                         alt={p.name}
@@ -607,25 +611,34 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                       <div className="w-[52px] h-[52px] bg-neutral-800 shrink-0" />
                     )}
                     <div className="flex-1 min-w-0 flex flex-col justify-center py-1 pl-2.5 pr-2.5 antialiased [font-feature-settings:'ss01','cv11'] tracking-tight font-sans">
-                      <div className={`text-white leading-[1.2] font-thin truncate ${productList.length > 1 ? 'text-[12px]' : 'text-[13px]'}`}>
-                        {p.name}
-                      </div>
-                      <div className={`text-white/95 leading-tight font-light tabular-nums truncate mt-0.5 ${productList.length > 1 ? 'text-[11px]' : 'text-[12px]'}`}>
-                        {p.price ? formatPrice(p.price) : '\u00A0'}
-                      </div>
+                      {p.pending ? (
+                        <>
+                          <div className="h-[10px] w-3/4 rounded bg-white/20 animate-pulse" />
+                          <div className="h-[9px] w-1/3 rounded bg-white/15 animate-pulse mt-1.5" />
+                        </>
+                      ) : (
+                        <>
+                          <div className={`text-white leading-[1.2] font-thin truncate ${productList.length > 1 ? 'text-[12px]' : 'text-[13px]'}`}>
+                            {p.name}
+                          </div>
+                          <div className={`text-white/95 leading-tight font-light tabular-nums truncate mt-0.5 ${productList.length > 1 ? 'text-[11px]' : 'text-[12px]'}`}>
+                            {p.price ? formatPrice(p.price) : '\u00A0'}
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
                   {/* Bottom: full-width Comprar button */}
                   <button
                     type="button"
-                    onClick={() => openProduct(p)}
-                    disabled={!p.url}
+                    onClick={() => !p.pending && openProduct(p)}
+                    disabled={p.pending || !p.url}
                     className={
                       'w-full bg-black hover:bg-black transition-colors text-white font-sans font-thin leading-none tracking-tight rounded-[4px] flex items-center justify-center disabled:opacity-100 disabled:cursor-not-allowed ' +
                       (productList.length > 1 ? 'h-[20px] text-[12px]' : 'h-[27px] text-[13px]')
                     }
                   >
-                    Comprar
+                    {p.pending ? '\u00A0' : 'Comprar'}
                   </button>
                 </div>
               ))}
