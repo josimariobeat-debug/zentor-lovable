@@ -778,11 +778,23 @@ export default function AdicionarStory() {
       />
 
       {/* Video Preview */}
-      <MediaPreviewModal
-        open={!!previewMedia}
-        onOpenChange={() => setPreviewMedia(null)}
-        media={previewMedia}
-      />
+      {(() => {
+        const key = previewMedia ? (previewMedia.id ?? previewMedia.url ?? '') : '';
+        const ids = key && productLinks[key] ? productLinks[key].productIds : [];
+        const previewProducts = ids
+          .map((pid) => productsPrefetch.find((p) => p.id === pid))
+          .filter(Boolean)
+          .map((p) => ({ id: p!.id, name: p!.name, price: p!.price, image: p!.image, url: p!.url }));
+        return (
+          <MediaPreviewModal
+            key={`preview-${key}-${previewProducts.length}`}
+            open={!!previewMedia}
+            onOpenChange={() => setPreviewMedia(null)}
+            media={previewMedia}
+            products={previewProducts}
+          />
+        );
+      })()}
 
       {/* Product link modal */}
       <ProductLinkModal
