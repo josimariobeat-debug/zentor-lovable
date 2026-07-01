@@ -490,6 +490,10 @@
       if (isVideo) {
         var v = document.createElement('video');
         v.src = item.url; v.autoplay = true; v.playsInline = true; v.controls = false; v.muted = muted;
+        v.setAttribute('controlsList', 'nodownload noplaybackrate nofullscreen noremoteplayback');
+        v.setAttribute('disablePictureInPicture', '');
+        v.oncontextmenu = function(e){ e.preventDefault(); return false; };
+
         var bar = progress.children[mediaIdx] && progress.children[mediaIdx].firstChild;
         function tick(now) {
           try {
