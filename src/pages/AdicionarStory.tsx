@@ -3,6 +3,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router';
 import TopBar from '@/components/layout/TopBar';
 
 import MediaPreviewModal from '@/components/storievideos/MediaPreviewModal';
+import { MeasurePreviewModal, type MeasureModel, type MeasureType } from '@/components/storievideos/MeasurePreviewModal';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -91,7 +92,8 @@ export default function AdicionarStory() {
   // Prefetch para hidratação imediata dos modais — evita skeleton/flash ao abrir.
   const [galleryPrefetch, setGalleryPrefetch] = useState<Tables<'media_gallery'>[] | null>(null);
   const [productsPrefetch, setProductsPrefetch] = useState<{ id: string; name: string; price: string; currency: string; url: string; image: string | null }[]>([]);
-  const [measuresPrefetch, setMeasuresPrefetch] = useState<{ id: string; name: string }[]>([]);
+  const [measuresPrefetch, setMeasuresPrefetch] = useState<MeasureModel[]>([]);
+  const [previewMeasureOpen, setPreviewMeasureOpen] = useState(false);
 
   // Carrega galeria, produtos e modelos de medida silenciosamente assim que
   // a página monta (e quando produtos são criados via AddProductModal).
@@ -102,15 +104,24 @@ export default function AdicionarStory() {
       const [g, p, m] = await Promise.all([
         supabase.from('media_gallery').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
         supabase.from('products').select('id,name,price,currency,url,image').eq('user_id', user.id).order('created_at', { ascending: false }),
-        (supabase as any).from('measure_models').select('id,name').eq('user_id', user.id).order('created_at', { ascending: false }),
+        (supabase as any).from('measure_models').select('id,name,measure_rows(id,size_name,measure_type,value_cm,position)').eq('user_id', user.id).order('created_at', { ascending: false }),
       ]);
       if (cancel) return;
       setGalleryPrefetch((g.data as any) ?? []);
       setProductsPrefetch(((p.data as any) ?? []) as typeof productsPrefetch);
-      setMeasuresPrefetch(((m.data as any) ?? []) as typeof measuresPrefetch);
+      const models: MeasureModel[] = ((m.data as any) ?? []).map((mm: any) => ({
+        id: mm.id,
+        name: mm.name,
+        rows: ((mm.measure_rows ?? []) as any[])
+          .slice()
+          .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+          .map((r) => ({ id: r.id, tamanho: r.size_name, medida: r.measure_type as MeasureType, valor: String(r.value_cm) })),
+      }));
+      setMeasuresPrefetch(models);
     })();
     return () => { cancel = true; };
   }, [user, productRefreshNonce]);
+
 
   useEffect(() => {
     // Restaura estado quando retornamos do editor de aparência
@@ -803,17 +814,30 @@ export default function AdicionarStory() {
           media: { url: previewMedia.url, type: previewMedia.type, name: previewMedia.name },
           products: items,
         }];
+        const measureModel = link?.measureId
+          ? measuresPrefetch.find((m) => m.id === link.measureId) ?? null
+          : null;
         const previewKey = `preview-${k}:${link?.layout ?? 'carrossel'}:${ids.join('|')}:m${link?.measureId ?? 'none'}`;
         return (
-          <MediaPreviewModal
-            key={previewKey}
-            open={!!previewMedia}
-            onOpenChange={() => setPreviewMedia(null)}
-            playlist={playlist}
-            startIndex={0}
-          />
+          <>
+            <MediaPreviewModal
+              key={previewKey}
+              open={!!previewMedia}
+              onOpenChange={() => { setPreviewMedia(null); setPreviewMeasureOpen(false); }}
+              playlist={playlist}
+              startIndex={0}
+              showMeasureIcon={!!measureModel}
+              measureOpen={previewMeasureOpen}
+              onMeasureClick={() => setPreviewMeasureOpen(true)}
+            />
+            <MeasurePreviewModal
+              model={previewMeasureOpen ? measureModel : null}
+              onClose={() => setPreviewMeasureOpen(false)}
+            />
+          </>
         );
       })()}
+
 
 
 
