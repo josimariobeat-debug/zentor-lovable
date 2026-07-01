@@ -157,7 +157,7 @@ export default function ProductLinkModal({ open, onOpenChange, initial, onSave, 
   useEffect(() => {
     if (!open) return;
     setTab('produtos');
-    setLayout(initial?.layout ?? 'carrossel');
+    setLayout('carrossel');
     setSelProductIds(initial?.productIds ?? []);
     setSelMeasure(initial?.measureId ?? null);
     setSearch(''); setSearchMed('');
