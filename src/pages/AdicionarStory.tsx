@@ -334,9 +334,19 @@ export default function AdicionarStory() {
   };
 
   const removeMedia = (idx: number) => {
+    const removed = media[idx];
+    const removedKey = removed?.id ?? removed?.url ?? String(idx);
     const next = media.filter((_, i) => i !== idx);
     if (next.length && !next.some((m) => m.cover)) next[0].cover = true;
     setMedia(next);
+    // Remove vínculo de produtos/medidas da mídia excluída para não vazar
+    // informações para outras mídias/stories.
+    setProductLinks((prev) => {
+      if (!(removedKey in prev)) return prev;
+      const clone = { ...prev };
+      delete clone[removedKey];
+      return clone;
+    });
   };
 
   const uploadFile = async (original: File): Promise<{ url: string; name: string; type: 'image' | 'video'; size: number }> => {
