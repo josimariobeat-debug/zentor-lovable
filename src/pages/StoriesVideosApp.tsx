@@ -650,16 +650,15 @@ export default function StoriesVideosApp() {
         onConfirm={handleDelete}
       />
 
-      {/* Video Preview Dialog — Stories list (mesma lógica do modal da aba Aparência: usa playlist) */}
+      {/* Video Preview Dialog — Stories list (mesma lógica do modal da aba Aparência: playlist com todas as mídias do projeto) */}
       <MediaPreviewModal
-        open={!!previewMedia}
-        onOpenChange={() => { setPreviewMedia(null); setPreviewProducts([]); setPreviewMeasure(null); }}
-
-        playlist={previewMedia ? [{ media: previewMedia, products: previewProducts }] : undefined}
+        open={!!previewStory}
+        onOpenChange={() => { setPreviewStory(null); setPreviewMeasure(null); }}
+        playlist={previewPlaylist}
+        startIndex={previewStartIndex}
         showMeasureIcon={!!previewMeasure}
         measureOpen={previewMeasureOpen}
         onMeasureClick={() => setPreviewMeasureOpen(true)}
-
       />
 
 
