@@ -57,6 +57,11 @@ interface Comment {
 
 const PROGRESS_MS = 5000;
 
+function blockNativeMediaAction(event: Event) {
+  event.preventDefault();
+  event.stopPropagation();
+}
+
 function formatPrice(price: string): string {
   if (!price) return '';
   if (/^R\$/i.test(price)) return price;
@@ -120,11 +125,6 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
       clearTimeout(gestureRef.current.holdTimer);
       gestureRef.current.holdTimer = null;
     }
-  };
-
-  const blockNativeMediaAction = (event: Event) => {
-    event.preventDefault();
-    event.stopPropagation();
   };
 
   const onGestureDown = (e: React.PointerEvent<HTMLDivElement>) => {
