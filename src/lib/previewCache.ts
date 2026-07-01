@@ -35,11 +35,9 @@ type Entry<T> = { value: T; expiresAt: number };
 
 type StorageKind = 'session' | 'local';
 
-function getStorage(kind: StorageKind): Storage | null {
-  if (typeof window === 'undefined') return null;
+function tryStorage(s: Storage | undefined | null): Storage | null {
+  if (!s) return null;
   try {
-    const s = kind === 'local' ? window.localStorage : window.sessionStorage;
-    // sanity check (Safari private mode etc.)
     const k = '__zc_probe__';
     s.setItem(k, '1');
     s.removeItem(k);
@@ -47,6 +45,24 @@ function getStorage(kind: StorageKind): Storage | null {
   } catch {
     return null;
   }
+}
+
+/**
+ * Resolve o storage preferido com fallback automático.
+ * - 'session' → tenta sessionStorage, cai para localStorage se indisponível
+ *   (ex.: Safari em modo privado antigo, iframes com storage bloqueado,
+ *   contextos sem sessionStorage). Retorna null se ambos falharem.
+ * - 'local'   → tenta localStorage, cai para sessionStorage.
+ */
+function getStorage(kind: StorageKind): { storage: Storage; kind: StorageKind } | null {
+  if (typeof window === 'undefined') return null;
+  const primary = kind === 'local' ? window.localStorage : window.sessionStorage;
+  const secondary = kind === 'local' ? window.sessionStorage : window.localStorage;
+  const p = tryStorage(primary);
+  if (p) return { storage: p, kind };
+  const s = tryStorage(secondary);
+  if (s) return { storage: s, kind: kind === 'local' ? 'session' : 'local' };
+  return null;
 }
 
 function storageKey(namespace: string) {
