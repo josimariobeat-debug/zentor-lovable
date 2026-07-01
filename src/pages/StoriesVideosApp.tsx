@@ -1276,6 +1276,7 @@ function AddMeasureModelModal({
   saving = false
 }: {open: boolean;editing?: MeasureModel | null;onClose: () => void;onSave: (m: Omit<MeasureModel, 'id'>) => void;saving?: boolean;}) {
   const [name, setName] = useState('');
+  const [sizeUsed, setSizeUsed] = useState('');
   const [rows, setRows] = useState<MeasureRow[]>([]);
   const [touched, setTouched] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
@@ -1285,9 +1286,12 @@ function AddMeasureModelModal({
     if (!open) return;
     if (editing) {
       setName(editing.name);
+      const firstSize = (editing.rows.find((r) => (r.tamanho || '').trim())?.tamanho || '').trim();
+      setSizeUsed(firstSize);
       setRows(editing.rows.map((r) => ({ ...r })));
     } else {
       setName('');
+      setSizeUsed('');
       setRows([{ id: crypto.randomUUID(), tamanho: '', medida: 'Busto', valor: '' }]);
     }
     setTouched(false);
@@ -1300,14 +1304,16 @@ function AddMeasureModelModal({
     setRows((r) => r.map((x) => x.id === id ? { ...x, ...patch } : x));
 
   const trimmedName = name.trim();
-  const validRows = rows.filter((r) => r.tamanho.trim() && r.valor.trim());
+  const trimmedSize = sizeUsed.trim();
+  const validRows = rows.filter((r) => r.valor.trim()).map((r) => ({ ...r, tamanho: trimmedSize }));
   const nameError = !trimmedName ? 'Informe o nome do modelo' : trimmedName.length > 80 ? 'Máximo 80 caracteres' : '';
-  const rowsError = validRows.length === 0 ? 'Adicione pelo menos uma linha completa' : '';
+  const sizeError = !trimmedSize ? 'Informe o tamanho que a modelo usa' : '';
+  const rowsError = validRows.length === 0 ? 'Adicione pelo menos uma medida com valor' : '';
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setTouched(true);
-    if (nameError || rowsError) return;
+    if (nameError || sizeError || rowsError) return;
     onSave({ name: trimmedName, rows: validRows });
   };
 
