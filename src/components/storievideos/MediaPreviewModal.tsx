@@ -17,6 +17,8 @@ interface Product {
   price: string;
   image?: string | null;
   url?: string | null;
+  /** Enquanto true, o card renderiza um skeleton em vez do conteúdo. */
+  pending?: boolean;
 }
 
 interface MediaInput {
