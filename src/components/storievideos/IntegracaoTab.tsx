@@ -167,6 +167,22 @@ export default function IntegracaoTab() {
         </div>
       </div>
 
+      <div className="bg-white border border-neutral-200 rounded-2xl p-6">
+        <div className="flex items-center gap-2 text-xs font-medium tracking-wide text-neutral-500 uppercase">
+          <ExternalLink className="w-4 h-4" /> Integração com a WBuy
+        </div>
+        <h3 className="mt-1 text-base font-semibold text-neutral-900">Como instalar na WBuy</h3>
+        <ol className="mt-3 text-sm text-neutral-600 list-decimal pl-5 flex flex-col gap-1.5">
+          <li>Acesse o painel da WBuy e vá em <b>Configurações → Layout → Editar HTML</b> (ou <b>Scripts personalizados</b>).</li>
+          <li>Cole o script acima logo antes do fechamento da tag <code className="text-xs bg-neutral-100 px-1 rounded">&lt;/body&gt;</code>.</li>
+          <li>Salve as alterações e publique o tema.</li>
+          <li>Os Stories aparecerão automaticamente nas páginas configuradas no campo <b>&ldquo;Onde o story irá aparecer&rdquo;</b> ao adicionar cada Story.</li>
+        </ol>
+        <p className="mt-3 text-xs text-neutral-500">
+          O widget detecta a URL atual da loja e exibe apenas os Stories cujas regras (contém / exato / todas as páginas) correspondem à página visitada.
+        </p>
+      </div>
+
 
 
       {stats && (
