@@ -462,7 +462,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                 <div
                   key={p.id}
                   className={
-                    'bg-black/55 backdrop-blur-md overflow-hidden flex items-stretch gap-0 shadow-[0_6px_18px_rgba(0,0,0,0.35)] rounded-[10px] h-[58px] ' +
+                    'bg-black/55 backdrop-blur-md overflow-hidden flex items-stretch gap-0 shadow-[0_6px_18px_rgba(0,0,0,0.35)] rounded-[10px] h-[56px] ' +
                     (productList.length > 1
                       ? 'shrink-0 snap-start basis-[72%]'
                       : 'w-full')
