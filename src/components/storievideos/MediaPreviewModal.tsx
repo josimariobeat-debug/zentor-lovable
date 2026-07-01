@@ -634,7 +634,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                     onClick={() => !p.pending && openProduct(p)}
                     disabled={p.pending || !p.url}
                     className={
-                      'w-full bg-black hover:bg-black transition-colors text-white font-sans font-thin leading-none tracking-tight rounded-[4px] flex items-center justify-center disabled:opacity-100 disabled:cursor-not-allowed ' +
+                      'w-full bg-black hover:bg-black transition-colors text-white font-sans font-thin leading-none tracking-tight rounded-t-none rounded-b-[7px] flex items-center justify-center disabled:opacity-100 disabled:cursor-not-allowed ' +
                       (productList.length > 1 ? 'h-[20px] text-[12px]' : 'h-[27px] text-[13px]')
                     }
                   >
