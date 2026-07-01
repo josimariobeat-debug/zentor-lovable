@@ -485,21 +485,21 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                   <div className="flex-1 min-w-0 flex flex-col py-1 pl-2 pr-2">
                     <div className="flex-1 min-w-0 overflow-hidden">
                       <div
-                        className="text-white leading-[1.1] text-[11px] truncate"
+                        className="text-white leading-[1.1] text-[13px] truncate"
                         style={{ fontWeight: 100 }}
                       >
                         {p.name}
                       </div>
                     </div>
                     <div className="flex items-center justify-between gap-2 mt-auto">
-                      <div className="text-white/90 leading-none text-[13px] font-light truncate">
+                      <div className="text-white/90 leading-none text-[10px] font-light truncate">
                         {p.price ? formatPrice(p.price) : '\u00A0'}
                       </div>
                       <button
                         type="button"
                         onClick={() => openProduct(p)}
                         disabled={!p.url}
-                        className="bg-white hover:bg-neutral-100 transition-colors text-neutral-900 font-semibold text-[16px] px-1.5 rounded-md shrink-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-white inline-flex items-center justify-center h-[19px]"
+                        className="bg-white hover:bg-neutral-100 transition-colors text-neutral-900 font-semibold text-[13px] px-1.5 rounded-md shrink-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-white inline-flex items-center justify-center h-[19px]"
                       >
                         Adicionar
                       </button>
