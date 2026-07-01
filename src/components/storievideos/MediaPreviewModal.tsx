@@ -454,7 +454,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
               onMouseLeave={onCarouselMouseUp}
               className={
                 productList.length > 1
-                  ? 'flex gap-2 overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar pl-5 pr-3 scroll-pl-5 pointer-events-auto cursor-grab select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'
+                  ? 'flex gap-2 overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar pl-3 pr-3 scroll-pl-3 pointer-events-auto cursor-grab select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'
                   : 'flex px-1.5 pointer-events-auto'
               }
             >
