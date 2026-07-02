@@ -144,6 +144,12 @@
     '@keyframes ztPulse{0%{opacity:.75;transform:scale(1)}70%{opacity:0;transform:scale(1.25)}100%{opacity:0;transform:scale(1.25)}}',
     /* label */
     '.zt-label{font-size:12px;color:#111;max-width:120px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}',
+    /* skeleton */
+    '.zt-skel .zt-bubble-inner{background:#ececec;position:relative;overflow:hidden}',
+    '.zt-skel .zt-bubble-inner::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.65),transparent);transform:translateX(-100%);animation:ztShimmer 1.2s ease-in-out infinite}',
+    '@keyframes ztShimmer{100%{transform:translateX(100%)}}',
+    '.zt-skel-label{height:10px;width:64px;border-radius:5px;background:#ececec;position:relative;overflow:hidden}',
+    '.zt-skel-label::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.65),transparent);transform:translateX(-100%);animation:ztShimmer 1.2s ease-in-out infinite}',
     /* cta pill */
     '.zt-cta{position:absolute;left:50%;transform:translate(-50%,-50%);top:0;background:#111;color:#fff;padding:6px 14px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,.18);opacity:0;transition:opacity .25s ease}',
     '.zt-story:hover .zt-cta,.zt-story:focus-within .zt-cta{opacity:1}',
