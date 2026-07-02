@@ -8,7 +8,8 @@
     var s = document.getElementsByTagName('script');
     return s[s.length - 1];
   })();
-  var STORE_ID = currentScript && currentScript.dataset && currentScript.dataset.store;
+  var STORE_ID = (currentScript && currentScript.dataset && currentScript.dataset.store) || (window.__ZENTOR__ && window.__ZENTOR__.store);
+  try { if (!STORE_ID && currentScript) STORE_ID = new URL(currentScript.src).searchParams.get('store'); } catch (_) {}
   if (!STORE_ID) { console.warn('[Zentor] data-store ausente no <script>'); return; }
 
   var API_BASE = (function () {
