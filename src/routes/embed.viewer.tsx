@@ -40,8 +40,8 @@ function EmbedViewer() {
       if (!data || typeof data !== 'object' || !data.__zentorEmbed) return;
       if (data.type === 'init') {
         setPayload(data.payload as EmbedPayload);
-        setCurrentStoryIdx(data.payload?.startStoryIdx ?? 0);
       }
+
     };
     window.addEventListener('message', onMsg);
     post({ type: 'ready' });
