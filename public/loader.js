@@ -67,7 +67,7 @@
   if (cached) inject(cached);
 
   function sync() {
-    var url = ORIGIN + '/api/public/widget?store=' + encodeURIComponent(STORE) +
+    var url = ORIGIN + '/api/public/zt-cfg?store=' + encodeURIComponent(STORE) +
       '&path=' + encodeURIComponent(rawPath) + '&_t=' + Date.now();
     fetch(url, { credentials: 'omit', cache: 'no-store' })
       .then(function (r) { return r.ok ? r.json() : null; })
