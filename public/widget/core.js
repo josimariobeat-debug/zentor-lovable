@@ -93,7 +93,7 @@
   }
 
   function fetchJSON(url) {
-    return fetch(url, { credentials: 'omit' }).then(function (r) { if (!r.ok) throw new Error(String(r.status)); return r.json(); });
+    return fetch(url, { credentials: 'omit', cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error(String(r.status)); return r.json(); });
   }
 
   /* ── Shadow root ── */
