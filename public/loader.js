@@ -49,7 +49,7 @@
     window.__ZENTOR_RUNTIME__ = true;
     window.__ZENTOR__ = { store: STORE, config: cfg, origin: ORIGIN, path: rawPath };
     var w = document.createElement('script');
-    w.src = ORIGIN + '/widget/core.js?store=' + encodeURIComponent(STORE) + '&v=' + encodeURIComponent(cfg.version || '6');
+    w.src = ORIGIN + '/widget/core.js?store=' + encodeURIComponent(STORE) + '&v=' + encodeURIComponent(cfg.version || '7');
     w.async = true;
     w.setAttribute('data-store', STORE);
     document.head.appendChild(w);
