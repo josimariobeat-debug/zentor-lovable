@@ -56,7 +56,7 @@
     if (window.__ZENTOR_RUNTIME__) return;
     window.__ZENTOR_RUNTIME__ = true;
     var w = document.createElement('script');
-    w.src = ORIGIN + '/widget/core.js?store=' + encodeURIComponent(STORE) + '&v=' + encodeURIComponent(cfg.version || '5');
+    w.src = ORIGIN + '/widget/core.js?store=' + encodeURIComponent(STORE) + '&v=' + encodeURIComponent(cfg.version || '6');
     w.async = true;
     w.setAttribute('data-store', STORE);
     document.head.appendChild(w);
@@ -67,7 +67,7 @@
   if (cached) inject(cached);
 
   function sync() {
-    var url = ORIGIN + '/api/public/widget?store=' + encodeURIComponent(STORE) +
+    var url = ORIGIN + '/api/public/zt-cfg?store=' + encodeURIComponent(STORE) +
       '&path=' + encodeURIComponent(rawPath) + '&_t=' + Date.now();
     fetch(url, { credentials: 'omit', cache: 'no-store' })
       .then(function (r) { return r.ok ? r.json() : null; })

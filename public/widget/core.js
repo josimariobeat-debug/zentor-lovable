@@ -20,7 +20,7 @@
   var API_BASE = (function () {
     try { return new URL(currentScript.src).origin; } catch (_) { return ''; }
   })();
-  var VIEWER_URL = API_BASE + '/widget/viewer.js?v=5';
+  var VIEWER_URL = API_BASE + '/widget/viewer.js?v=6';
 
   /* ── URL match (mirror de src/lib/urlMatch.ts) ── */
   var PRODUCT_HINTS = ['/produto/', '/produtos/', '/products/', '/product/', '/p/'];
@@ -85,9 +85,9 @@
     try {
       var payload = JSON.stringify({ store_id: STORE_ID, story_id: story_id || null, event_type: event_type, session_id: sessionId });
       if (navigator.sendBeacon) {
-        navigator.sendBeacon(API_BASE + '/api/public/track', new Blob([payload], { type: 'application/json' }));
+        navigator.sendBeacon(API_BASE + '/api/public/zt-ev', new Blob([payload], { type: 'application/json' }));
       } else {
-        fetch(API_BASE + '/api/public/track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payload, keepalive: true }).catch(function(){});
+        fetch(API_BASE + '/api/public/zt-ev', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payload, keepalive: true }).catch(function(){});
       }
     } catch (_) {}
   }
@@ -433,7 +433,7 @@
       return;
     }
     // Fallback: busca o payload agregado direto.
-    fetchJSON(API_BASE + '/api/public/widget?store=' + encodeURIComponent(STORE_ID) +
+    fetchJSON(API_BASE + '/api/public/zt-cfg?store=' + encodeURIComponent(STORE_ID) +
               '&path=' + encodeURIComponent(window.location.pathname + window.location.search))
       .then(function (res) {
         update(res);

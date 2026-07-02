@@ -3,7 +3,7 @@ import { jsonCors, preflight } from '@/lib/cors';
 
 const ALLOWED = new Set(['impression', 'open', 'view', 'completed', 'click']);
 
-export const Route = createFileRoute('/api/public/track')({
+export const Route = createFileRoute('/api/public/zt-ev')({
   server: {
     handlers: {
       OPTIONS: async () => preflight(),
