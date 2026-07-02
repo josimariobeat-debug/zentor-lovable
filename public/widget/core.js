@@ -20,7 +20,7 @@
   var API_BASE = (function () {
     try { return new URL(currentScript.src).origin; } catch (_) { return ''; }
   })();
-  var VIEWER_URL = API_BASE + '/widget/viewer.js';
+  var VIEWER_URL = API_BASE + '/widget/viewer.js?v=5';
 
   /* ── URL match (mirror de src/lib/urlMatch.ts) ── */
   var PRODUCT_HINTS = ['/produto/', '/produtos/', '/products/', '/product/', '/p/'];
