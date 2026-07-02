@@ -417,16 +417,17 @@
       }
       return;
     }
-    // Sem config no cache: consome a promise do loader (fetch em paralelo).
+    // Sem config no cache: mostra skeleton imediatamente e aguarda o fetch.
+    renderSkeleton();
     if (Z.configPromise && typeof Z.configPromise.then === 'function') {
-      Z.configPromise.then(renderFromConfig);
+      Z.configPromise.then(renderFromConfig).catch(function(){ clearSkeleton(); });
       return;
     }
     // Fallback (loader antigo/ausente): busca direto.
     fetchJSON(API_BASE + '/api/public/widget?store=' + encodeURIComponent(STORE_ID) +
               '&path=' + encodeURIComponent(window.location.pathname + window.location.search))
       .then(renderFromConfig)
-      .catch(function (err) { console.warn('[Zentor] failed to load:', err && err.message); });
+      .catch(function (err) { clearSkeleton(); console.warn('[Zentor] failed to load:', err && err.message); });
   }
 
   // Não esperamos DOMContentLoaded — o host é anexado a documentElement,
