@@ -1,10 +1,15 @@
-/*! Zentor Widget viewer v4 — iframe shim.
- *  Ao invés de reimplementar o player em vanilla JS, embute a rota
- *  /embed/viewer do painel para que a experiência da loja seja
- *  100% idêntica ao preview do painel administrativo (mesmo React,
- *  mesmo MediaPreviewModal, mesmo MeasurePreviewModal, mesmas
- *  animações e comportamentos).
- *  Payload é enviado via postMessage — zero refetch no iframe.
+/*! Zentor Widget viewer v5 — iframe shim.
+ *  Monta a rota /embed/viewer do painel em um iframe fullscreen para que
+ *  a experiência da loja seja 100% idêntica ao preview do painel
+ *  administrativo (mesmo React, mesmo MediaPreviewModal, mesmo
+ *  MeasurePreviewModal, mesmas animações e comportamentos).
+ *
+ *  Correções v5 (comportamento em tablet/mobile):
+ *   - Overlay é anexado ao <body> da loja, não ao shadow root (que tem
+ *     pointer-events:none no host, o que bloqueava toques em iOS/iPadOS
+ *     dentro do iframe).
+ *   - Overlay + iframe transparentes: o escurecimento vem apenas do
+ *     Radix Dialog (bg-black/80), igual ao preview da aba Stories.
  */
 (function () {
   'use strict';
@@ -14,7 +19,6 @@
     var stories = opts.stories || [];
     var startIdx = opts.startIdx || 0;
     var apiBase = opts.apiBase || '';
-    var shadow = opts.shadow || document.documentElement;
     var track = opts.track || function () {};
 
     // Bloqueia scroll do body enquanto o viewer estiver aberto.
@@ -27,7 +31,10 @@
       'position:fixed',
       'inset:0',
       'z-index:2147483600',
-      'background:#000',
+      'background:transparent',
+      'pointer-events:auto',
+      '-webkit-tap-highlight-color:transparent',
+      'touch-action:manipulation',
       'animation:ztFadeIn .18s ease',
     ].join(';');
 
@@ -40,18 +47,23 @@
     iframe.title = 'Zentor Stories';
     iframe.allow = 'autoplay; fullscreen; picture-in-picture';
     iframe.setAttribute('allowfullscreen', '');
+    iframe.setAttribute('allowtransparency', 'true');
     iframe.style.cssText = [
       'position:absolute',
       'inset:0',
       'width:100%',
       'height:100%',
       'border:0',
-      'background:#000',
+      'background:transparent',
       'display:block',
+      'pointer-events:auto',
     ].join(';');
 
     overlay.appendChild(iframe);
-    shadow.appendChild(overlay);
+    // Importante: anexar ao <body>, NÃO ao shadow root do widget. O host
+    // do shadow tem pointer-events:none, o que impede toques do iframe em
+    // alguns navegadores mobile/tablet (Safari iOS/iPadOS notavelmente).
+    (document.body || document.documentElement).appendChild(overlay);
 
     var expectedOrigin = (function () { try { return new URL(iframe.src).origin; } catch (_) { return '*'; } })();
 
@@ -70,6 +82,7 @@
 
     function close() {
       window.removeEventListener('message', onMessage);
+      window.removeEventListener('keydown', onKey);
       try { overlay.parentNode && overlay.parentNode.removeChild(overlay); } catch (_) {}
       document.documentElement.style.overflow = prevOverflow;
     }
@@ -90,7 +103,7 @@
 
     // ESC fecha (foco fica no host, não no iframe).
     var onKey = function (e) {
-      if (e.key === 'Escape') { close(); window.removeEventListener('keydown', onKey); }
+      if (e.key === 'Escape') close();
     };
     window.addEventListener('keydown', onKey);
   }
