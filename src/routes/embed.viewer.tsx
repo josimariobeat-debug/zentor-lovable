@@ -94,7 +94,7 @@ function EmbedViewer() {
 
 
   if (!payload) {
-    return <div style={{ background: '#000', width: '100vw', height: '100vh' }} />;
+    return <div style={{ background: 'transparent', width: '100vw', height: '100vh' }} />;
   }
 
   return (
