@@ -63,7 +63,7 @@ export default function IntegracaoTab() {
   const snippet = useMemo(
     () =>
       store
-        ? `<script src="${origin}/widget.js" data-store="${store.store_id}" async></script>`
+        ? `<script src="${origin}/loader.js?store=${store.store_id}" async></script>`
         : '',
     [store, origin],
   );
