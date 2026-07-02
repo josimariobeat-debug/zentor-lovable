@@ -45,13 +45,14 @@
   }
 
   function inject(cfg) {
-    if (!cfg || !cfg.stories || !cfg.stories.length) return;
+    if (!cfg) return;
     window.__ZENTOR__ = { store: STORE, config: cfg, origin: ORIGIN, path: rawPath };
     if (window.__ZENTOR_WIDGET__ && window.__ZENTOR_WIDGET__.update) {
       window.__ZENTOR_WIDGET__.update(cfg);
       lastVersion = cfg.version || lastVersion;
       return;
     }
+    if (!cfg.stories || !cfg.stories.length) return;
     if (window.__ZENTOR_RUNTIME__) return;
     window.__ZENTOR_RUNTIME__ = true;
     var w = document.createElement('script');
