@@ -249,7 +249,7 @@ export default function AdicionarStory() {
       setTitle(story.title);
       setFormat(story.format);
       setScroll(story.scroll);
-      setAparencia(story.aparencia);
+      setAparencia(story.appearance_preset_id || story.aparencia);
       setActive(story.active);
       setCta(story.cta || '');
       setUrls((story.urls as unknown as UrlEntry[])?.length ? (story.urls as unknown as UrlEntry[]) : [{ value: '', type: 'contem', ignore_params: false }]);
@@ -466,6 +466,7 @@ export default function AdicionarStory() {
         format,
         scroll,
         aparencia,
+        appearance_preset_id: aparencia !== 'default' ? aparencia : null,
         active,
         cta: cta || null,
         urls: urls as unknown as Tables<'stories'>['urls'],
