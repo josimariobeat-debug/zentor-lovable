@@ -21,7 +21,7 @@
   var API_BASE = (function () {
     try { return new URL(currentScript.src).origin; } catch (_) { return ''; }
   })();
-  var VIEWER_URL = API_BASE + '/widget/viewer.js?v=6';
+  var VIEWER_URL = API_BASE + '/widget/viewer.js?v=7';
 
   /* ── URL match (mirror de src/lib/urlMatch.ts) ── */
   var PRODUCT_HINTS = ['/produto/', '/produtos/', '/products/', '/product/', '/p/'];
@@ -201,8 +201,11 @@
   function preloadViewer() {
     if (preloadStarted) return;
     preloadStarted = true;
-    ensureViewer().catch(function(){ preloadStarted = false; });
-    // Pré-aquece o iframe do viewer (documento HTML + bundle) sem custo de render.
+    ensureViewer().then(function (V) {
+      // Pré-cria o iframe do /embed/viewer escondido, para que documento
+      // HTML + bundle React + primeiro paint aconteçam antes do clique.
+      try { V.prewarm && V.prewarm(API_BASE); } catch (_) {}
+    }).catch(function(){ preloadStarted = false; });
     try {
       var lk = document.createElement('link');
       lk.rel = 'preload'; lk.as = 'document'; lk.href = API_BASE + '/embed/viewer';
@@ -326,6 +329,15 @@
       track('impression', story.id);
     });
     shadow.appendChild(wrap);
+
+    // Prewarm em idle: cria iframe do viewer escondido logo após a página
+    // estabilizar, para que o clique tenha resposta instantânea.
+    var kick = function () { try { preloadViewer(); } catch (_) {} };
+    if (window.requestIdleCallback) {
+      window.requestIdleCallback(kick, { timeout: 2000 });
+    } else {
+      setTimeout(kick, 1200);
+    }
   }
 
   function boot() {
