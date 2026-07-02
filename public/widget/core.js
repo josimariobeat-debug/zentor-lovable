@@ -329,6 +329,15 @@
       track('impression', story.id);
     });
     shadow.appendChild(wrap);
+
+    // Prewarm em idle: cria iframe do viewer escondido logo após a página
+    // estabilizar, para que o clique tenha resposta instantânea.
+    var kick = function () { try { preloadViewer(); } catch (_) {} };
+    if (window.requestIdleCallback) {
+      window.requestIdleCallback(kick, { timeout: 2000 });
+    } else {
+      setTimeout(kick, 1200);
+    }
   }
 
   function boot() {
