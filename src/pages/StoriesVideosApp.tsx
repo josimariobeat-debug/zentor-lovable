@@ -693,6 +693,13 @@ export default function StoriesVideosApp() {
         showMeasureIcon={!!previewMeasure}
         measureOpen={previewMeasureOpen}
         onMeasureClick={() => setPreviewMeasureOpen(true)}
+        onActiveIndexChange={(idx) => {
+          if (!previewStory) return;
+          const item = getOrderedStoryMedia(previewStory)[idx] as (StoryMedia & { measure_id?: string | null }) | undefined;
+          const mid = item?.measure_id ?? null;
+          setPreviewMeasure(mid ? ((measuresStore.get(mid) as MeasureModel | undefined) ?? { id: mid, name: '', rows: [] }) : null);
+          setPreviewMeasureOpen(false);
+        }}
       />
 
 
