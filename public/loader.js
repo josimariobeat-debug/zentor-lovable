@@ -1,4 +1,11 @@
-/*! Zentor Loader v2 — carrega o core sob demanda somente quando há stories para a página atual */
+/*! Zentor Loader v3 — bootstrap paralelo: core + fetch em paralelo,
+ *  render imediato quando cache existe, sem esperar window.load.
+ *  Novo em v3:
+ *   - core.js baixa em paralelo com o fetch de config (não sequencial).
+ *   - Config atual é exposto via `__ZENTOR__.config` (cache) e via
+ *     `__ZENTOR__.configPromise` (rede) — core consome o que chegar primeiro.
+ *   - <link rel=preconnect> para o origin do CDN, reduzindo TLS/TCP inicial.
+ */
 (function () {
   if (window.__ZENTOR_LOADER__) return;
   window.__ZENTOR_LOADER__ = true;
@@ -11,7 +18,13 @@
   if (!STORE) { console.warn('[Zentor] loader: parâmetro store ausente'); return; }
   var ORIGIN = src.origin;
 
-  // Normalização (mirror de src/lib/urlMatch.ts) — usada só para o cache key.
+  // Preconnect ao CDN antes de qualquer request — economiza handshake TLS/TCP.
+  try {
+    var pc = document.createElement('link');
+    pc.rel = 'preconnect'; pc.href = ORIGIN; pc.crossOrigin = '';
+    document.head.appendChild(pc);
+  } catch (_) {}
+
   function normalizePath(input) {
     if (!input) return '/';
     var v = String(input).trim();
@@ -43,28 +56,50 @@
     try { localStorage.setItem(cacheKey, JSON.stringify({ t: Date.now(), v: v })); } catch (_) {}
   }
 
-  function inject(cfg) {
-    if (!cfg || !cfg.stories || !cfg.stories.length) return;
+  // Estado compartilhado com o core.
+  var initial = { store: STORE, origin: ORIGIN, path: rawPath };
+  var cached = readCache();
+  if (cached) initial.config = cached;
+  window.__ZENTOR__ = initial;
+
+  // Dispara fetch e injeção do core EM PARALELO — não esperamos um pelo outro.
+  var url = ORIGIN + '/api/public/widget?store=' + encodeURIComponent(STORE) + '&path=' + encodeURIComponent(rawPath);
+  var fetchP = fetch(url, { credentials: 'omit' })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (cfg) {
+      if (cfg) writeCache(cfg);
+      return cfg;
+    })
+    .catch(function () { return null; });
+  window.__ZENTOR__.configPromise = fetchP;
+
+  // Só injeta o core se: já temos cache (renderiza imediato) OU o fetch trouxe
+  // stories (para páginas sem stories mapeados, não polui o DOM).
+  function inject(version) {
     if (window.__ZENTOR_RUNTIME__) return;
     window.__ZENTOR_RUNTIME__ = true;
-    window.__ZENTOR__ = { store: STORE, config: cfg, origin: ORIGIN, path: rawPath };
     var w = document.createElement('script');
-    w.src = ORIGIN + '/widget/core.js?store=' + encodeURIComponent(STORE) + '&v=' + encodeURIComponent(cfg.version || '9');
+    w.src = ORIGIN + '/widget/core.js?store=' + encodeURIComponent(STORE) + '&v=' + encodeURIComponent(version || '10');
     w.async = true;
     w.setAttribute('data-store', STORE);
     document.head.appendChild(w);
   }
 
-  var cached = readCache();
-  if (cached) inject(cached);
-
-  var url = ORIGIN + '/api/public/widget?store=' + encodeURIComponent(STORE) + '&path=' + encodeURIComponent(rawPath);
-  fetch(url, { credentials: 'omit' })
-    .then(function (r) { return r.ok ? r.json() : null; })
-    .then(function (cfg) {
+  if (cached && cached.stories && cached.stories.length) {
+    // Fast path: render imediato baseado em cache; fetch atualiza em background.
+    inject(cached.version);
+    fetchP.then(function (cfg) {
       if (!cfg) return;
-      writeCache(cfg);
-      if (!cached) inject(cfg);
-    })
-    .catch(function () {});
+      window.__ZENTOR__.config = cfg;
+    });
+  } else {
+    // Sem cache útil: aguarda fetch, injeta core em paralelo assim que
+    // souber que há stories para esta página.
+    fetchP.then(function (cfg) {
+      if (!cfg || !cfg.stories || !cfg.stories.length) return;
+      window.__ZENTOR__.config = cfg;
+      inject(cfg.version);
+    });
+  }
 })();
+
