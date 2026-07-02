@@ -70,22 +70,15 @@ function EmbedViewer() {
     return { playlist, mediaToStory, startIdx };
   }, [payload]);
 
-  // Índice ativo da playlist para descobrir medida atual e story ativo.
-  const [activeIdx, setActiveIdx] = useState(0);
-  useEffect(() => { setActiveIdx(flat.startIdx); }, [flat.startIdx]);
-
-  const activeMedia = useMemo(() => {
+  // Medida do item inicial (mesmo comportamento do preview admin: ícone reflete
+  // o story em que o usuário clicou, sem atualizar dinamicamente enquanto avança).
+  const currentMeasure = useMemo(() => {
     if (!payload) return null;
-    const si = flat.mediaToStory[activeIdx];
-    if (si == null) return null;
-    const story = payload.stories[si];
-    // Recupera a mídia correspondente somando offsets.
-    let offset = 0;
-    for (let i = 0; i < si; i++) offset += payload.stories[i].media.length;
-    return story.media[activeIdx - offset] ?? null;
-  }, [payload, flat.mediaToStory, activeIdx]);
+    const si = payload.startStoryIdx ?? 0;
+    const mi = payload.startMediaIdx ?? 0;
+    return payload.stories[si]?.media[mi]?.measure ?? null;
+  }, [payload]);
 
-  const currentMeasure = activeMedia?.measure ?? null;
 
   if (!payload) {
     return <div style={{ background: '#000', width: '100vw', height: '100vh' }} />;
