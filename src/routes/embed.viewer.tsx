@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import MediaPreviewModal, { type PlaylistItem } from '@/components/storievideos/MediaPreviewModal';
 import { MeasurePreviewModal, type MeasureModel } from '@/components/storievideos/MeasurePreviewModal';
 
@@ -32,7 +32,6 @@ function post(data: any) {
 function EmbedViewer() {
   const [payload, setPayload] = useState<EmbedPayload | null>(null);
   const [measureOpen, setMeasureOpen] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(0);
   
 
   useEffect(() => {
@@ -52,10 +51,9 @@ function EmbedViewer() {
   // Achata todas as mídias de todos os stories em uma playlist única — mesmo
   // comportamento do preview da lista de Stories no painel.
   const flat = useMemo(() => {
-    if (!payload) return { playlist: [] as PlaylistItem[], mediaToStory: [] as number[], measures: [] as Array<MeasureModel | null>, startIdx: 0 };
+    if (!payload) return { playlist: [] as PlaylistItem[], mediaToStory: [] as number[], startIdx: 0 };
     const playlist: PlaylistItem[] = [];
     const mediaToStory: number[] = [];
-    const measures: Array<MeasureModel | null> = [];
     let startIdx = 0;
     payload.stories.forEach((story, si) => {
       story.media.forEach((m, mi) => {
@@ -67,28 +65,19 @@ function EmbedViewer() {
           products: m.products ?? [],
         });
         mediaToStory.push(si);
-        measures.push(m.measure ?? null);
       });
     });
-    return { playlist, mediaToStory, measures, startIdx };
+    return { playlist, mediaToStory, startIdx };
   }, [payload]);
 
-  useEffect(() => {
-    if (!payload) return;
-    setActiveIndex(flat.startIdx);
-    setMeasureOpen(false);
-  }, [payload, flat.startIdx]);
-
-  const handleActiveIndexChange = useCallback((idx: number) => {
-    setActiveIndex(idx);
-    setMeasureOpen(false);
-  }, []);
-
-  // Medida da mídia ativa, usando o mesmo MediaPreviewModal do painel.
+  // Medida do item inicial (mesmo comportamento do preview admin: ícone reflete
+  // o story em que o usuário clicou, sem atualizar dinamicamente enquanto avança).
   const currentMeasure = useMemo(() => {
     if (!payload) return null;
-    return flat.measures[activeIndex] ?? null;
-  }, [payload, flat.measures, activeIndex]);
+    const si = payload.startStoryIdx ?? 0;
+    const mi = payload.startMediaIdx ?? 0;
+    return payload.stories[si]?.media[mi]?.measure ?? null;
+  }, [payload]);
 
 
   if (!payload) {
@@ -105,7 +94,6 @@ function EmbedViewer() {
         showMeasureIcon={!!currentMeasure}
         measureOpen={measureOpen}
         onMeasureClick={() => setMeasureOpen(true)}
-        onActiveIndexChange={handleActiveIndexChange}
       />
       <MeasurePreviewModal
         model={measureOpen ? currentMeasure : null}
