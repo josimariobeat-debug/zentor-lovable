@@ -1,8 +1,6 @@
-/*! Zentor Widget core v4 — bootstrap + bubbles + lazy viewer
+/*! Zentor Widget core v11 — bootstrap + bubbles + lazy viewer + skeleton
  *  Aplica 100% da aba Aparência do painel nas miniaturas do widget.
- *  Fonte de verdade da lógica de match: src/lib/urlMatch.ts (mirror abaixo).
- *  Fonte de verdade do modal de reprodução: /embed/viewer (React do painel),
- *  carregado via viewer.js (iframe shim).
+ *  Skeleton mínimo enquanto config/Stories chegam (não altera layout final).
  */
 (function () {
   'use strict';
