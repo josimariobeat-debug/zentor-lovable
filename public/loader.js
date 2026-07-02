@@ -1,4 +1,4 @@
-/*! Zentor Loader v3 — carrega o core e mantém aparência sincronizada em tempo real */
+/*! Zentor Loader v2 — carrega o core sob demanda somente quando há stories para a página atual */
 (function () {
   if (window.__ZENTOR_LOADER__) return;
   window.__ZENTOR_LOADER__ = true;
@@ -28,8 +28,7 @@
   var rawPath = location.pathname + location.search;
   var normPath = normalizePath(location.pathname);
   var cacheKey = 'zt:cfg:' + STORE + ':' + normPath;
-  var TTL = 5 * 1000;
-  var lastVersion = '';
+  var TTL = 60 * 1000;
 
   function readCache() {
     try {
@@ -45,40 +44,27 @@
   }
 
   function inject(cfg) {
-    if (!cfg) return;
-    window.__ZENTOR__ = { store: STORE, config: cfg, origin: ORIGIN, path: rawPath };
-    if (window.__ZENTOR_WIDGET__ && window.__ZENTOR_WIDGET__.update) {
-      window.__ZENTOR_WIDGET__.update(cfg);
-      lastVersion = cfg.version || lastVersion;
-      return;
-    }
-    if (!cfg.stories || !cfg.stories.length) return;
+    if (!cfg || !cfg.stories || !cfg.stories.length) return;
     if (window.__ZENTOR_RUNTIME__) return;
     window.__ZENTOR_RUNTIME__ = true;
+    window.__ZENTOR__ = { store: STORE, config: cfg, origin: ORIGIN, path: rawPath };
     var w = document.createElement('script');
-    w.src = ORIGIN + '/widget/core.js?store=' + encodeURIComponent(STORE) + '&v=' + encodeURIComponent(cfg.version || '5');
+    w.src = ORIGIN + '/widget/core.js?store=' + encodeURIComponent(STORE) + '&v=' + encodeURIComponent(cfg.version || '4');
     w.async = true;
     w.setAttribute('data-store', STORE);
     document.head.appendChild(w);
-    lastVersion = cfg.version || lastVersion;
   }
 
   var cached = readCache();
   if (cached) inject(cached);
 
-  function sync() {
-    var url = ORIGIN + '/api/public/widget?store=' + encodeURIComponent(STORE) +
-      '&path=' + encodeURIComponent(rawPath) + '&_t=' + Date.now();
-    fetch(url, { credentials: 'omit', cache: 'no-store' })
-      .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (cfg) {
-        if (!cfg) return;
-        writeCache(cfg);
-        if ((cfg.version || '') !== lastVersion || !window.__ZENTOR_RUNTIME__) inject(cfg);
-      })
-      .catch(function () {});
-  }
-
-  sync();
-  window.setInterval(sync, 4000);
+  var url = ORIGIN + '/api/public/widget?store=' + encodeURIComponent(STORE) + '&path=' + encodeURIComponent(rawPath);
+  fetch(url, { credentials: 'omit' })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (cfg) {
+      if (!cfg) return;
+      writeCache(cfg);
+      if (!cached) inject(cfg);
+    })
+    .catch(function () {});
 })();
