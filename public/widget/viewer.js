@@ -109,7 +109,7 @@
       'pointer-events:auto',
       '-webkit-tap-highlight-color:transparent',
       'touch-action:manipulation',
-      'opacity:0','transition:opacity .1s linear',
+      'opacity:1',
     ].join(';');
 
     var payload = { stories: stories, startStoryIdx: startIdx, startMediaIdx: 0 };
@@ -121,17 +121,9 @@
       } catch (_) {}
     }
 
-    var revealed = false;
-    function reveal() {
-      if (revealed) return;
-      revealed = true;
-      requestAnimationFrame(function () { ov.style.opacity = '1'; });
-    }
-
     function close() {
       w.activeHandler = null;
       window.removeEventListener('keydown', onKey);
-      // Descarta o iframe (payload já foi consumido); prewarma outro para o próximo clique.
       try { ov.parentNode && ov.parentNode.removeChild(ov); } catch (_) {}
       try { window.removeEventListener('message', w._globalOnMsg); } catch (_) {}
       document.documentElement.style.overflow = prevOverflow;
@@ -141,25 +133,23 @@
     }
 
     w.activeHandler = function (data) {
-      if (data.type === 'initialized') reveal();
-      else if (data.type === 'close') close();
+      if (data.type === 'close') close();
       else if (data.type === 'track') track(data.event_type, data.story_id);
     };
-
-    // Fallback se initialized não chegar.
-    setTimeout(reveal, 500);
 
     var onKey = function (e) { if (e.key === 'Escape') close(); };
     window.addEventListener('keydown', onKey);
 
+    // Envia init imediatamente se ready; senão enfileira (dispara no ready).
     if (w.ready) {
       sendInit();
     } else {
       w.readyCallbacks.push(sendInit);
-      // Extra safety: se load já aconteceu mas ready não chegou (bloqueio de msg), tenta.
-      setTimeout(function () { if (!revealed) sendInit(); }, 250);
+      // Safety: se por algum motivo ready não chegou mas iframe já carregou.
+      setTimeout(function () { if (!w.ready) sendInit(); }, 200);
     }
   }
+
 
   window.__ZENTOR_VIEWER__ = { open: open, prewarm: prewarm };
 })();
