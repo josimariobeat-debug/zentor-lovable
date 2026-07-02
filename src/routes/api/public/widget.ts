@@ -3,6 +3,7 @@ import { CORS_HEADERS, jsonCors, preflight } from '@/lib/cors';
 import { storyMatchesPath } from '@/lib/urlMatch';
 
 const SIGNED_TTL = 60 * 60 * 24 * 7; // 7 days
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 async function reSign(rawUrl: string | null | undefined, admin: any): Promise<string | null> {
   if (!rawUrl) return null;
@@ -37,14 +38,14 @@ export const Route = createFileRoute('/api/public/widget')({
 
           const { data: store } = await supabaseAdmin
             .from('stores')
-            .select('store_id, name, theme, active, user_id')
+            .select('store_id, name, theme, active, user_id, updated_at')
             .eq('store_id', storeId)
             .maybeSingle();
           if (!store || !store.active) return jsonCors({ error: 'not_found' }, { status: 404 });
 
           const { data: rows, error } = await supabaseAdmin
             .from('stories')
-            .select('id, title, cta, cover_url, thumbnail_url, urls, appearance_preset_id, story_media(id, url, type, is_cover, position, product_ids, measure_id)')
+            .select('id, title, cta, cover_url, thumbnail_url, urls, aparencia, appearance_preset_id, updated_at, story_media(id, url, type, name, is_cover, position, product_ids, measure_id, products_layout, created_at)')
             .eq('store_id', storeId)
             .eq('active', true)
             .order('created_at', { ascending: false })
@@ -58,7 +59,8 @@ export const Route = createFileRoute('/api/public/widget')({
           const measureIds = new Set<string>();
           const presetIds = new Set<string>();
           for (const s of filtered) {
-            if (s.appearance_preset_id) presetIds.add(s.appearance_preset_id);
+            const effectivePresetId = s.appearance_preset_id || (UUID_RE.test(String(s.aparencia ?? '')) ? String(s.aparencia) : null);
+            if (effectivePresetId) presetIds.add(effectivePresetId);
             for (const m of (s.story_media ?? []) as any[]) {
               if (Array.isArray(m.product_ids)) m.product_ids.forEach((id: string) => id && productIds.add(id));
               if (m.measure_id) measureIds.add(m.measure_id);
@@ -70,21 +72,21 @@ export const Route = createFileRoute('/api/public/widget')({
             productIds.size
               ? supabaseAdmin
                   .from('products')
-                  .select('id, name, price, currency, url, image')
+                  .select('id, name, price, currency, url, image, updated_at')
                   .in('id', Array.from(productIds))
                   .eq('user_id', store.user_id)
               : Promise.resolve({ data: [] as any[] }),
             measureIds.size
               ? supabaseAdmin
                   .from('measure_models')
-                  .select('id, name, measure_rows(id, size_name, measure_type, value_cm, position)')
+                  .select('id, name, updated_at, measure_rows(id, size_name, measure_type, value_cm, position, updated_at)')
                   .in('id', Array.from(measureIds))
                   .eq('user_id', store.user_id)
               : Promise.resolve({ data: [] as any[] }),
             presetIds.size
               ? supabaseAdmin
                   .from('appearance_presets')
-                  .select('id, config')
+                  .select('id, config, updated_at')
                   .in('id', Array.from(presetIds))
                   .eq('user_id', store.user_id)
               : Promise.resolve({ data: [] as any[] }),
@@ -92,7 +94,15 @@ export const Route = createFileRoute('/api/public/widget')({
 
           const productMap = new Map<string, any>();
           for (const p of (productsRes.data ?? []) as any[]) {
-            productMap.set(p.id, { id: p.id, name: p.name, price: String(p.price ?? ''), image: p.image ?? null, url: p.url ?? null });
+            productMap.set(p.id, {
+              id: p.id,
+              name: p.name,
+              price: String(p.price ?? ''),
+              currency: p.currency ?? 'BRL',
+              image: await reSign(p.image ?? null, supabaseAdmin),
+              url: p.url ?? null,
+              updated_at: p.updated_at ?? null,
+            });
           }
 
           const measureMap = new Map<string, any>();
@@ -101,13 +111,31 @@ export const Route = createFileRoute('/api/public/widget')({
               .slice()
               .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
               .map((r) => ({ id: r.id, tamanho: r.size_name, medida: r.measure_type, valor: String(r.value_cm) }));
-            measureMap.set(m.id, { id: m.id, name: m.name, rows: rowsArr });
+            measureMap.set(m.id, { id: m.id, name: m.name, rows: rowsArr, updated_at: m.updated_at ?? null });
           }
 
           const presetMap = new Map<string, any>();
+          const presetUpdatedMap = new Map<string, string | null>();
           for (const p of (presetsRes.data ?? []) as any[]) {
             presetMap.set(p.id, p.config ?? {});
+            presetUpdatedMap.set(p.id, p.updated_at ?? null);
           }
+
+          const revisionParts: string[] = [store.updated_at ?? ''];
+          for (const s of filtered as any[]) {
+            revisionParts.push(s.updated_at ?? '', s.id ?? '');
+            const effectivePresetId = s.appearance_preset_id || (UUID_RE.test(String(s.aparencia ?? '')) ? String(s.aparencia) : null);
+            if (effectivePresetId) revisionParts.push(effectivePresetId, presetUpdatedMap.get(effectivePresetId) ?? '');
+            for (const m of (s.story_media ?? []) as any[]) {
+              revisionParts.push(m.id ?? '', m.created_at ?? '', (m.product_ids ?? []).join(','), m.measure_id ?? '', m.products_layout ?? '');
+            }
+          }
+          for (const p of productMap.values()) revisionParts.push(p.id, p.updated_at ?? '');
+          for (const m of measureMap.values()) revisionParts.push(m.id, m.updated_at ?? '');
+          let hash = 0;
+          const revisionSource = revisionParts.join('|');
+          for (let i = 0; i < revisionSource.length; i += 1) hash = ((hash << 5) - hash + revisionSource.charCodeAt(i)) | 0;
+          const revision = `r${Math.abs(hash).toString(36)}`;
 
           const stories = await Promise.all(
             filtered.map(async (s: any) => {
@@ -134,18 +162,23 @@ export const Route = createFileRoute('/api/public/widget')({
                     id: m.id,
                     url: await reSign(m.url, supabaseAdmin),
                     type: m.type,
+                    name: m.name ?? null,
                     products,
                     measure,
+                    products_layout: m.products_layout ?? 'carrossel',
                   };
                 }),
               );
+
+              const effectivePresetId = s.appearance_preset_id || (UUID_RE.test(String(s.aparencia ?? '')) ? String(s.aparencia) : null);
 
               return {
                 id: s.id,
                 title: s.title,
                 cta: s.cta,
                 cover: (await reSign(s.thumbnail_url ?? s.cover_url ?? cover?.url ?? null, supabaseAdmin)) ?? null,
-                appearance: s.appearance_preset_id ? presetMap.get(s.appearance_preset_id) ?? null : null,
+                appearance_preset_id: effectivePresetId,
+                appearance: effectivePresetId ? presetMap.get(effectivePresetId) ?? null : null,
                 media: items.filter((m) => !!m.url),
               };
             }),
@@ -153,14 +186,15 @@ export const Route = createFileRoute('/api/public/widget')({
 
           return jsonCors(
             {
-              version: '2',
+              version: `5-${revision}`,
               store: { store_id: store.store_id, name: store.name, theme: store.theme, active: store.active },
               stories,
             },
             {
               headers: {
                 ...CORS_HEADERS,
-                'Cache-Control': 'public, max-age=30, s-maxage=30',
+                'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+                Pragma: 'no-cache',
               },
             },
           );
