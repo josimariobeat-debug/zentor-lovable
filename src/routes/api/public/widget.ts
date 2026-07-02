@@ -1,22 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { CORS_HEADERS, jsonCors, preflight } from '@/lib/cors';
+import { storyMatchesPath } from '@/lib/urlMatch';
 
 const SIGNED_TTL = 60 * 60 * 24 * 7; // 7 days
 
-type UrlRule = { mode?: 'contains' | 'exact' | 'all'; value?: string };
-
-function storyMatchesPath(urls: unknown, path: string): boolean {
-  if (!Array.isArray(urls) || urls.length === 0) return true;
-  for (const r of urls as UrlRule[]) {
-    if (!r) continue;
-    if (r.mode === 'all') return true;
-    const v = (r.value ?? '').trim();
-    if (!v) continue;
-    if (r.mode === 'exact' && path === v) return true;
-    if ((r.mode === 'contains' || !r.mode) && path.includes(v)) return true;
-  }
-  return false;
-}
 
 async function reSign(rawUrl: string | null | undefined, admin: any): Promise<string | null> {
   if (!rawUrl) return null;
