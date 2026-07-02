@@ -122,6 +122,27 @@ function EmbedViewer() {
         model={measureOpen ? currentMeasure : null}
         onClose={() => setMeasureOpen(false)}
       />
+      <InitSignal />
     </div>
   );
+}
+
+// Sinaliza para o shim que o React já renderizou o modal. Rodamos em dois
+// rAFs seguidos para garantir que o Radix Dialog já montou no portal e o
+// browser já pintou pelo menos um frame antes do fade-in.
+function InitSignal() {
+  useEffect(() => {
+    let raf1 = 0;
+    let raf2 = 0;
+    raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => {
+        post({ type: 'initialized' });
+      });
+    });
+    return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+    };
+  }, []);
+  return null;
 }
