@@ -686,6 +686,16 @@
   }
 
   function boot() {
+    // Preferred path: loader.js já baixou a config unificada e filtrou por página.
+    var pre = window.__ZENTOR__ && window.__ZENTOR__.config;
+    if (pre && pre.store && Array.isArray(pre.stories)) {
+      injectStyles();
+      flowLog('preloaded', { path: currentPagePath(), total: pre.stories.length });
+      if (!pre.stories.length) return;
+      renderBubbles(pre.store, pre.stories);
+      return;
+    }
+    // Fallback legado (script antigo instalado direto sem loader).
     fetchJSON(API_BASE + '/api/public/store/' + encodeURIComponent(STORE_ID))
       .then(function (cfg) {
         injectStyles();
