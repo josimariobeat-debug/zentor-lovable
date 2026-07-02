@@ -1,15 +1,17 @@
-/*! Zentor Widget viewer v7 — iframe shim com prewarm.
- *  Novo em v7:
- *   - `prewarm(apiBase)` cria o iframe do /embed/viewer imediatamente após
- *     o core carregar, escondido em posição fixa (0x0, opacity:0), para que
- *     o documento HTML + bundle React + primeiro paint aconteçam ANTES do
- *     usuário clicar. No clique, apenas expandimos e mandamos o init —
- *     resposta praticamente instantânea.
- *   - Handshake `ready` do embed é capturado durante o prewarm e memoizado,
- *     evitando espera no `open`.
- *  Mantido de v5/v6: overlay no <body>, pointer-events:auto,
- *  touch-action:manipulation, transparência total (fade só do Radix).
+/*! Zentor Widget viewer v8 — iframe shim com prewarm + reveal instantâneo.
+ *  Novo em v8:
+ *   - Reveal do overlay é INSTANTÂNEO (opacity 1, sem transition, sem esperar
+ *     handshake `initialized`). Como o iframe já foi prewarmado e o embed
+ *     documento é transparente, mostrá-lo imediatamente não causa flash — a
+ *     animação percebida é a do próprio Radix Dialog dentro do iframe, que
+ *     começa assim que o `init` postMessage chega (< 1 frame). Elimina o
+ *     delay de handshake + transition (~150–300ms).
+ *   - `init` é enviado o mais cedo possível; se ready ainda não chegou, é
+ *     enfileirado e disparado no ready.
+ *  Mantido de v7: prewarm no idle, overlay no <body>, pointer-events:auto,
+ *  touch-action:manipulation, transparência total.
  */
+
 (function () {
   'use strict';
   if (window.__ZENTOR_VIEWER__) return;
@@ -107,7 +109,7 @@
       'pointer-events:auto',
       '-webkit-tap-highlight-color:transparent',
       'touch-action:manipulation',
-      'opacity:0','transition:opacity .1s linear',
+      'opacity:1',
     ].join(';');
 
     var payload = { stories: stories, startStoryIdx: startIdx, startMediaIdx: 0 };
@@ -119,17 +121,9 @@
       } catch (_) {}
     }
 
-    var revealed = false;
-    function reveal() {
-      if (revealed) return;
-      revealed = true;
-      requestAnimationFrame(function () { ov.style.opacity = '1'; });
-    }
-
     function close() {
       w.activeHandler = null;
       window.removeEventListener('keydown', onKey);
-      // Descarta o iframe (payload já foi consumido); prewarma outro para o próximo clique.
       try { ov.parentNode && ov.parentNode.removeChild(ov); } catch (_) {}
       try { window.removeEventListener('message', w._globalOnMsg); } catch (_) {}
       document.documentElement.style.overflow = prevOverflow;
@@ -139,25 +133,23 @@
     }
 
     w.activeHandler = function (data) {
-      if (data.type === 'initialized') reveal();
-      else if (data.type === 'close') close();
+      if (data.type === 'close') close();
       else if (data.type === 'track') track(data.event_type, data.story_id);
     };
-
-    // Fallback se initialized não chegar.
-    setTimeout(reveal, 500);
 
     var onKey = function (e) { if (e.key === 'Escape') close(); };
     window.addEventListener('keydown', onKey);
 
+    // Envia init imediatamente se ready; senão enfileira (dispara no ready).
     if (w.ready) {
       sendInit();
     } else {
       w.readyCallbacks.push(sendInit);
-      // Extra safety: se load já aconteceu mas ready não chegou (bloqueio de msg), tenta.
-      setTimeout(function () { if (!revealed) sendInit(); }, 250);
+      // Safety: se por algum motivo ready não chegou mas iframe já carregou.
+      setTimeout(function () { if (!w.ready) sendInit(); }, 200);
     }
   }
+
 
   window.__ZENTOR_VIEWER__ = { open: open, prewarm: prewarm };
 })();
