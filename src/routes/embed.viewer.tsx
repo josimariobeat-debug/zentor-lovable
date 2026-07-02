@@ -8,6 +8,16 @@ export const Route = createFileRoute('/embed/viewer')({
   component: EmbedViewer,
 });
 
+// Torna o documento transparente antes do primeiro paint do React, evitando
+// o flash branco padrão do iframe. Executa no import do módulo (client-only
+// pois a rota é ssr:false).
+if (typeof document !== 'undefined') {
+  const s = document.createElement('style');
+  s.textContent =
+    'html,body{background:transparent !important;margin:0;padding:0;overflow:hidden;color-scheme:normal}';
+  document.head.appendChild(s);
+}
+
 interface StoryPayload {
   id: string;
   media: Array<{
@@ -112,6 +122,27 @@ function EmbedViewer() {
         model={measureOpen ? currentMeasure : null}
         onClose={() => setMeasureOpen(false)}
       />
+      <InitSignal />
     </div>
   );
+}
+
+// Sinaliza para o shim que o React já renderizou o modal. Rodamos em dois
+// rAFs seguidos para garantir que o Radix Dialog já montou no portal e o
+// browser já pintou pelo menos um frame antes do fade-in.
+function InitSignal() {
+  useEffect(() => {
+    let raf1 = 0;
+    let raf2 = 0;
+    raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => {
+        post({ type: 'initialized' });
+      });
+    });
+    return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+    };
+  }, []);
+  return null;
 }
