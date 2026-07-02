@@ -63,7 +63,7 @@ export default function IntegracaoTab() {
   const snippet = useMemo(
     () =>
       store
-        ? `<script src="${origin}/zt.js?store=${store.store_id}&v=7" async></script>`
+        ? `<script src="${origin}/zt.js?store=${store.store_id}&v=8" async></script>`
         : '',
     [store, origin],
   );
@@ -95,7 +95,7 @@ export default function IntegracaoTab() {
 
   function testIntegration() {
     if (!store) return;
-    const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Teste Zentor — ${store.store_id}</title><style>body{font-family:system-ui,sans-serif;background:#f5f5f5;margin:0;padding:40px;color:#111}h1{font-size:22px}.box{max-width:640px;background:#fff;padding:24px;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.06)}</style></head><body><div class="box"><h1>Página de teste — ${store.store_id}</h1><p>Esta é uma página em branco com o widget Zentor instalado. Você deve ver as bolinhas dos stories no canto da tela.</p></div><script src="${origin}/zt.js?store=${store.store_id}&v=7" async></script></body></html>`;
+    const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Teste Zentor — ${store.store_id}</title><style>body{font-family:system-ui,sans-serif;background:#f5f5f5;margin:0;padding:40px;color:#111}h1{font-size:22px}.box{max-width:640px;background:#fff;padding:24px;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.06)}</style></head><body><div class="box"><h1>Página de teste — ${store.store_id}</h1><p>Esta é uma página em branco com o widget Zentor instalado. Você deve ver as bolinhas dos stories no canto da tela.</p></div><script src="${origin}/zt.js?store=${store.store_id}&v=8" async></script></body></html>`;
     const blob = new Blob([html], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
     window.open(url, '_blank', 'noopener');
@@ -157,7 +157,7 @@ export default function IntegracaoTab() {
             <Eye className="w-4 h-4" /> Testar integração
           </button>
           <a
-            href={`${origin}/zt.js?store=${store.store_id}&v=7`}
+            href={`${origin}/zt.js?store=${store.store_id}&v=8`}
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-2 h-10 px-4 rounded-xl border border-neutral-200 text-sm font-medium text-neutral-800 hover:bg-neutral-50"

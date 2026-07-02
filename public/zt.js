@@ -1,4 +1,4 @@
-/*! Zentor Loader v4 — alias neutro para evitar bloqueadores por nome de rota */
+/*! Zentor Loader v5 — alias neutro para evitar bloqueadores por nome de rota */
 (function () {
   if (window.__ZENTOR_LOADER__) return;
   window.__ZENTOR_LOADER__ = true;
@@ -55,7 +55,7 @@
     if (window.__ZENTOR_RUNTIME__) return;
     window.__ZENTOR_RUNTIME__ = true;
     var w = document.createElement('script');
-    w.src = ORIGIN + '/zt/core.js?store=' + encodeURIComponent(STORE) + '&v=' + encodeURIComponent(cfg.version || '7');
+    w.src = ORIGIN + '/zt/core.js?store=' + encodeURIComponent(STORE) + '&v=' + encodeURIComponent(cfg.version || '8');
     w.async = true;
     w.setAttribute('data-store', STORE);
     document.head.appendChild(w);

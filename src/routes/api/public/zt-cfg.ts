@@ -196,7 +196,7 @@ export const Route = createFileRoute('/api/public/zt-cfg')({
 
           return jsonCors(
             {
-              version: `5-${revision}`,
+              version: `8-${revision}`,
               store: { store_id: store.store_id, name: store.name, theme: store.theme, active: store.active },
               stories,
             },
