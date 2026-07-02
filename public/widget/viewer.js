@@ -1,15 +1,12 @@
-/*! Zentor Widget viewer v5 — iframe shim.
- *  Monta a rota /embed/viewer do painel em um iframe fullscreen para que
- *  a experiência da loja seja 100% idêntica ao preview do painel
- *  administrativo (mesmo React, mesmo MediaPreviewModal, mesmo
- *  MeasurePreviewModal, mesmas animações e comportamentos).
- *
- *  Correções v5 (comportamento em tablet/mobile):
- *   - Overlay é anexado ao <body> da loja, não ao shadow root (que tem
- *     pointer-events:none no host, o que bloqueava toques em iOS/iPadOS
- *     dentro do iframe).
- *   - Overlay + iframe transparentes: o escurecimento vem apenas do
- *     Radix Dialog (bg-black/80), igual ao preview da aba Stories.
+/*! Zentor Widget viewer v6 — iframe shim.
+ *  Correções v6 (flash na abertura):
+ *   - Iframe começa com opacity:0 e só faz fade-in DEPOIS que a app React
+ *     dentro dele confirmou o render inicial (mensagem "initialized"),
+ *     evitando o flash branco/preto do iframe antes do modal aparecer.
+ *   - Não animamos mais o overlay separadamente; o único fade visível é o
+ *     do próprio Radix Dialog, idêntico ao preview da aba Stories.
+ *  Correções v5 mantidas: overlay no <body>, pointer-events:auto,
+ *  touch-action:manipulation.
  */
 (function () {
   'use strict';
@@ -21,7 +18,6 @@
     var apiBase = opts.apiBase || '';
     var track = opts.track || function () {};
 
-    // Bloqueia scroll do body enquanto o viewer estiver aberto.
     var prevOverflow = document.documentElement.style.overflow;
     document.documentElement.style.overflow = 'hidden';
 
@@ -35,12 +31,7 @@
       'pointer-events:auto',
       '-webkit-tap-highlight-color:transparent',
       'touch-action:manipulation',
-      'animation:ztFadeIn .18s ease',
     ].join(';');
-
-    var style = document.createElement('style');
-    style.textContent = '@keyframes ztFadeIn{from{opacity:0}to{opacity:1}}';
-    overlay.appendChild(style);
 
     var iframe = document.createElement('iframe');
     iframe.src = apiBase + '/embed/viewer';
@@ -57,12 +48,11 @@
       'background:transparent',
       'display:block',
       'pointer-events:auto',
+      'opacity:0',
+      'transition:opacity .12s linear',
     ].join(';');
 
     overlay.appendChild(iframe);
-    // Importante: anexar ao <body>, NÃO ao shadow root do widget. O host
-    // do shadow tem pointer-events:none, o que impede toques do iframe em
-    // alguns navegadores mobile/tablet (Safari iOS/iPadOS notavelmente).
     (document.body || document.documentElement).appendChild(overlay);
 
     var expectedOrigin = (function () { try { return new URL(iframe.src).origin; } catch (_) { return '*'; } })();
@@ -72,6 +62,17 @@
       startStoryIdx: startIdx,
       startMediaIdx: 0,
     };
+
+    var revealed = false;
+    function reveal() {
+      if (revealed) return;
+      revealed = true;
+      // rAF garante que o navegador já aplicou o layout do modal antes de
+      // subir a opacidade, eliminando qualquer flicker perceptível.
+      requestAnimationFrame(function () {
+        iframe.style.opacity = '1';
+      });
+    }
 
     function sendInit() {
       try {
@@ -92,16 +93,18 @@
       var data = ev.data;
       if (!data || !data.__zentor) return;
       if (data.type === 'ready') sendInit();
+      else if (data.type === 'initialized') reveal();
       else if (data.type === 'close') close();
       else if (data.type === 'track') track(data.event_type, data.story_id);
     }
 
     window.addEventListener('message', onMessage);
-
-    // Se o iframe carregar antes do ready (cache), força um init.
     iframe.addEventListener('load', function () { setTimeout(sendInit, 30); });
 
-    // ESC fecha (foco fica no host, não no iframe).
+    // Fallback: se por algum motivo a app não mandar "initialized", revela
+    // depois de 600ms para não deixar o modal invisível.
+    setTimeout(reveal, 600);
+
     var onKey = function (e) {
       if (e.key === 'Escape') close();
     };
