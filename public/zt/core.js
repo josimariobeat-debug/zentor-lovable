@@ -1,4 +1,4 @@
-/*! Zentor Widget core v7 — bootstrap + bubbles + lazy viewer
+/*! Zentor Widget core v8 — bootstrap + bubbles + lazy viewer
  *  Aplica 100% da aba Aparência do painel nas miniaturas do widget.
  *  Fonte de verdade da lógica de match: src/lib/urlMatch.ts (mirror abaixo).
  *  Fonte de verdade do modal de reprodução: /embed/viewer (React do painel),
@@ -82,14 +82,11 @@
   } catch (_) { sessionId = 's_' + Date.now(); }
 
   function track(event_type, story_id) {
-    try {
-      var payload = JSON.stringify({ store_id: STORE_ID, story_id: story_id || null, event_type: event_type, session_id: sessionId });
-      if (navigator.sendBeacon) {
-        navigator.sendBeacon(API_BASE + '/api/public/zt-ev', new Blob([payload], { type: 'application/json' }));
-      } else {
-        fetch(API_BASE + '/api/public/zt-ev', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payload, keepalive: true }).catch(function(){});
-      }
-    } catch (_) {}
+    // Métricas desativadas no storefront: alguns bloqueadores classificam
+    // qualquer beacon/fetch de analytics como anúncio e exibem ERR_BLOCKED_BY_CLIENT,
+    // o que polui o console e pode interferir em navegadores mobile agressivos.
+    void event_type;
+    void story_id;
   }
 
   function fetchJSON(url) {
