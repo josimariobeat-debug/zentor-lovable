@@ -472,12 +472,8 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                 src={url}
                 autoPlay
                 muted
-                // @ts-ignore
                 playsInline
-                // @ts-ignore
-                webkit-playsinline="true"
-                // @ts-ignore
-                x5-playsinline="true"
+                {...({ 'webkit-playsinline': 'true', 'x5-playsinline': 'true' } as Record<string, string>)}
                 preload="auto"
                 controls={false}
                 disablePictureInPicture
