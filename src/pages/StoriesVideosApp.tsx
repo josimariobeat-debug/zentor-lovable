@@ -697,7 +697,11 @@ export default function StoriesVideosApp() {
           if (!previewStory) return;
           const item = getOrderedStoryMedia(previewStory)[idx] as (StoryMedia & { measure_id?: string | null }) | undefined;
           const mid = item?.measure_id ?? null;
-          setPreviewMeasure(mid ? ((measuresStore.get(mid) as MeasureModel | undefined) ?? { id: mid, name: '', rows: [] }) : null);
+          setPreviewMeasure((prev) => {
+            if (!mid) return prev === null ? prev : null;
+            if (prev?.id === mid) return prev;
+            return (measuresStore.get(mid) as MeasureModel | undefined) ?? { id: mid, name: '', rows: [] };
+          });
           setPreviewMeasureOpen(false);
         }}
       />
