@@ -6,6 +6,17 @@ import { MeasurePreviewModal, type MeasureModel } from '@/components/storievideo
 export const Route = createFileRoute('/embed/viewer')({
   ssr: false,
   component: EmbedViewer,
+  head: () => ({
+    meta: [{ name: 'robots', content: 'noindex' }],
+    // Inline style é aplicado antes do primeiro paint — evita flash branco
+    // do iframe (default UA background) antes do useEffect rodar.
+    styles: [
+      {
+        children:
+          'html,body{background:transparent !important;margin:0;padding:0;overflow:hidden;color-scheme:normal}',
+      },
+    ],
+  }),
 });
 
 interface StoryPayload {
