@@ -206,7 +206,8 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
   };
 
   const [paused, setPaused] = useState(false);
-  const [muted, setMuted] = useState(false);
+  // Default true: iOS/Android bloqueiam autoplay com som. O usuário desmuta via botão.
+  const [muted, setMuted] = useState(true);
   const [liked, setLiked] = useState(false);
   const [, setLikeCount] = useState(0);
   const [comments, setComments] = useState<Comment[]>([]);
