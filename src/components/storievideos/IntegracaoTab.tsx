@@ -157,12 +157,12 @@ export default function IntegracaoTab() {
             <Eye className="w-4 h-4" /> Testar integração
           </button>
           <a
-            href={`${origin}/widget.js`}
+            href={`${origin}/loader.js?store=${store.store_id}`}
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-2 h-10 px-4 rounded-xl border border-neutral-200 text-sm font-medium text-neutral-800 hover:bg-neutral-50"
           >
-            <ExternalLink className="w-4 h-4" /> Ver widget.js
+            <ExternalLink className="w-4 h-4" /> Ver loader.js
           </a>
         </div>
       </div>
