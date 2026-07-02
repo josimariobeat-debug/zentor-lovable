@@ -58,7 +58,7 @@ function EmbedViewer() {
       document.documentElement.style.background = prevHtmlBg;
       document.body.style.background = prevBodyBg;
     };
-    return () => window.removeEventListener('message', onMsg);
+    
   }, []);
 
   // Achata todas as mídias de todos os stories em uma playlist única — mesmo
