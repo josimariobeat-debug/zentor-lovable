@@ -1,8 +1,6 @@
-/*! Zentor Widget core v4 — bootstrap + bubbles + lazy viewer
+/*! Zentor Widget core v11 — bootstrap + bubbles + lazy viewer + skeleton
  *  Aplica 100% da aba Aparência do painel nas miniaturas do widget.
- *  Fonte de verdade da lógica de match: src/lib/urlMatch.ts (mirror abaixo).
- *  Fonte de verdade do modal de reprodução: /embed/viewer (React do painel),
- *  carregado via viewer.js (iframe shim).
+ *  Skeleton mínimo enquanto config/Stories chegam (não altera layout final).
  */
 (function () {
   'use strict';
@@ -146,6 +144,12 @@
     '@keyframes ztPulse{0%{opacity:.75;transform:scale(1)}70%{opacity:0;transform:scale(1.25)}100%{opacity:0;transform:scale(1.25)}}',
     /* label */
     '.zt-label{font-size:12px;color:#111;max-width:120px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}',
+    /* skeleton */
+    '.zt-skel .zt-bubble-inner{background:#ececec;position:relative;overflow:hidden}',
+    '.zt-skel .zt-bubble-inner::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.65),transparent);transform:translateX(-100%);animation:ztShimmer 1.2s ease-in-out infinite}',
+    '@keyframes ztShimmer{100%{transform:translateX(100%)}}',
+    '.zt-skel-label{height:10px;width:64px;border-radius:5px;background:#ececec;position:relative;overflow:hidden}',
+    '.zt-skel-label::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.65),transparent);transform:translateX(-100%);animation:ztShimmer 1.2s ease-in-out infinite}',
     /* cta pill */
     '.zt-cta{position:absolute;left:50%;transform:translate(-50%,-50%);top:0;background:#111;color:#fff;padding:6px 14px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,.18);opacity:0;transition:opacity .25s ease}',
     '.zt-story:hover .zt-cta,.zt-story:focus-within .zt-cta{opacity:1}',
@@ -345,9 +349,56 @@
   function renderFromConfig(cfg) {
     if (!cfg) return;
     var stories = Array.isArray(cfg.stories) ? cfg.stories : [];
-    if (!stories.length) return;
+    if (!stories.length) { clearSkeleton(); return; }
     injectCoreStyles();
+    // Persiste aparência conhecida para skeletons futuros baterem com o layout real.
+    try {
+      var firstAp = null;
+      for (var i = 0; i < stories.length; i++) if (stories[i].appearance) { firstAp = stories[i].appearance; break; }
+      if (firstAp) localStorage.setItem('zt_last_ap:' + STORE_ID, JSON.stringify({ appearance: firstAp, count: Math.min(stories.length, 3) }));
+    } catch (_) {}
+    clearSkeleton();
     renderBubbles(cfg.store, stories);
+  }
+
+  /* ── Skeleton (mostrado enquanto config/Stories chegam) ── */
+  var skeletonWrap = null;
+  function clearSkeleton() {
+    if (skeletonWrap && skeletonWrap.parentNode) skeletonWrap.parentNode.removeChild(skeletonWrap);
+    skeletonWrap = null;
+  }
+  function renderSkeleton() {
+    if (skeletonWrap) return;
+    var appearance = coerceAppearance(null);
+    var count = 1;
+    try {
+      var raw = localStorage.getItem('zt_last_ap:' + STORE_ID);
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        appearance = coerceAppearance(parsed && parsed.appearance);
+        if (parsed && parsed.count) count = Math.max(1, Math.min(3, parsed.count | 0));
+      }
+    } catch (_) {}
+    if (appearance.hideStories) return;
+    injectCoreStyles();
+    var wrap = el('div', 'zt-wrap');
+    applyWrapPosition(wrap, appearance);
+    for (var i = 0; i < count; i++) {
+      var item = el('div', 'zt-story zt-skel');
+      item.style.color = appearance.color || '#000';
+      var bubble = el('div', 'zt-bubble');
+      var inner = el('div', 'zt-bubble-inner');
+      var ph = el('div', 'zt-bubble-img');
+      ph.style.background = 'transparent';
+      inner.appendChild(ph);
+      bubble.appendChild(inner);
+      applyBubbleShape(bubble, inner, ph, appearance);
+      item.appendChild(bubble);
+      item.appendChild(el('div', 'zt-skel-label'));
+      wrap.appendChild(item);
+    }
+    shadow.appendChild(wrap);
+    skeletonWrap = wrap;
   }
 
 
@@ -366,16 +417,17 @@
       }
       return;
     }
-    // Sem config no cache: consome a promise do loader (fetch em paralelo).
+    // Sem config no cache: mostra skeleton imediatamente e aguarda o fetch.
+    renderSkeleton();
     if (Z.configPromise && typeof Z.configPromise.then === 'function') {
-      Z.configPromise.then(renderFromConfig);
+      Z.configPromise.then(renderFromConfig).catch(function(){ clearSkeleton(); });
       return;
     }
     // Fallback (loader antigo/ausente): busca direto.
     fetchJSON(API_BASE + '/api/public/widget?store=' + encodeURIComponent(STORE_ID) +
               '&path=' + encodeURIComponent(window.location.pathname + window.location.search))
       .then(renderFromConfig)
-      .catch(function (err) { console.warn('[Zentor] failed to load:', err && err.message); });
+      .catch(function (err) { clearSkeleton(); console.warn('[Zentor] failed to load:', err && err.message); });
   }
 
   // Não esperamos DOMContentLoaded — o host é anexado a documentElement,
