@@ -471,7 +471,14 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                 key={`v-${currentIdx}-${url}`}
                 src={url}
                 autoPlay
+                muted
+                defaultMuted
                 playsInline
+                // @ts-ignore
+                webkit-playsinline="true"
+                // @ts-ignore
+                x5-playsinline="true"
+                preload="auto"
                 controls={false}
                 disablePictureInPicture
                 // @ts-ignore - non-standard attribute to hide download/save UI
