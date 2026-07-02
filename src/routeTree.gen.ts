@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SplatRouteImport } from './routes/$'
+import { Route as EmbedViewerRouteImport } from './routes/embed.viewer'
 import { Route as ApiPublicWidgetRouteImport } from './routes/api/public/widget'
 import { Route as ApiPublicTrackRouteImport } from './routes/api/public/track'
 import { Route as ApiPublicStoreStoreIdRouteImport } from './routes/api/public/store.$storeId'
@@ -18,6 +19,11 @@ import { Route as ApiPublicStoreStoreIdStoriesRouteImport } from './routes/api/p
 const SplatRoute = SplatRouteImport.update({
   id: '/$',
   path: '/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EmbedViewerRoute = EmbedViewerRouteImport.update({
+  id: '/embed/viewer',
+  path: '/embed/viewer',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicWidgetRoute = ApiPublicWidgetRouteImport.update({
@@ -44,6 +50,7 @@ const ApiPublicStoreStoreIdStoriesRoute =
 
 export interface FileRoutesByFullPath {
   '/$': typeof SplatRoute
+  '/embed/viewer': typeof EmbedViewerRoute
   '/api/public/track': typeof ApiPublicTrackRoute
   '/api/public/widget': typeof ApiPublicWidgetRoute
   '/api/public/store/$storeId': typeof ApiPublicStoreStoreIdRouteWithChildren
@@ -51,6 +58,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/$': typeof SplatRoute
+  '/embed/viewer': typeof EmbedViewerRoute
   '/api/public/track': typeof ApiPublicTrackRoute
   '/api/public/widget': typeof ApiPublicWidgetRoute
   '/api/public/store/$storeId': typeof ApiPublicStoreStoreIdRouteWithChildren
@@ -59,6 +67,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/$': typeof SplatRoute
+  '/embed/viewer': typeof EmbedViewerRoute
   '/api/public/track': typeof ApiPublicTrackRoute
   '/api/public/widget': typeof ApiPublicWidgetRoute
   '/api/public/store/$storeId': typeof ApiPublicStoreStoreIdRouteWithChildren
@@ -68,6 +77,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/$'
+    | '/embed/viewer'
     | '/api/public/track'
     | '/api/public/widget'
     | '/api/public/store/$storeId'
@@ -75,6 +85,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/$'
+    | '/embed/viewer'
     | '/api/public/track'
     | '/api/public/widget'
     | '/api/public/store/$storeId'
@@ -82,6 +93,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/$'
+    | '/embed/viewer'
     | '/api/public/track'
     | '/api/public/widget'
     | '/api/public/store/$storeId'
@@ -90,6 +102,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   SplatRoute: typeof SplatRoute
+  EmbedViewerRoute: typeof EmbedViewerRoute
   ApiPublicTrackRoute: typeof ApiPublicTrackRoute
   ApiPublicWidgetRoute: typeof ApiPublicWidgetRoute
   ApiPublicStoreStoreIdRoute: typeof ApiPublicStoreStoreIdRouteWithChildren
@@ -102,6 +115,13 @@ declare module '@tanstack/react-router' {
       path: '/$'
       fullPath: '/$'
       preLoaderRoute: typeof SplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/embed/viewer': {
+      id: '/embed/viewer'
+      path: '/embed/viewer'
+      fullPath: '/embed/viewer'
+      preLoaderRoute: typeof EmbedViewerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/widget': {
@@ -150,6 +170,7 @@ const ApiPublicStoreStoreIdRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   SplatRoute: SplatRoute,
+  EmbedViewerRoute: EmbedViewerRoute,
   ApiPublicTrackRoute: ApiPublicTrackRoute,
   ApiPublicWidgetRoute: ApiPublicWidgetRoute,
   ApiPublicStoreStoreIdRoute: ApiPublicStoreStoreIdRouteWithChildren,
@@ -157,13 +178,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

@@ -1,97 +1,125 @@
-# Melhorias na arquitetura do widget Zentor
 
-Refatoração em 5 frentes para deixar o widget do e-commerce leve, modular e visualmente idêntico ao painel admin.
+## Objetivo
 
-## 1. Lazy Module Loading (`public/widget.js` → módulos separados)
+Fazer o widget da loja refletir 100% a aba **Aparência** e usar **exatamente o mesmo modal** de preview do painel (mesmo player, produtos, medidas, animações, comportamento). Fonte única de UI = React do painel.
 
-Quebrar o `widget.js` monolítico em uma entry mínima + módulos carregados sob demanda via `import()` dinâmico servidos como assets estáticos versionados.
+## Diagnóstico da arquitetura atual
 
-```text
-public/widget/
-  core.js        ← boot, fetch da config já feita pelo loader, render das miniaturas
-  viewer.js      ← StoryViewer/MediaPreview (player, progress bars, gestos)
-  products.js    ← cards de produto + carrossel
-  measures.js    ← modal de tabela de medidas + manequim
-  comments.js    ← área de comentários
-  likes.js       ← curtidas
-  styles.css     ← CSS único injetado no Shadow DOM
+- `public/widget/core.js` — desenha bubbles em vanilla JS + shadow DOM. Lê pouca coisa de aparência (posição, dark mode). Ignora tamanho, radius, cores, tipografia, animações, layout, margens.
+- `public/widget/viewer.js` — modal de reprodução em vanilla JS. É uma **reimplementação divergente** do `MediaPreviewModal.tsx`. Nunca vai ficar 1:1 com o painel — cada melhoria no React precisa ser reescrita à mão.
+- `src/components/storievideos/MediaPreviewModal.tsx` — componente React usado no painel (produtos, medidas, curtir, comentar, CTA, swipe, hold-pause, carrossel).
+- Endpoint agregado `/api/public/widget` já retorna store + stories filtrados por URL.
+
+Problema estrutural: **dois runtimes diferentes** para a mesma UI. Enquanto for assim, nunca fica idêntico.
+
+## Estratégia
+
+**1. Bubbles (miniaturas) — continuam vanilla, mas passam a honrar 100% da Aparência.**
+Leve, sem custo de React na loja. Aplicar todos os tokens de aparência via CSS variables dentro do shadow root.
+
+**2. Modal de preview — deixa de ser vanilla e passa a ser o próprio `MediaPreviewModal` do painel, carregado num iframe fullscreen.**
+Isso garante paridade absoluta (mesmo código, mesmas animações, mesmos componentes de produto/medida, mesmo comportamento futuro). O iframe roda em `meuzentor.lovable.app` com o mesmo bundle React do painel, então qualquer melhoria futura no preview reflete automaticamente na loja.
+
+## Implementação
+
+### A. Schema de aparência (fonte da verdade)
+
+Adicionar/consolidar em `stores.appearance` (jsonb) todos os campos que a aba Aparência já expõe:
+
+```
+position, align, offsetX, offsetY, gap,
+layout (row/grid), size (px), shape (circle/rounded/square), borderRadius,
+ringStyle, ringColors[], ringWidth,
+labelShow, labelColor, labelFont, labelSize, labelWeight,
+bgColor, ctaText, ctaStyle, ctaAnimation,
+darkMode
 ```
 
-Regras de carregamento:
-- `core.js` (≤ 8 KB) renderiza só as miniaturas — nada mais é baixado até o primeiro clique.
-- `viewer.js` carrega no primeiro clique em uma miniatura.
-- `products.js` só se o story atual tiver `products.length > 0`.
-- `measures.js` só se existir `measure_model_id` vinculado E o usuário tocar o ícone.
-- `comments.js` / `likes.js` só ao abrir a respectiva UI.
-- Cada módulo é cacheado em memória após o primeiro `import()`.
+Já é lido pelo `AppearanceEditor` e `AppearanceMiniPreview`. Falta expor no endpoint público e consumir no widget.
 
-## 2. Componente de modal compartilhado (painel + widget)
+### B. Endpoint `/api/public/widget`
 
-Extrair `src/components/storievideos/MediaPreviewModal.tsx` para um pacote isomórfico:
+Passa a devolver o objeto `appearance` inteiro (hoje devolve subset). Sem quebrar formato existente — só acrescenta campos.
 
-```text
-src/components/preview/
-  PreviewViewer.tsx      ← React, usado pelo painel admin
-  PreviewViewer.vanilla.ts ← wrapper vanilla que hidrata o mesmo markup/CSS no widget
-  preview.css            ← fonte única de estilos (importada nos dois lados)
-  parts/
-    ProgressBars.tsx
-    ProductCard.tsx
-    MeasureModal.tsx
-    Controls.tsx         ← play/pause, som, gestos (hold-to-pause, swipe)
-```
+### C. `public/widget/core.js` — bubbles fiéis à Aparência
 
-- Painel admin continua importando `PreviewViewer` normalmente.
-- Widget monta `PreviewViewer.vanilla` dentro de um **Shadow DOM** (`attachShadow({mode:'open'})`) e injeta `preview.css` inline no shadow root, isolando 100% do CSS da loja.
-- Qualquer melhoria futura (novo botão, animação, layout) é feita uma vez em `parts/*` e reflete nos dois ambientes.
+Refatorar `renderBubbles`:
+- Injetar CSS variables no host a partir de `appearance` (`--zt-size`, `--zt-radius`, `--zt-gap`, `--zt-ring`, `--zt-label-color`, `--zt-font`, `--zt-offset-x/y`, etc.).
+- Aplicar posição/alinhamento/margens via classe + variáveis.
+- Suportar layouts (linha/grid).
+- Ring gradient/sólido configurável.
+- Label com fonte/tamanho/peso/cor configuráveis (carregar Google Font via `<link>` se `labelFont` for externa).
+- Animação de entrada configurável (fade/slide/scale).
+- CTA "pill" já existente passa a ler `ctaText/ctaStyle/ctaAnimation`.
 
-## 3. Normalização de URLs
+### D. Novo modal do e-commerce = iframe do painel
 
-Novo utilitário `src/lib/urlMatch.ts` usado tanto no server (`/api/public/widget`) quanto no `loader.js`:
+1. Criar rota pública **`/embed/viewer`** (React, SSR-off) em `src/routes/embed.viewer.tsx`:
+   - Recebe `?store=...&story=...&idx=...` (ou lê `postMessage` do parent).
+   - Busca stories via `/api/public/widget` (mesmo payload que a loja já tem — passar via `postMessage` para evitar refetch).
+   - Renderiza **exatamente** `<MediaPreviewModal open playlist={...} startIndex={...} />` em modo fullscreen (sem sidebar/app shell).
+   - Fecha via `postMessage({type:'zentor:close'})` → parent remove o iframe.
+   - Comunica eventos (`impression`, `view`, `click_product`, `close`) por `postMessage` → parent chama `track()`.
 
-- remove querystring inteira (ou mantém só um allow-list se necessário no futuro),
-- remove `#hash`,
-- remove barra final,
-- lowercase no host + path,
-- ignora `www.`.
+2. Reescrever `public/widget/viewer.js` como **shim mínimo** (~1 KB):
+   - `open({stories, startIdx, storeId, track})`: injeta `<iframe src="{origin}/embed/viewer?store=...">` fullscreen no shadow root, com `allow="autoplay; fullscreen"`, `sandbox="allow-scripts allow-same-origin allow-popups"`.
+   - `postMessage` do payload (stories completos com produtos/medidas) para o iframe → zero refetch.
+   - Escuta mensagens do iframe (`close`, `track`, `resize`).
+   - Bloqueia scroll do body enquanto aberto.
+   - Fallback gracioso se iframe falhar (mensagem de erro discreta).
 
-Aplicado antes de qualquer comparação nas regras (`exact`, `contains`, etc). Isso corrige o caso `/produto/blusa` ≡ `/produto/blusa/` ≡ `/produto/blusa?utm_source=google`.
+3. Garantir que `MediaPreviewModal` funciona standalone (sem AppLayout). Ele já é `Dialog` fullscreen, então precisa apenas de um wrapper `<EmbedViewer />` que injete `QueryClientProvider`, tokens de tema, e monte o modal como `open` fixo.
 
-## 4. Validação e cobertura das regras de exibição
+### E. Produtos e medidas no iframe
 
-Estender `storyMatchesPage()` (server + loader) para suportar todos os tipos:
+O payload enviado pelo `postMessage` já contém `products[]` e `measure_models[]` vinculados por story (mesma estrutura que `StoriesVideosApp` monta hoje). O `MediaPreviewModal` recebe esses props exatamente como no painel — sem código duplicado.
 
-| Tipo | Como detecta |
-|---|---|
-| `exact` | path normalizado === regra |
-| `contains` | path normalizado inclui trecho |
-| `all` | sempre true |
-| `home` | path === `/` |
-| `product` | heurística por plataforma (WBuy: `/produto/`, Shopify: `/products/`, etc.) + override manual |
-| `category` | `/categoria/`, `/collections/`, `/c/` |
-| `search` | `/busca`, `/search`, `?q=` |
-| `cart` | `/carrinho`, `/cart`, `/checkout/cart` |
+Se story sem produtos → carrossel oculto (comportamento já existente).
+Se story sem medidas → ícone de régua oculto (comportamento já existente).
 
-Testes unitários em `src/lib/__tests__/urlMatch.test.ts` cobrindo cada tipo + variações com/sem query e barra final.
+### F. CORS/segurança do iframe
 
-## 5. Garantia de consistência visual painel ↔ widget
+- Rota `/embed/viewer` responde com `Content-Security-Policy: frame-ancestors *` (ou lista de origens da loja, se quiser restringir por `stores.allowed_origins`).
+- `postMessage` valida `event.origin` contra `stores.allowed_origins` (opcional; sem lista = aceita qualquer, comportamento atual).
 
-- Fonte única de CSS (`preview.css`) importada nos dois ambientes.
-- Fonte única de markup (`parts/*` renderizando o mesmo HTML).
-- Snapshot visual: rodar Playwright abrindo o mesmo story no painel e num HTML de teste do widget, comparar screenshots dos 5 estados (miniaturas, viewer aberto, produto expandido, medidas abertas, pausado).
-- Nenhum estilo do tema da loja pode vazar (Shadow DOM garante).
+### G. Cache/perf
 
-## Detalhes técnicos
+- `loader.js` continua igual (SWR + página-match).
+- `core.js` mantém preload do viewer no primeiro hover — mas agora "preload" = `<link rel="preload" as="document" href="/embed/viewer">`, não script.
+- Iframe é criado **no primeiro clique**, não no boot — custo zero para quem só vê as bubbles.
 
-**Build dos módulos do widget**
-Adicionar entry Vite dedicada (build separado) que emite `public/widget/*.js` com hash em nome de arquivo. Loader existente (`public/loader.js`) passa a apontar para `/widget/core.js?v=<hash>`. Config já pré-carregada pelo loader continua sendo consumida via `window.__ZENTOR__.config` — sem fetch extra no core.
+## Arquivos afetados
 
-**Shadow DOM**
-`core.js` cria um `<div id="zentor-root">` no `<body>`, chama `attachShadow`, injeta `<style>` com `preview.css`, e monta miniaturas + (lazy) viewer dentro do shadow. Isso resolve conflitos com Tailwind/Bootstrap da loja e elimina a necessidade de prefixos CSS defensivos.
+- `public/widget/core.js` — rewrite parcial (bubbles honram appearance completa).
+- `public/widget/viewer.js` — rewrite completo como shim de iframe (~1 KB).
+- `public/loader.js` — sem mudanças.
+- `src/routes/api/public/widget.ts` — devolve `appearance` completo.
+- `src/routes/embed.viewer.tsx` — **novo**, monta `MediaPreviewModal` standalone.
+- `src/components/storievideos/MediaPreviewModal.tsx` — pequenos ajustes para modo embed (fechar via callback que o pai converte em `postMessage`).
+- `src/pages/AppearanceEditor.tsx` — garantir que salva todos os campos que o widget agora consome.
+- `src/components/storievideos/AppearanceMiniPreview.tsx` — refletir mesmos tokens.
 
-**Compatibilidade**
-Loader antigo (`widget.js` monolítico) continua respondendo por 1 versão para não quebrar lojas já integradas; log de deprecation no console e migração recomendada via aba Integração.
+## Fora do escopo (fica pra depois se você pedir)
 
-**Escopo fora deste plano**
-- Backend/DB inalterados (o endpoint `/api/public/widget` só ganha a normalização + novos tipos de regra).
-- UX do painel admin idêntica; só troca o import interno do modal.
+- Comentários e curtir com persistência por visitante da loja (hoje é UI-only no painel). Se quiser real, precisa endpoint público + tabela + moderação.
+- Auth do visitante da loja pra curtir/comentar (login social embedado).
+- Editor visual de aparência com preview do iframe real.
+
+## Riscos
+
+- Iframe adiciona ~200ms no primeiro open (carrega HTML+JS do painel). Mitigado com `<link rel="preload">` no hover.
+- Fontes customizadas do painel precisam estar disponíveis na rota `/embed/viewer` (já estão no `__root.tsx`).
+- Alguns navegadores de webview embutido (Instagram in-app) restringem iframe autoplay. Vamos usar `muted autoplay playsinline` como já é hoje.
+
+## Ordem de execução
+
+1. Endpoint devolve `appearance` completa.
+2. `core.js` aplica appearance nos bubbles.
+3. Rota `/embed/viewer` + adaptação do `MediaPreviewModal`.
+4. `viewer.js` vira shim de iframe + `postMessage`.
+5. Preload no hover.
+6. Publicar e testar em `vitrinneclassica.com`.
+
+---
+
+Confirma esta abordagem (iframe do painel = modal da loja)? Se preferir manter tudo vanilla (sem iframe) eu sigo, mas aviso: nunca vai ficar 1:1 e cada ajuste no painel vira trabalho dobrado.
