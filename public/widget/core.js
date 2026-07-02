@@ -201,8 +201,11 @@
   function preloadViewer() {
     if (preloadStarted) return;
     preloadStarted = true;
-    ensureViewer().catch(function(){ preloadStarted = false; });
-    // Pré-aquece o iframe do viewer (documento HTML + bundle) sem custo de render.
+    ensureViewer().then(function (V) {
+      // Pré-cria o iframe do /embed/viewer escondido, para que documento
+      // HTML + bundle React + primeiro paint aconteçam antes do clique.
+      try { V.prewarm && V.prewarm(API_BASE); } catch (_) {}
+    }).catch(function(){ preloadStarted = false; });
     try {
       var lk = document.createElement('link');
       lk.rel = 'preload'; lk.as = 'document'; lk.href = API_BASE + '/embed/viewer';
