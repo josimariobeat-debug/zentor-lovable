@@ -1,15 +1,17 @@
-/*! Zentor Widget viewer v7 — iframe shim com prewarm.
- *  Novo em v7:
- *   - `prewarm(apiBase)` cria o iframe do /embed/viewer imediatamente após
- *     o core carregar, escondido em posição fixa (0x0, opacity:0), para que
- *     o documento HTML + bundle React + primeiro paint aconteçam ANTES do
- *     usuário clicar. No clique, apenas expandimos e mandamos o init —
- *     resposta praticamente instantânea.
- *   - Handshake `ready` do embed é capturado durante o prewarm e memoizado,
- *     evitando espera no `open`.
- *  Mantido de v5/v6: overlay no <body>, pointer-events:auto,
- *  touch-action:manipulation, transparência total (fade só do Radix).
+/*! Zentor Widget viewer v8 — iframe shim com prewarm + reveal instantâneo.
+ *  Novo em v8:
+ *   - Reveal do overlay é INSTANTÂNEO (opacity 1, sem transition, sem esperar
+ *     handshake `initialized`). Como o iframe já foi prewarmado e o embed
+ *     documento é transparente, mostrá-lo imediatamente não causa flash — a
+ *     animação percebida é a do próprio Radix Dialog dentro do iframe, que
+ *     começa assim que o `init` postMessage chega (< 1 frame). Elimina o
+ *     delay de handshake + transition (~150–300ms).
+ *   - `init` é enviado o mais cedo possível; se ready ainda não chegou, é
+ *     enfileirado e disparado no ready.
+ *  Mantido de v7: prewarm no idle, overlay no <body>, pointer-events:auto,
+ *  touch-action:manipulation, transparência total.
  */
+
 (function () {
   'use strict';
   if (window.__ZENTOR_VIEWER__) return;
