@@ -281,11 +281,12 @@
 
   function applyClose(close, appearance) {
     var g = geom(appearance);
+    var p = posInfo(appearance);
     var badge = 18;
     var offX = appearance.shape === 'circular' ? -badge / 2 : 2;
     var offY = appearance.shape === 'circular' ? -badge / 2 : 2;
-    close.style.left = (g.w - badge + offX) + 'px';
-    close.style.top = offY + 'px';
+    close.style.left = (p.isLeft ? (g.w - badge + offX) : (-offX)) + 'px';
+    close.style.top = (p.isBottom ? (-offY) : (g.h - badge + offY)) + 'px';
   }
 
   function createRing(appearance, delay) {
