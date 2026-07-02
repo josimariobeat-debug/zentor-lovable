@@ -77,7 +77,7 @@ export const Route = createFileRoute('/api/public/widget')({
             measureIds.size
               ? supabaseAdmin
                   .from('measure_models')
-                  .select('id, name, measure_rows(id, size_name, measure_type, value_cm, position, size_used)')
+                  .select('id, name, measure_rows(id, size_name, measure_type, value_cm, position)')
                   .in('id', Array.from(measureIds))
                   .eq('user_id', store.user_id)
               : Promise.resolve({ data: [] as any[] }),
