@@ -258,6 +258,7 @@
     wrap.style.left = '0'; wrap.style.top = '0'; wrap.style.right = '0'; wrap.style.bottom = '0';
     wrap.style.width = '0'; wrap.style.height = '0';
     wrap.style.zIndex = String(appearance.zIndex || 9999999);
+    host.style.zIndex = String(appearance.zIndex || 9999999);
   }
 
   function posInfo(appearance) {
