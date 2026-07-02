@@ -116,22 +116,32 @@ export const Route = createFileRoute('/api/public/widget')({
 
           const presetMap = new Map<string, any>();
           const presetUpdatedMap = new Map<string, string | null>();
+          const presetRevisionMap = new Map<string, string>();
           for (const p of (presetsRes.data ?? []) as any[]) {
             presetMap.set(p.id, p.config ?? {});
             presetUpdatedMap.set(p.id, p.updated_at ?? null);
+            presetRevisionMap.set(p.id, JSON.stringify(p.config ?? {}));
           }
 
           const revisionParts: string[] = [store.updated_at ?? ''];
           for (const s of filtered as any[]) {
             revisionParts.push(s.updated_at ?? '', s.id ?? '');
             const effectivePresetId = s.appearance_preset_id || (UUID_RE.test(String(s.aparencia ?? '')) ? String(s.aparencia) : null);
-            if (effectivePresetId) revisionParts.push(effectivePresetId, presetUpdatedMap.get(effectivePresetId) ?? '');
+            if (effectivePresetId) {
+              revisionParts.push(
+                effectivePresetId,
+                presetUpdatedMap.get(effectivePresetId) ?? '',
+                // Garante sync visual em tempo real mesmo se algum ambiente não
+                // disparar o trigger de updated_at do preset por qualquer motivo.
+                presetRevisionMap.get(effectivePresetId) ?? '',
+              );
+            }
             for (const m of (s.story_media ?? []) as any[]) {
               revisionParts.push(m.id ?? '', m.created_at ?? '', (m.product_ids ?? []).join(','), m.measure_id ?? '', m.products_layout ?? '');
             }
           }
-          for (const p of productMap.values()) revisionParts.push(p.id, p.updated_at ?? '');
-          for (const m of measureMap.values()) revisionParts.push(m.id, m.updated_at ?? '');
+          for (const p of productMap.values()) revisionParts.push(p.id, p.updated_at ?? '', p.name ?? '', p.price ?? '', p.image ?? '', p.url ?? '');
+          for (const m of measureMap.values()) revisionParts.push(m.id, m.updated_at ?? '', JSON.stringify(m.rows ?? []));
           let hash = 0;
           const revisionSource = revisionParts.join('|');
           for (let i = 0; i < revisionSource.length; i += 1) hash = ((hash << 5) - hash + revisionSource.charCodeAt(i)) | 0;
