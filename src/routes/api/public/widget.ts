@@ -22,7 +22,7 @@ async function reSign(rawUrl: string | null | undefined, admin: any): Promise<st
   }
 }
 
-export const Route = createFileRoute('/api/public/zt-cfg')({
+export const Route = createFileRoute('/api/public/widget')({
   server: {
     handlers: {
       OPTIONS: async () => preflight(),
@@ -196,7 +196,7 @@ export const Route = createFileRoute('/api/public/zt-cfg')({
 
           return jsonCors(
             {
-              version: `8-${revision}`,
+              version: `5-${revision}`,
               store: { store_id: store.store_id, name: store.name, theme: store.theme, active: store.active },
               stories,
             },

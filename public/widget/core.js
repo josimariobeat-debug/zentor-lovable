@@ -1,4 +1,4 @@
-/*! Zentor Widget core v8 — bootstrap + bubbles + lazy viewer
+/*! Zentor Widget core v5 — bootstrap + bubbles + lazy viewer
  *  Aplica 100% da aba Aparência do painel nas miniaturas do widget.
  *  Fonte de verdade da lógica de match: src/lib/urlMatch.ts (mirror abaixo).
  *  Fonte de verdade do modal de reprodução: /embed/viewer (React do painel),
@@ -20,7 +20,7 @@
   var API_BASE = (function () {
     try { return new URL(currentScript.src).origin; } catch (_) { return ''; }
   })();
-  var VIEWER_URL = API_BASE + '/zt/viewer.js?v=7';
+  var VIEWER_URL = API_BASE + '/widget/viewer.js';
 
   /* ── URL match (mirror de src/lib/urlMatch.ts) ── */
   var PRODUCT_HINTS = ['/produto/', '/produtos/', '/products/', '/product/', '/p/'];
@@ -82,11 +82,14 @@
   } catch (_) { sessionId = 's_' + Date.now(); }
 
   function track(event_type, story_id) {
-    // Métricas desativadas no storefront: alguns bloqueadores classificam
-    // qualquer beacon/fetch de analytics como anúncio e exibem ERR_BLOCKED_BY_CLIENT,
-    // o que polui o console e pode interferir em navegadores mobile agressivos.
-    void event_type;
-    void story_id;
+    try {
+      var payload = JSON.stringify({ store_id: STORE_ID, story_id: story_id || null, event_type: event_type, session_id: sessionId });
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(API_BASE + '/api/public/track', new Blob([payload], { type: 'application/json' }));
+      } else {
+        fetch(API_BASE + '/api/public/track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payload, keepalive: true }).catch(function(){});
+      }
+    } catch (_) {}
   }
 
   function fetchJSON(url) {
@@ -430,7 +433,7 @@
       return;
     }
     // Fallback: busca o payload agregado direto.
-    fetchJSON(API_BASE + '/api/public/zt-cfg?store=' + encodeURIComponent(STORE_ID) +
+    fetchJSON(API_BASE + '/api/public/widget?store=' + encodeURIComponent(STORE_ID) +
               '&path=' + encodeURIComponent(window.location.pathname + window.location.search))
       .then(function (res) {
         update(res);

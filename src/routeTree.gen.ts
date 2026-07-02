@@ -11,8 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SplatRouteImport } from './routes/$'
 import { Route as EmbedViewerRouteImport } from './routes/embed.viewer'
-import { Route as ApiPublicZtEvRouteImport } from './routes/api/public/zt-ev'
-import { Route as ApiPublicZtCfgRouteImport } from './routes/api/public/zt-cfg'
+import { Route as ApiPublicWidgetRouteImport } from './routes/api/public/widget'
+import { Route as ApiPublicTrackRouteImport } from './routes/api/public/track'
 import { Route as ApiPublicStoreStoreIdRouteImport } from './routes/api/public/store.$storeId'
 import { Route as ApiPublicStoreStoreIdStoriesRouteImport } from './routes/api/public/store.$storeId.stories'
 
@@ -26,14 +26,14 @@ const EmbedViewerRoute = EmbedViewerRouteImport.update({
   path: '/embed/viewer',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicZtEvRoute = ApiPublicZtEvRouteImport.update({
-  id: '/api/public/zt-ev',
-  path: '/api/public/zt-ev',
+const ApiPublicWidgetRoute = ApiPublicWidgetRouteImport.update({
+  id: '/api/public/widget',
+  path: '/api/public/widget',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicZtCfgRoute = ApiPublicZtCfgRouteImport.update({
-  id: '/api/public/zt-cfg',
-  path: '/api/public/zt-cfg',
+const ApiPublicTrackRoute = ApiPublicTrackRouteImport.update({
+  id: '/api/public/track',
+  path: '/api/public/track',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicStoreStoreIdRoute = ApiPublicStoreStoreIdRouteImport.update({
@@ -51,16 +51,16 @@ const ApiPublicStoreStoreIdStoriesRoute =
 export interface FileRoutesByFullPath {
   '/$': typeof SplatRoute
   '/embed/viewer': typeof EmbedViewerRoute
-  '/api/public/zt-cfg': typeof ApiPublicZtCfgRoute
-  '/api/public/zt-ev': typeof ApiPublicZtEvRoute
+  '/api/public/track': typeof ApiPublicTrackRoute
+  '/api/public/widget': typeof ApiPublicWidgetRoute
   '/api/public/store/$storeId': typeof ApiPublicStoreStoreIdRouteWithChildren
   '/api/public/store/$storeId/stories': typeof ApiPublicStoreStoreIdStoriesRoute
 }
 export interface FileRoutesByTo {
   '/$': typeof SplatRoute
   '/embed/viewer': typeof EmbedViewerRoute
-  '/api/public/zt-cfg': typeof ApiPublicZtCfgRoute
-  '/api/public/zt-ev': typeof ApiPublicZtEvRoute
+  '/api/public/track': typeof ApiPublicTrackRoute
+  '/api/public/widget': typeof ApiPublicWidgetRoute
   '/api/public/store/$storeId': typeof ApiPublicStoreStoreIdRouteWithChildren
   '/api/public/store/$storeId/stories': typeof ApiPublicStoreStoreIdStoriesRoute
 }
@@ -68,8 +68,8 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/$': typeof SplatRoute
   '/embed/viewer': typeof EmbedViewerRoute
-  '/api/public/zt-cfg': typeof ApiPublicZtCfgRoute
-  '/api/public/zt-ev': typeof ApiPublicZtEvRoute
+  '/api/public/track': typeof ApiPublicTrackRoute
+  '/api/public/widget': typeof ApiPublicWidgetRoute
   '/api/public/store/$storeId': typeof ApiPublicStoreStoreIdRouteWithChildren
   '/api/public/store/$storeId/stories': typeof ApiPublicStoreStoreIdStoriesRoute
 }
@@ -78,24 +78,24 @@ export interface FileRouteTypes {
   fullPaths:
     | '/$'
     | '/embed/viewer'
-    | '/api/public/zt-cfg'
-    | '/api/public/zt-ev'
+    | '/api/public/track'
+    | '/api/public/widget'
     | '/api/public/store/$storeId'
     | '/api/public/store/$storeId/stories'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/$'
     | '/embed/viewer'
-    | '/api/public/zt-cfg'
-    | '/api/public/zt-ev'
+    | '/api/public/track'
+    | '/api/public/widget'
     | '/api/public/store/$storeId'
     | '/api/public/store/$storeId/stories'
   id:
     | '__root__'
     | '/$'
     | '/embed/viewer'
-    | '/api/public/zt-cfg'
-    | '/api/public/zt-ev'
+    | '/api/public/track'
+    | '/api/public/widget'
     | '/api/public/store/$storeId'
     | '/api/public/store/$storeId/stories'
   fileRoutesById: FileRoutesById
@@ -103,8 +103,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   SplatRoute: typeof SplatRoute
   EmbedViewerRoute: typeof EmbedViewerRoute
-  ApiPublicZtCfgRoute: typeof ApiPublicZtCfgRoute
-  ApiPublicZtEvRoute: typeof ApiPublicZtEvRoute
+  ApiPublicTrackRoute: typeof ApiPublicTrackRoute
+  ApiPublicWidgetRoute: typeof ApiPublicWidgetRoute
   ApiPublicStoreStoreIdRoute: typeof ApiPublicStoreStoreIdRouteWithChildren
 }
 
@@ -124,18 +124,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EmbedViewerRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/zt-ev': {
-      id: '/api/public/zt-ev'
-      path: '/api/public/zt-ev'
-      fullPath: '/api/public/zt-ev'
-      preLoaderRoute: typeof ApiPublicZtEvRouteImport
+    '/api/public/widget': {
+      id: '/api/public/widget'
+      path: '/api/public/widget'
+      fullPath: '/api/public/widget'
+      preLoaderRoute: typeof ApiPublicWidgetRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/zt-cfg': {
-      id: '/api/public/zt-cfg'
-      path: '/api/public/zt-cfg'
-      fullPath: '/api/public/zt-cfg'
-      preLoaderRoute: typeof ApiPublicZtCfgRouteImport
+    '/api/public/track': {
+      id: '/api/public/track'
+      path: '/api/public/track'
+      fullPath: '/api/public/track'
+      preLoaderRoute: typeof ApiPublicTrackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/store/$storeId': {
@@ -171,8 +171,8 @@ const ApiPublicStoreStoreIdRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   SplatRoute: SplatRoute,
   EmbedViewerRoute: EmbedViewerRoute,
-  ApiPublicZtCfgRoute: ApiPublicZtCfgRoute,
-  ApiPublicZtEvRoute: ApiPublicZtEvRoute,
+  ApiPublicTrackRoute: ApiPublicTrackRoute,
+  ApiPublicWidgetRoute: ApiPublicWidgetRoute,
   ApiPublicStoreStoreIdRoute: ApiPublicStoreStoreIdRouteWithChildren,
 }
 export const routeTree = rootRouteImport

@@ -1,4 +1,4 @@
-/*! Zentor Widget viewer v5 — iframe modal bridge.
+/*! Zentor Widget viewer v4 — iframe shim.
  *  Ao invés de reimplementar o player em vanilla JS, embute a rota
  *  /embed/viewer do painel para que a experiência da loja seja
  *  100% idêntica ao preview do painel administrativo (mesmo React,
@@ -17,40 +17,17 @@
     var shadow = opts.shadow || document.documentElement;
     var track = opts.track || function () {};
 
-    // Se já houver um viewer aberto, remove antes de criar outro.
-    try {
-      var previous = (shadow.querySelector && shadow.querySelector('[data-zt-viewer]')) || document.querySelector('[data-zt-viewer]');
-      if (previous && previous.parentNode) previous.parentNode.removeChild(previous);
-    } catch (_) {}
-
-    var host = shadow && shadow.host ? shadow.host : null;
-    var prevHostPointerEvents = host ? host.style.pointerEvents : '';
-    var prevHostZIndex = host ? host.style.zIndex : '';
-    if (host) {
-      host.style.pointerEvents = 'auto';
-      host.style.zIndex = '2147483600';
-    }
-
-    // Bloqueia scroll da loja enquanto o viewer estiver aberto.
+    // Bloqueia scroll do body enquanto o viewer estiver aberto.
     var prevOverflow = document.documentElement.style.overflow;
-    var prevBodyOverflow = document.body && document.body.style ? document.body.style.overflow : '';
     document.documentElement.style.overflow = 'hidden';
-    if (document.body && document.body.style) document.body.style.overflow = 'hidden';
-    var lastActive = document.activeElement;
 
     var overlay = document.createElement('div');
     overlay.setAttribute('data-zt-viewer', '');
-    overlay.setAttribute('role', 'dialog');
-    overlay.setAttribute('aria-modal', 'true');
-    overlay.tabIndex = -1;
     overlay.style.cssText = [
       'position:fixed',
       'inset:0',
       'z-index:2147483600',
-      'background:transparent',
-      'pointer-events:auto',
-      'isolation:isolate',
-      'overscroll-behavior:contain',
+      'background:#000',
       'animation:ztFadeIn .18s ease',
     ].join(';');
 
@@ -61,18 +38,16 @@
     var iframe = document.createElement('iframe');
     iframe.src = apiBase + '/embed/viewer';
     iframe.title = 'Zentor Stories';
-    iframe.allow = 'autoplay; fullscreen; picture-in-picture; clipboard-write; web-share';
+    iframe.allow = 'autoplay; fullscreen; picture-in-picture';
     iframe.setAttribute('allowfullscreen', '');
-    iframe.setAttribute('allowtransparency', 'true');
     iframe.style.cssText = [
       'position:absolute',
       'inset:0',
       'width:100%',
       'height:100%',
       'border:0',
-      'background:transparent',
+      'background:#000',
       'display:block',
-      'pointer-events:auto',
     ].join(';');
 
     overlay.appendChild(iframe);
@@ -95,16 +70,8 @@
 
     function close() {
       window.removeEventListener('message', onMessage);
-      window.removeEventListener('keydown', onKey, true);
-      window.removeEventListener('focusin', keepFocusInViewer, true);
       try { overlay.parentNode && overlay.parentNode.removeChild(overlay); } catch (_) {}
       document.documentElement.style.overflow = prevOverflow;
-      if (document.body && document.body.style) document.body.style.overflow = prevBodyOverflow;
-      if (host) {
-        host.style.pointerEvents = prevHostPointerEvents;
-        host.style.zIndex = prevHostZIndex;
-      }
-      try { lastActive && lastActive.focus && lastActive.focus({ preventScroll: true }); } catch (_) {}
     }
 
     function onMessage(ev) {
@@ -118,40 +85,14 @@
 
     window.addEventListener('message', onMessage);
 
-    // Se o iframe carregar antes do ready (cache), força um init e move o foco para o modal.
-    iframe.addEventListener('load', function () {
-      setTimeout(sendInit, 30);
-      try { iframe.focus({ preventScroll: true }); } catch (_) { try { iframe.focus(); } catch (__) {} }
-    });
+    // Se o iframe carregar antes do ready (cache), força um init.
+    iframe.addEventListener('load', function () { setTimeout(sendInit, 30); });
 
-    // Eventos no backdrop/overlay nunca devem atravessar para a loja.
-    ['pointerdown', 'pointerup', 'click', 'dblclick', 'touchstart', 'touchmove', 'touchend', 'wheel'].forEach(function (type) {
-      overlay.addEventListener(type, function (e) {
-        if (e.target === overlay) {
-          e.preventDefault();
-          e.stopPropagation();
-        }
-      }, { capture: true, passive: false });
-    });
-
+    // ESC fecha (foco fica no host, não no iframe).
     var onKey = function (e) {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        e.stopPropagation();
-        close();
-      }
+      if (e.key === 'Escape') { close(); window.removeEventListener('keydown', onKey); }
     };
-
-    function keepFocusInViewer(e) {
-      if (!overlay.parentNode) return;
-      if (e.target !== iframe && e.target !== overlay) {
-        try { iframe.focus({ preventScroll: true }); } catch (_) {}
-      }
-    }
-
-    window.addEventListener('keydown', onKey, true);
-    window.addEventListener('focusin', keepFocusInViewer, true);
-    try { overlay.focus({ preventScroll: true }); } catch (_) { try { overlay.focus(); } catch (__) {} }
+    window.addEventListener('keydown', onKey);
   }
 
   window.__ZENTOR_VIEWER__ = { open: open };
