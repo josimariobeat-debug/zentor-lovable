@@ -206,7 +206,8 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
   };
 
   const [paused, setPaused] = useState(false);
-  const [muted, setMuted] = useState(false);
+  // Default true: iOS/Android bloqueiam autoplay com som. O usuário desmuta via botão.
+  const [muted, setMuted] = useState(true);
   const [liked, setLiked] = useState(false);
   const [, setLikeCount] = useState(0);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -470,7 +471,10 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                 key={`v-${currentIdx}-${url}`}
                 src={url}
                 autoPlay
+                muted
                 playsInline
+                {...({ 'webkit-playsinline': 'true', 'x5-playsinline': 'true' } as Record<string, string>)}
+                preload="auto"
                 controls={false}
                 disablePictureInPicture
                 // @ts-ignore - non-standard attribute to hide download/save UI
