@@ -48,6 +48,8 @@ interface MediaPreviewModalProps {
   onMeasureClick?: () => void;
   /** Quando true, pausa o vídeo (sem reset de currentTime) — usado enquanto o modal de Medidas está aberto. */
   measureOpen?: boolean;
+  /** Notifica o índice ativo da playlist para consumidores externos (ex.: medidas por mídia no embed). */
+  onActiveIndexChange?: (index: number) => void;
 }
 
 
@@ -72,7 +74,7 @@ function formatPrice(price: string): string {
   return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
-export default function MediaPreviewModal({ open, onOpenChange, media, products, playlist, startIndex, showMeasureIcon, onMeasureClick, measureOpen }: MediaPreviewModalProps) {
+export default function MediaPreviewModal({ open, onOpenChange, media, products, playlist, startIndex, showMeasureIcon, onMeasureClick, measureOpen, onActiveIndexChange }: MediaPreviewModalProps) {
   const hasPlaylist = !!playlist && playlist.length > 0;
   const segmentCount = hasPlaylist ? playlist!.length : 1;
 
@@ -255,6 +257,11 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
     setFormPhone('');
     setFormText('');
   }, [open, initialIdx]);
+
+  useEffect(() => {
+    if (!open) return;
+    onActiveIndexChange?.(currentIdx);
+  }, [open, currentIdx, onActiveIndexChange]);
 
 
   // Reset per-segment progress quando troca de mídia
