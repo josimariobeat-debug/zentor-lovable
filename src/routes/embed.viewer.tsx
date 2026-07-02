@@ -32,7 +32,7 @@ function post(data: any) {
 function EmbedViewer() {
   const [payload, setPayload] = useState<EmbedPayload | null>(null);
   const [measureOpen, setMeasureOpen] = useState(false);
-  const [, setCurrentStoryIdx] = useState(0);
+  
 
   useEffect(() => {
     const onMsg = (ev: MessageEvent) => {
