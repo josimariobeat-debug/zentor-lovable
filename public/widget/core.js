@@ -349,9 +349,56 @@
   function renderFromConfig(cfg) {
     if (!cfg) return;
     var stories = Array.isArray(cfg.stories) ? cfg.stories : [];
-    if (!stories.length) return;
+    if (!stories.length) { clearSkeleton(); return; }
     injectCoreStyles();
+    // Persiste aparência conhecida para skeletons futuros baterem com o layout real.
+    try {
+      var firstAp = null;
+      for (var i = 0; i < stories.length; i++) if (stories[i].appearance) { firstAp = stories[i].appearance; break; }
+      if (firstAp) localStorage.setItem('zt_last_ap:' + STORE_ID, JSON.stringify({ appearance: firstAp, count: Math.min(stories.length, 3) }));
+    } catch (_) {}
+    clearSkeleton();
     renderBubbles(cfg.store, stories);
+  }
+
+  /* ── Skeleton (mostrado enquanto config/Stories chegam) ── */
+  var skeletonWrap = null;
+  function clearSkeleton() {
+    if (skeletonWrap && skeletonWrap.parentNode) skeletonWrap.parentNode.removeChild(skeletonWrap);
+    skeletonWrap = null;
+  }
+  function renderSkeleton() {
+    if (skeletonWrap) return;
+    var appearance = coerceAppearance(null);
+    var count = 1;
+    try {
+      var raw = localStorage.getItem('zt_last_ap:' + STORE_ID);
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        appearance = coerceAppearance(parsed && parsed.appearance);
+        if (parsed && parsed.count) count = Math.max(1, Math.min(3, parsed.count | 0));
+      }
+    } catch (_) {}
+    if (appearance.hideStories) return;
+    injectCoreStyles();
+    var wrap = el('div', 'zt-wrap');
+    applyWrapPosition(wrap, appearance);
+    for (var i = 0; i < count; i++) {
+      var item = el('div', 'zt-story zt-skel');
+      item.style.color = appearance.color || '#000';
+      var bubble = el('div', 'zt-bubble');
+      var inner = el('div', 'zt-bubble-inner');
+      var ph = el('div', 'zt-bubble-img');
+      ph.style.background = 'transparent';
+      inner.appendChild(ph);
+      bubble.appendChild(inner);
+      applyBubbleShape(bubble, inner, ph, appearance);
+      item.appendChild(bubble);
+      item.appendChild(el('div', 'zt-skel-label'));
+      wrap.appendChild(item);
+    }
+    shadow.appendChild(wrap);
+    skeletonWrap = wrap;
   }
 
 
