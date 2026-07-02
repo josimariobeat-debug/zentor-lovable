@@ -100,7 +100,7 @@ export const Route = createFileRoute('/api/public/widget')({
             const rowsArr = ((m.measure_rows ?? []) as any[])
               .slice()
               .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
-              .map((r) => ({ id: r.id, tamanho: r.size_name, medida: r.measure_type, valor: String(r.value_cm), size_used: r.size_used ?? null }));
+              .map((r) => ({ id: r.id, tamanho: r.size_name, medida: r.measure_type, valor: String(r.value_cm) }));
             measureMap.set(m.id, { id: m.id, name: m.name, rows: rowsArr });
           }
 
