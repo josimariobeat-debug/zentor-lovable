@@ -342,26 +342,44 @@
     }
   }
 
+  function renderFromConfig(cfg) {
+    if (!cfg) return;
+    var stories = Array.isArray(cfg.stories) ? cfg.stories.filter(storyMatchesPage) : [];
+    if (!stories.length) return;
+    injectCoreStyles();
+    renderBubbles(cfg.store, stories);
+  }
+
   function boot() {
-    var pre = window.__ZENTOR__ && window.__ZENTOR__.config;
-    if (pre && pre.store && Array.isArray(pre.stories)) {
-      injectCoreStyles();
-      renderBubbles(pre.store, pre.stories);
+    var Z = window.__ZENTOR__ || {};
+    // Fast path: config já disponível (cache do loader) — render síncrono.
+    if (Z.config && Array.isArray(Z.config.stories)) {
+      renderFromConfig(Z.config);
+      // Ainda assim, aguarda o fetch em background para refletir updates.
+      if (Z.configPromise && typeof Z.configPromise.then === 'function') {
+        Z.configPromise.then(function (fresh) {
+          if (fresh && fresh !== Z.config) {
+            // Silencioso: próxima navegação já reflete no cache.
+          }
+        });
+      }
       return;
     }
-    // Fallback: busca o payload agregado direto.
+    // Sem config no cache: consome a promise do loader (fetch em paralelo).
+    if (Z.configPromise && typeof Z.configPromise.then === 'function') {
+      Z.configPromise.then(renderFromConfig);
+      return;
+    }
+    // Fallback (loader antigo/ausente): busca direto.
     fetchJSON(API_BASE + '/api/public/widget?store=' + encodeURIComponent(STORE_ID) +
               '&path=' + encodeURIComponent(window.location.pathname + window.location.search))
-      .then(function (res) {
-        injectCoreStyles();
-        renderBubbles(res && res.store, (res && res.stories) || []);
-      })
+      .then(renderFromConfig)
       .catch(function (err) { console.warn('[Zentor] failed to load:', err && err.message); });
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', boot);
-  } else {
-    boot();
-  }
+  // Não esperamos DOMContentLoaded — o host é anexado a documentElement,
+  // que já existe assim que este script executa (o <script async> só corre
+  // depois do parser ter criado <html>).
+  boot();
 })();
+
