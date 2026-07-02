@@ -1,135 +1,97 @@
+# Melhorias na arquitetura do widget Zentor
 
-## Objetivo
+Refatoração em 5 frentes para deixar o widget do e-commerce leve, modular e visualmente idêntico ao painel admin.
 
-Refatorar o widget do Zentor para o modelo Planweb-style: **loader ultraleve** + **runtime modular carregado sob demanda** + **endpoint único de configuração**, mantendo 100% do UX atual (modal, cards, medidas, comentários, curtir, comprar).
+## 1. Lazy Module Loading (`public/widget.js` → módulos separados)
 
-## Arquitetura final
+Quebrar o `widget.js` monolítico em uma entry mínima + módulos carregados sob demanda via `import()` dinâmico servidos como assets estáticos versionados.
 
 ```text
-Loja (script instalado, ~1.5 KB)
-   │  <script src="/loader.js?store=STORE_ID" async></script>
-   ▼
-loader.js
-   • lê STORE_ID + URL atual
-   • GET /api/widget?store=xxx&path=/produto/blusa
-   • decide se há stories para essa página
-   • se sim → injeta runtime widget.js (com hash de versão)
-   ▼
-widget.js (runtime, code-split em módulos)
-   ├── bootstrap.ts       shadow root, montagem
-   ├── api.ts             fetch + cache
-   ├── router.ts          detecção de página (SPA + full reload)
-   ├── stories.ts         bolhas + IntersectionObserver
-   ├── preview-modal.ts   reusa MediaPreviewModal do painel
-   ├── player.ts          vídeo + lazy load do próximo
-   ├── products.ts        carrossel glass
-   ├── measurements.ts    tabela de medidas
-   ├── comments.ts / likes.ts
-   ├── analytics.ts       track events (sendBeacon)
-   └── storage.ts         cache localStorage com TTL
+public/widget/
+  core.js        ← boot, fetch da config já feita pelo loader, render das miniaturas
+  viewer.js      ← StoryViewer/MediaPreview (player, progress bars, gestos)
+  products.js    ← cards de produto + carrossel
+  measures.js    ← modal de tabela de medidas + manequim
+  comments.js    ← área de comentários
+  likes.js       ← curtidas
+  styles.css     ← CSS único injetado no Shadow DOM
 ```
 
-## API unificada
+Regras de carregamento:
+- `core.js` (≤ 8 KB) renderiza só as miniaturas — nada mais é baixado até o primeiro clique.
+- `viewer.js` carrega no primeiro clique em uma miniatura.
+- `products.js` só se o story atual tiver `products.length > 0`.
+- `measures.js` só se existir `measure_model_id` vinculado E o usuário tocar o ícone.
+- `comments.js` / `likes.js` só ao abrir a respectiva UI.
+- Cada módulo é cacheado em memória após o primeiro `import()`.
 
-Novo endpoint `GET /api/public/widget?store=xxx&path=/produto/blusa` retorna um único payload:
+## 2. Componente de modal compartilhado (painel + widget)
 
-```json
-{
-  "store": { "id": "zt_...", "active": true },
-  "theme": { "mode": "dark", "position": "bottom-left", "accent": "#111" },
-  "cta":   { "label": "Ver stories", "style": "pill" },
-  "stories": [
-    {
-      "id": "...", "title": "...", "cover": "...",
-      "media": [{ "url": "...", "type": "video/mp4" }],
-      "products":   [{ "id","name","price","image","url" }],
-      "measures":   [{ "id","name","sizeUsed","rows":[...] }],
-      "comments":   [...],
-      "likes":      12
-    }
-  ]
-}
+Extrair `src/components/storievideos/MediaPreviewModal.tsx` para um pacote isomórfico:
+
+```text
+src/components/preview/
+  PreviewViewer.tsx      ← React, usado pelo painel admin
+  PreviewViewer.vanilla.ts ← wrapper vanilla que hidrata o mesmo markup/CSS no widget
+  preview.css            ← fonte única de estilos (importada nos dois lados)
+  parts/
+    ProgressBars.tsx
+    ProductCard.tsx
+    MeasureModal.tsx
+    Controls.tsx         ← play/pause, som, gestos (hold-to-pause, swipe)
 ```
 
-Filtragem por página é feita no servidor comparando `urls[]` do story com `path` — o loader nem precisa baixar stories de outras páginas.
+- Painel admin continua importando `PreviewViewer` normalmente.
+- Widget monta `PreviewViewer.vanilla` dentro de um **Shadow DOM** (`attachShadow({mode:'open'})`) e injeta `preview.css` inline no shadow root, isolando 100% do CSS da loja.
+- Qualquer melhoria futura (novo botão, animação, layout) é feita uma vez em `parts/*` e reflete nos dois ambientes.
 
-## Loader (public/loader.js, ~1.5 KB minificado)
+## 3. Normalização de URLs
 
-```js
-(function(){
-  var s = document.currentScript;
-  var STORE = new URL(s.src).searchParams.get('store') || s.dataset.store;
-  if (!STORE || window.__ZENTOR__) return;
-  window.__ZENTOR__ = { store: STORE };
-  var origin = new URL(s.src).origin;
-  var path = location.pathname + location.search;
-  fetch(origin + '/api/public/widget?store=' + STORE + '&path=' + encodeURIComponent(path), { credentials:'omit' })
-    .then(function(r){ return r.ok ? r.json() : null; })
-    .then(function(cfg){
-      if (!cfg || !cfg.stories || !cfg.stories.length) return;
-      window.__ZENTOR__.config = cfg;
-      var w = document.createElement('script');
-      w.src = origin + '/widget.js?v=' + (cfg.version || '1');
-      w.async = true;
-      document.head.appendChild(w);
-    });
-})();
-```
+Novo utilitário `src/lib/urlMatch.ts` usado tanto no server (`/api/public/widget`) quanto no `loader.js`:
 
-Snippet mostrado na aba **Integração** passa a ser:
+- remove querystring inteira (ou mantém só um allow-list se necessário no futuro),
+- remove `#hash`,
+- remove barra final,
+- lowercase no host + path,
+- ignora `www.`.
 
-```html
-<script src="https://<origin>/loader.js?store=STORE_ID" async></script>
-```
+Aplicado antes de qualquer comparação nas regras (`exact`, `contains`, etc). Isso corrige o caso `/produto/blusa` ≡ `/produto/blusa/` ≡ `/produto/blusa?utm_source=google`.
 
-## Reuso do modal do painel
+## 4. Validação e cobertura das regras de exibição
 
-O `MediaPreviewModal` atual é React + Tailwind — não carrega dentro do widget standalone sem custo. Duas opções:
+Estender `storyMatchesPage()` (server + loader) para suportar todos os tipos:
 
-**A. Componente único, dois hosts** *(recomendado)*
-- Extrair `MediaPreviewModal` + subcomponentes (produtos, medidas, comentários, likes, comprar) para `src/widget-runtime/` como um bundle React isolado.
-- `widget.js` é gerado por uma entry Vite dedicada (`vite.config.ts` → `build.rollupOptions.input.widget`) que faz `ReactDOM.createRoot` dentro do Shadow DOM.
-- Mesmo código-fonte roda no painel e na loja → zero divergência visual/animação.
+| Tipo | Como detecta |
+|---|---|
+| `exact` | path normalizado === regra |
+| `contains` | path normalizado inclui trecho |
+| `all` | sempre true |
+| `home` | path === `/` |
+| `product` | heurística por plataforma (WBuy: `/produto/`, Shopify: `/products/`, etc.) + override manual |
+| `category` | `/categoria/`, `/collections/`, `/c/` |
+| `search` | `/busca`, `/search`, `?q=` |
+| `cart` | `/carrinho`, `/cart`, `/checkout/cart` |
 
-**B. Vanilla port** — mantém widget minúsculo mas duplica o modal. Rejeitado: viola a exigência "mesmo player, mesmas animações".
+Testes unitários em `src/lib/__tests__/urlMatch.test.ts` cobrindo cada tipo + variações com/sem query e barra final.
 
-Vamos com **A**.
+## 5. Garantia de consistência visual painel ↔ widget
 
-## Lazy loading real
+- Fonte única de CSS (`preview.css`) importada nos dois ambientes.
+- Fonte única de markup (`parts/*` renderizando o mesmo HTML).
+- Snapshot visual: rodar Playwright abrindo o mesmo story no painel e num HTML de teste do widget, comparar screenshots dos 5 estados (miniaturas, viewer aberto, produto expandido, medidas abertas, pausado).
+- Nenhum estilo do tema da loja pode vazar (Shadow DOM garante).
 
-- Bolhas renderizam do payload (`cover` apenas — sem `<video preload>`).
-- `<video>` só é criado ao abrir o story.
-- Ao entrar no story N, pré-buffer só do N+1 (`link rel=preload as=video` no shadow root).
-- `IntersectionObserver` só monta bolhas quando entram no viewport.
+## Detalhes técnicos
 
-## Cache & performance
+**Build dos módulos do widget**
+Adicionar entry Vite dedicada (build separado) que emite `public/widget/*.js` com hash em nome de arquivo. Loader existente (`public/loader.js`) passa a apontar para `/widget/core.js?v=<hash>`. Config já pré-carregada pelo loader continua sendo consumida via `window.__ZENTOR__.config` — sem fetch extra no core.
 
-- `storage.ts` grava payload em `localStorage` com TTL 60s (chave `zt:cfg:<store>:<path>`).
-- Loader serve do cache imediatamente e revalida em background (SWR).
-- Todos os fetches com `credentials:'omit'`, `Cache-Control: public, max-age=30` no servidor.
-- Cleanup: fechar modal destrói `<video>` e revoga blobs.
+**Shadow DOM**
+`core.js` cria um `<div id="zentor-root">` no `<body>`, chama `attachShadow`, injeta `<style>` com `preview.css`, e monta miniaturas + (lazy) viewer dentro do shadow. Isso resolve conflitos com Tailwind/Bootstrap da loja e elimina a necessidade de prefixos CSS defensivos.
 
-## Segurança / compatibilidade
+**Compatibilidade**
+Loader antigo (`widget.js` monolítico) continua respondendo por 1 versão para não quebrar lojas já integradas; log de deprecation no console e migração recomendada via aba Integração.
 
-- Endpoint continua sob `/api/public/*` (bypass auth), assinado só pelo `store_id` público.
-- Nenhuma dependência de plataforma (WBuy/Shopify/etc.) — só lê `location` e DOM.
-- Shadow DOM garante isolamento de CSS.
-
-## Passos de implementação
-
-1. **DB/API** — criar endpoint `GET /api/public/widget` que agrega stores + stories filtradas por `path` + produtos + medidas + likes + comentários numa única query.
-2. **Loader** — criar `public/loader.js` (arquivo estático, ~1.5 KB).
-3. **Runtime bundle** — adicionar entry Vite `src/widget-runtime/index.tsx` que monta o `MediaPreviewModal` em Shadow DOM; refatorar o modal para aceitar dados via props (produtos/medidas já vem prontos do payload — sem fetch adicional).
-4. **Bolhas & IntersectionObserver** — mover render de bolhas para dentro do runtime; loader só decide *se* baixa o runtime.
-5. **Cache SWR** — `storage.ts` com TTL 60s.
-6. **Aba Integração** — trocar snippet exibido para o loader novo; manter compat com o `widget.js` v2 antigo por 1 release (redirect no antigo `/widget.js` → carrega o novo loader).
-7. **Deprecar** rotas `/api/public/store/:id` e `/api/public/store/:id/stories` — manter respondendo por 30 dias com header `Deprecation`.
-
-## Fora de escopo
-
-- Comentários e curtidas: os endpoints de escrita já existem (ou serão criados como parte do payload); UI vem "de graça" ao reusar o modal.
-- Migração de lojistas já instalados: o `widget.js` antigo continua funcionando durante o período de compat.
-
-## Riscos
-
-- Bundle React no Shadow DOM tende a 40–60 KB gzip. Ainda assim carregado só quando há stories para a página, com `async` e após cache. Se ficar acima do orçamento, fazemos code-split adicional (player em chunk separado, carregado ao abrir o modal).
+**Escopo fora deste plano**
+- Backend/DB inalterados (o endpoint `/api/public/widget` só ganha a normalização + novos tipos de regra).
+- UX do painel admin idêntica; só troca o import interno do modal.
