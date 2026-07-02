@@ -344,11 +344,12 @@
 
   function renderFromConfig(cfg) {
     if (!cfg) return;
-    var stories = Array.isArray(cfg.stories) ? cfg.stories.filter(storyMatchesPage) : [];
+    var stories = Array.isArray(cfg.stories) ? cfg.stories : [];
     if (!stories.length) return;
     injectCoreStyles();
     renderBubbles(cfg.store, stories);
   }
+
 
   function boot() {
     var Z = window.__ZENTOR__ || {};
