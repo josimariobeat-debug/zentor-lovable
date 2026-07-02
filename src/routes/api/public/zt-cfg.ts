@@ -22,7 +22,7 @@ async function reSign(rawUrl: string | null | undefined, admin: any): Promise<st
   }
 }
 
-export const Route = createFileRoute('/api/public/widget')({
+export const Route = createFileRoute('/api/public/zt-cfg')({
   server: {
     handlers: {
       OPTIONS: async () => preflight(),
