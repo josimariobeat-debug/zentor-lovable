@@ -145,7 +145,7 @@
     '.zt-ring{position:absolute;background:transparent;border:0;pointer-events:none;z-index:1;animation:ztPulseRing 8s cubic-bezier(.22,.61,.36,1) infinite;will-change:box-shadow,opacity}',
     '@keyframes ztPulseRing{0%{box-shadow:0 0 0 0px var(--zt-ring);opacity:.75}15%{box-shadow:0 0 0 12px var(--zt-ring);opacity:0}100%{box-shadow:0 0 0 12px var(--zt-ring);opacity:0}}',
     '.zt-cta{position:absolute;color:#fff;line-height:1;padding:5px 10px;white-space:nowrap;box-shadow:0 6px 18px -8px rgba(0,0,0,.28);will-change:transform,opacity;transition:transform 620ms cubic-bezier(.22,.61,.36,1),opacity 620ms cubic-bezier(.22,.61,.36,1);z-index:1;font-weight:500;letter-spacing:.3px;pointer-events:none}',
-    '.zt-cta[data-visible="1"]{opacity:1;transform:translateY(50%) translateX(0)}',
+    '.zt-cta[data-visible="1"]{opacity:1;transform:translateY(50%) translateX(0)!important}',
     '.zt-cta[data-visible="0"]{opacity:0}',
   ].join('');
 
@@ -385,7 +385,7 @@
       }
 
       if (appearance.cta) {
-        var cta = el('div', 'zt-cta', appearance.cta);
+        var cta = el('div', 'zt-cta', String(appearance.cta).toUpperCase());
         applyCta(cta, appearance);
         cta.dataset.visible = '1';
         var hideDelay = Math.max(0, Number(appearance.ctaDuration || 0)) * 1000;
