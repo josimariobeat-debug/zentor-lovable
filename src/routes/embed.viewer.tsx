@@ -35,6 +35,14 @@ function EmbedViewer() {
   
 
   useEffect(() => {
+    // Torna o documento do iframe transparente para que o overlay do Radix
+    // (bg-black/80) seja o único responsável pelo escurecimento — igual ao
+    // preview da aba Stories no painel.
+    const prevHtmlBg = document.documentElement.style.background;
+    const prevBodyBg = document.body.style.background;
+    document.documentElement.style.background = 'transparent';
+    document.body.style.background = 'transparent';
+
     const onMsg = (ev: MessageEvent) => {
       const data = ev.data;
       if (!data || typeof data !== 'object' || !data.__zentorEmbed) return;
@@ -45,7 +53,12 @@ function EmbedViewer() {
     };
     window.addEventListener('message', onMsg);
     post({ type: 'ready' });
-    return () => window.removeEventListener('message', onMsg);
+    return () => {
+      window.removeEventListener('message', onMsg);
+      document.documentElement.style.background = prevHtmlBg;
+      document.body.style.background = prevBodyBg;
+    };
+    
   }, []);
 
   // Achata todas as mídias de todos os stories em uma playlist única — mesmo
@@ -81,7 +94,7 @@ function EmbedViewer() {
 
 
   if (!payload) {
-    return <div style={{ background: '#000', width: '100vw', height: '100vh' }} />;
+    return <div style={{ background: 'transparent', width: '100vw', height: '100vh' }} />;
   }
 
   return (
