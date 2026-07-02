@@ -1,4 +1,4 @@
-/*! Zentor Loader v3 — carrega o core e mantém aparência sincronizada em tempo real */
+/*! Zentor Loader v4 — carrega o core por rota neutra e mantém aparência sincronizada em tempo real */
 (function () {
   if (window.__ZENTOR_LOADER__) return;
   window.__ZENTOR_LOADER__ = true;
@@ -56,7 +56,7 @@
     if (window.__ZENTOR_RUNTIME__) return;
     window.__ZENTOR_RUNTIME__ = true;
     var w = document.createElement('script');
-    w.src = ORIGIN + '/widget/core.js?store=' + encodeURIComponent(STORE) + '&v=' + encodeURIComponent(cfg.version || '6');
+    w.src = ORIGIN + '/zt/core.js?store=' + encodeURIComponent(STORE) + '&v=' + encodeURIComponent(cfg.version || '7');
     w.async = true;
     w.setAttribute('data-store', STORE);
     document.head.appendChild(w);

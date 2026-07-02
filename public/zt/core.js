@@ -1,4 +1,4 @@
-/*! Zentor Widget core v5 — bootstrap + bubbles + lazy viewer
+/*! Zentor Widget core v7 — bootstrap + bubbles + lazy viewer
  *  Aplica 100% da aba Aparência do painel nas miniaturas do widget.
  *  Fonte de verdade da lógica de match: src/lib/urlMatch.ts (mirror abaixo).
  *  Fonte de verdade do modal de reprodução: /embed/viewer (React do painel),
@@ -20,7 +20,7 @@
   var API_BASE = (function () {
     try { return new URL(currentScript.src).origin; } catch (_) { return ''; }
   })();
-  var VIEWER_URL = API_BASE + '/widget/viewer.js?v=6';
+  var VIEWER_URL = API_BASE + '/zt/viewer.js?v=7';
 
   /* ── URL match (mirror de src/lib/urlMatch.ts) ── */
   var PRODUCT_HINTS = ['/produto/', '/produtos/', '/products/', '/product/', '/p/'];
