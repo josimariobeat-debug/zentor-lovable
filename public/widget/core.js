@@ -312,12 +312,14 @@
 
       applyBubbleShape(bubble, inner, mediaEl, appearance);
 
-      // CTA pill (aparece no hover)
-      if (appearance.cta) {
-        var cta = el('div', 'zt-cta', appearance.cta);
-        cta.style.fontSize = (appearance.ctaSize || 13) + 'px';
-        item.appendChild(cta);
-      }
+      // CTA pill "Detalhes" temporariamente desativada — será redesenhada.
+      // Mantido comentado para reativação futura.
+      // if (appearance.cta) {
+      //   var cta = el('div', 'zt-cta', appearance.cta);
+      //   cta.style.fontSize = (appearance.ctaSize || 13) + 'px';
+      //   item.appendChild(cta);
+      // }
+
 
       item.appendChild(bubble);
       if (story.title) item.appendChild(el('div', 'zt-label', story.title));
