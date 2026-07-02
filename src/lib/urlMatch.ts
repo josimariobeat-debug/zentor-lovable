@@ -1,9 +1,9 @@
 /**
  * URL normalization + story-visibility rule matching.
  * Used by:
- *   - server: src/routes/api/public/widget.ts
+ *   - server: src/routes/api/public/zt-cfg.ts
  *   - client (loader): logic mirrored inline in public/loader.js
- *   - client (widget core): logic mirrored inline in public/widget/core.js
+ *   - client (widget core): logic mirrored inline in public/zt/core.js
  *
  * Keep this file the single source of truth for rule semantics.
  * If you extend it, update the two mirrored copies.

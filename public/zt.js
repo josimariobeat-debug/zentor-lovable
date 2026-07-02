@@ -1,4 +1,4 @@
-/*! Zentor Loader v4 — carrega o core por rota neutra e mantém aparência sincronizada em tempo real */
+/*! Zentor Loader v4 — alias neutro para evitar bloqueadores por nome de rota */
 (function () {
   if (window.__ZENTOR_LOADER__) return;
   window.__ZENTOR_LOADER__ = true;
@@ -11,7 +11,6 @@
   if (!STORE) { console.warn('[Zentor] loader: parâmetro store ausente'); return; }
   var ORIGIN = src.origin;
 
-  // Normalização (mirror de src/lib/urlMatch.ts) — usada só para o cache key.
   function normalizePath(input) {
     if (!input) return '/';
     var v = String(input).trim();
