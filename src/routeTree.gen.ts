@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SplatRouteImport } from './routes/$'
+import { Route as ApiPublicWidgetRouteImport } from './routes/api/public/widget'
 import { Route as ApiPublicTrackRouteImport } from './routes/api/public/track'
 import { Route as ApiPublicStoreStoreIdRouteImport } from './routes/api/public/store.$storeId'
 import { Route as ApiPublicStoreStoreIdStoriesRouteImport } from './routes/api/public/store.$storeId.stories'
@@ -17,6 +18,11 @@ import { Route as ApiPublicStoreStoreIdStoriesRouteImport } from './routes/api/p
 const SplatRoute = SplatRouteImport.update({
   id: '/$',
   path: '/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicWidgetRoute = ApiPublicWidgetRouteImport.update({
+  id: '/api/public/widget',
+  path: '/api/public/widget',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicTrackRoute = ApiPublicTrackRouteImport.update({
@@ -39,12 +45,14 @@ const ApiPublicStoreStoreIdStoriesRoute =
 export interface FileRoutesByFullPath {
   '/$': typeof SplatRoute
   '/api/public/track': typeof ApiPublicTrackRoute
+  '/api/public/widget': typeof ApiPublicWidgetRoute
   '/api/public/store/$storeId': typeof ApiPublicStoreStoreIdRouteWithChildren
   '/api/public/store/$storeId/stories': typeof ApiPublicStoreStoreIdStoriesRoute
 }
 export interface FileRoutesByTo {
   '/$': typeof SplatRoute
   '/api/public/track': typeof ApiPublicTrackRoute
+  '/api/public/widget': typeof ApiPublicWidgetRoute
   '/api/public/store/$storeId': typeof ApiPublicStoreStoreIdRouteWithChildren
   '/api/public/store/$storeId/stories': typeof ApiPublicStoreStoreIdStoriesRoute
 }
@@ -52,6 +60,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/$': typeof SplatRoute
   '/api/public/track': typeof ApiPublicTrackRoute
+  '/api/public/widget': typeof ApiPublicWidgetRoute
   '/api/public/store/$storeId': typeof ApiPublicStoreStoreIdRouteWithChildren
   '/api/public/store/$storeId/stories': typeof ApiPublicStoreStoreIdStoriesRoute
 }
@@ -60,18 +69,21 @@ export interface FileRouteTypes {
   fullPaths:
     | '/$'
     | '/api/public/track'
+    | '/api/public/widget'
     | '/api/public/store/$storeId'
     | '/api/public/store/$storeId/stories'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/$'
     | '/api/public/track'
+    | '/api/public/widget'
     | '/api/public/store/$storeId'
     | '/api/public/store/$storeId/stories'
   id:
     | '__root__'
     | '/$'
     | '/api/public/track'
+    | '/api/public/widget'
     | '/api/public/store/$storeId'
     | '/api/public/store/$storeId/stories'
   fileRoutesById: FileRoutesById
@@ -79,6 +91,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   SplatRoute: typeof SplatRoute
   ApiPublicTrackRoute: typeof ApiPublicTrackRoute
+  ApiPublicWidgetRoute: typeof ApiPublicWidgetRoute
   ApiPublicStoreStoreIdRoute: typeof ApiPublicStoreStoreIdRouteWithChildren
 }
 
@@ -89,6 +102,13 @@ declare module '@tanstack/react-router' {
       path: '/$'
       fullPath: '/$'
       preLoaderRoute: typeof SplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/widget': {
+      id: '/api/public/widget'
+      path: '/api/public/widget'
+      fullPath: '/api/public/widget'
+      preLoaderRoute: typeof ApiPublicWidgetRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/track': {
@@ -131,6 +151,7 @@ const ApiPublicStoreStoreIdRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   SplatRoute: SplatRoute,
   ApiPublicTrackRoute: ApiPublicTrackRoute,
+  ApiPublicWidgetRoute: ApiPublicWidgetRoute,
   ApiPublicStoreStoreIdRoute: ApiPublicStoreStoreIdRouteWithChildren,
 }
 export const routeTree = rootRouteImport
