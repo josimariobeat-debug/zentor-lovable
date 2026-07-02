@@ -79,7 +79,7 @@
     if (window.__ZENTOR_RUNTIME__) return;
     window.__ZENTOR_RUNTIME__ = true;
     var w = document.createElement('script');
-    w.src = ORIGIN + '/widget/core.js?store=' + encodeURIComponent(STORE) + '&v=' + encodeURIComponent(version || '11');
+    w.src = ORIGIN + '/widget/core.js?store=' + encodeURIComponent(STORE) + '&v=' + encodeURIComponent(version || '12');
     w.async = true;
     w.setAttribute('data-store', STORE);
     document.head.appendChild(w);

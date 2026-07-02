@@ -1,4 +1,4 @@
-/*! Zentor Widget core v11 — bootstrap + bubbles + lazy viewer + skeleton
+/*! Zentor Widget core v12 — bootstrap + bubbles + lazy viewer + skeleton
  *  Aplica 100% da aba Aparência do painel nas miniaturas do widget.
  *  Skeleton mínimo enquanto config/Stories chegam (não altera layout final).
  */
