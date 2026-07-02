@@ -277,6 +277,31 @@
     var wrap = el('div', 'zt-wrap');
     applyWrapPosition(wrap, globalAppearance);
 
+    // IntersectionObserver compartilhado: pausa vídeos fora da viewport
+    // (baixo consumo de CPU/rede em celulares).
+    var videoEls = [];
+    var io = null;
+    if (typeof IntersectionObserver !== 'undefined') {
+      io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          var v = entry.target;
+          if (!v || v.tagName !== 'VIDEO') return;
+          if (entry.isIntersecting) {
+            if (v.paused) { var p = v.play(); if (p && p.catch) p.catch(function(){}); }
+          } else {
+            try { v.pause(); } catch (_) {}
+          }
+        });
+      }, { root: null, threshold: 0.15 });
+    }
+
+    // Escalona carregamento pesado: primeira miniatura começa cedo (preload=auto),
+    // demais entram com preload=metadata e sobem para auto quando a rede acalmar.
+    function upgradePreload(v) {
+      if (!v || v.preload === 'auto') return;
+      try { v.preload = 'auto'; } catch (_) {}
+    }
+
     stories.forEach(function (story, storyIdx) {
       var appearance = coerceAppearance(story.appearance || firstWithAppearance);
       var item = el('div', 'zt-story');
@@ -286,15 +311,21 @@
 
       var bubble = el('div', 'zt-bubble');
       var inner = el('div', 'zt-bubble-inner');
-      var videoUrl = storyIdx === 0 ? firstVideoUrl(story) : null;
+      var videoUrl = firstVideoUrl(story);
       var mediaEl;
       if (videoUrl) {
         var v = document.createElement('video');
         v.className = 'zt-bubble-video';
         v.src = videoUrl; v.muted = true; v.defaultMuted = true; v.autoplay = true;
         v.loop = false; v.playsInline = true;
+        v.setAttribute('muted', ''); v.setAttribute('autoplay', '');
         v.setAttribute('playsinline', ''); v.setAttribute('webkit-playsinline', '');
-        v.preload = 'auto';
+        v.setAttribute('x5-playsinline', '');
+        // 1ª miniatura: preload agressivo p/ auto-play imediato ao aparecer.
+        // Demais: só metadata (leve); sobe para auto no idle.
+        v.preload = storyIdx === 0 ? 'auto' : 'metadata';
+        v.disablePictureInPicture = true;
+        v.setAttribute('disablepictureinpicture', '');
         if (story.cover) v.poster = story.cover;
         v.addEventListener('timeupdate', function () {
           if (v.currentTime >= BUBBLE_LOOP_SECONDS) {
@@ -305,10 +336,16 @@
         v.addEventListener('loadedmetadata', function () {
           var p = v.play(); if (p && p.catch) p.catch(function(){});
         });
+        if (storyIdx > 0) {
+          var kickUpgrade = function () { upgradePreload(v); };
+          if (window.requestIdleCallback) window.requestIdleCallback(kickUpgrade, { timeout: 3000 });
+          else setTimeout(kickUpgrade, 1500 + storyIdx * 300);
+        }
         mediaEl = v;
+        videoEls.push(v);
       } else {
         mediaEl = el('img', 'zt-bubble-img');
-        mediaEl.loading = 'lazy'; mediaEl.alt = story.title || '';
+        mediaEl.loading = 'lazy'; mediaEl.decoding = 'async'; mediaEl.alt = story.title || '';
         if (story.cover) mediaEl.src = story.cover;
       }
       inner.appendChild(mediaEl);
@@ -335,6 +372,24 @@
       track('impression', story.id);
     });
     shadow.appendChild(wrap);
+
+    // Registra vídeos no IO após montagem (garantindo primeiro layout).
+    if (io) videoEls.forEach(function (v) { io.observe(v); });
+
+    // Pausa tudo quando a aba fica em background — economia real de bateria.
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) {
+        videoEls.forEach(function (v) { try { v.pause(); } catch (_) {} });
+      } else {
+        videoEls.forEach(function (v) {
+          // Só religa quem está visível (IO ligará os demais quando entrarem).
+          var r = v.getBoundingClientRect();
+          var inView = r.bottom > 0 && r.right > 0 && r.top < innerHeight && r.left < innerWidth;
+          if (inView) { var p = v.play(); if (p && p.catch) p.catch(function(){}); }
+        });
+      }
+    });
+
 
     // Prewarm em idle: cria iframe do viewer escondido logo após a página
     // estabilizar, para que o clique tenha resposta instantânea.
