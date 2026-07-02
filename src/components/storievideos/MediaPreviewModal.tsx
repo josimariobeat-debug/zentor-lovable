@@ -472,7 +472,7 @@ export default function MediaPreviewModal({ open, onOpenChange, media, products,
                 src={url}
                 autoPlay
                 muted
-                defaultMuted
+                // @ts-ignore
                 playsInline
                 // @ts-ignore
                 webkit-playsinline="true"
